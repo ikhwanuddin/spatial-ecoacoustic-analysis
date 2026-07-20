@@ -32,7 +32,7 @@ from config import (
 from beamforming import Beamformer
 from signal_averaging import SignalAverager
 from birdnet_processor import process_directory_pipeline
-from pipeline_state import PipelineState, STEP_BF_PREFIX, STEP_SA, STEP_BIRNET_PREFIX, STEP_BIRNET_SA
+from pipeline_state import PipelineState, STEP_BF_PREFIX, STEP_SA, STEP_BIRNET_PREFIX, STEP_BIRNET_SA, STEP_MONO, STEP_BIRNET_MONO
 
 # Max parallel BirdNET directories (all beamforming + SA = up to 4 dirs at once)
 BIRDNET_PARALLEL_DIRS = int(os.environ.get("BIRDNET_PARALLEL_DIRS", "4"))
@@ -50,7 +50,7 @@ def get_flac_files(rpiid: str, date_str: str, max_files: int = 1) -> List[str]:
     flacs = sorted([
         os.path.join(date_dir, f)
         for f in os.listdir(date_dir)
-        if f.lower().endswith(".flac")
+        if f.lower().endswith(".flac") and not f.startswith("._")
     ])
     if max_files and len(flacs) > max_files:
         flacs = flacs[:max_files]
@@ -203,6 +203,40 @@ def process_one_flac(
             if state and key:
                 state.mark_complete(key, STEP_SA)
 
+    # ── Step 2.5: Monochannel Baseline (first channel) ────────
+    import librosa as _librosa
+    import soundfile as _sf
+    from config import FS_TARGET
+
+    mono_dir = build_output_path(location_name, date_str, "mono_baseline", hour_subdir)
+    mono_out = os.path.join(mono_dir, base_name + "_mono.wav")
+
+    print(f"\n── Monochannel Baseline → {mono_dir} ──")
+    if state and key and state.is_complete(key, STEP_MONO):
+        print(f"  ✓ Mono baseline already complete (state) — skipping")
+    elif os.path.isfile(mono_out):
+        print(f"  ✓ Mono baseline already exists — skipping")
+        if state and key:
+            state.mark_complete(key, STEP_MONO)
+    else:
+        try:
+            raw, _ = _librosa.load(flac_path, sr=FS_TARGET, mono=False)
+            ch0 = raw[0, :] if raw.ndim > 1 else raw
+            amax = max(abs(ch0))
+            if amax > 1.0:
+                ch0 = ch0 / amax
+            os.makedirs(mono_dir, exist_ok=True)
+            _sf.write(
+                mono_out,
+                (ch0 * 32767).clip(-32768, 32767).astype("int16"),
+                FS_TARGET, subtype="PCM_16",
+            )
+            print(f"  ✓ Mono baseline: {mono_out}")
+            if state and key:
+                state.mark_complete(key, STEP_MONO)
+        except Exception as e:
+            print(f"  ❌ Mono baseline failed: {e}")
+
     # ── Step 3: BirdNET — PARALLEL across all dirs ───────────
     if run_birdnet:
         recording_date = parse_flac_date(flac_path, date_str)
@@ -241,6 +275,18 @@ def process_one_flac(
             else:
                 birdnet_tasks.append((sa_dir, "SA", STEP_BIRNET_SA, ""))
 
+        # Monochannel baseline BirdNET
+        if os.path.isfile(mono_out):
+            if state and key and state.is_complete(key, STEP_BIRNET_MONO):
+                print(f"  ✓ BirdNET [Mono] already complete — skipping")
+            elif os.path.isfile(os.path.join(mono_dir, "results.json")) and \
+                 os.path.isfile(os.path.join(mono_dir, "processed.json")):
+                print(f"  ✓ BirdNET [Mono] results exist — skipping")
+                if state and key:
+                    state.mark_complete(key, STEP_BIRNET_MONO)
+            else:
+                birdnet_tasks.append((mono_dir, "Mono", STEP_BIRNET_MONO, ""))
+
         if birdnet_tasks:
             print(f"\n  🚀 BirdNET parallel: {len(birdnet_tasks)} directories, "
                   f"{min(BIRDNET_PARALLEL_DIRS, len(birdnet_tasks))} concurrent")
@@ -251,7 +297,7 @@ def process_one_flac(
                     process_directory_pipeline(
                         directory=directory, date=recording_date,
                         identifier_pattern=pattern,
-                        cleanup=(cleanup and label != "SA"),
+                        cleanup=(cleanup and label not in ("SA", "Mono")),
                         dry_run=dry_run, lat=lat, lon=lon,
                     )
                     if state and key:
@@ -285,6 +331,7 @@ def process_one_flac(
         "flac": flac_path,
         "beamforming_dirs": [d for d, _ in bf_dirs],
         "sa_dir": sa_dir,
+        "mono_dir": mono_dir,
         "elapsed": elapsed,
     }
 
@@ -443,6 +490,8 @@ def main():
             print(f"    BF: {d}")
         if r["sa_dir"]:
             print(f"    SA: {r['sa_dir']}")
+        if r.get("mono_dir"):
+            print(f"    Mono: {r['mono_dir']}")
 
 
 if __name__ == "__main__":

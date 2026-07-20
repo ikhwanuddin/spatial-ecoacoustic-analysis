@@ -5,3 +5,4 @@ numpy>=1.26
 resampy>=0.4
 pydub>=0.25
 birdnetlib>=0.18
+tensorflow-macos>=2.16

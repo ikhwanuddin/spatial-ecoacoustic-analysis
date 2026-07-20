@@ -32,6 +32,8 @@ STEP_BF_PREFIX = "bf_"
 STEP_BIRNET_PREFIX = "birdnet_bf_"
 STEP_SA = "sa"
 STEP_BIRNET_SA = "birdnet_sa"
+STEP_MONO = "mono"
+STEP_BIRNET_MONO = "birdnet_mono"
 
 
 def _build_key(location_name: str, date_str: str, hour_subdir: str, base_name: str) -> str:
@@ -184,6 +186,22 @@ class PipelineState:
                     self.mark_complete(key, STEP_BIRNET_SA)
                     completed.add(STEP_BIRNET_SA)
 
+        # Monochannel baseline
+        mono_dir = os.path.join(
+            ANALYSIS_OUTPUT, location_name, date_str,
+            "mono_baseline", hour_subdir,
+        )
+        mono_file = os.path.join(mono_dir, f"{base_name}_mono.wav")
+        if os.path.isfile(mono_file):
+            self.mark_complete(key, STEP_MONO)
+            completed.add(STEP_MONO)
+            if run_birdnet:
+                mono_results = os.path.join(mono_dir, "results.json")
+                mono_processed = os.path.join(mono_dir, "processed.json")
+                if os.path.isfile(mono_results) and os.path.isfile(mono_processed):
+                    self.mark_complete(key, STEP_BIRNET_MONO)
+                    completed.add(STEP_BIRNET_MONO)
+
         return completed
 
     # ---------------------------------------------------------------
@@ -230,6 +248,25 @@ class PipelineState:
             if updated:
                 lines.append(f"    updated: {updated}")
         return "\n".join(lines)
+
+    def clean_stale_keys(self, stale_days: int = 7):
+        """Remove entries older than stale_days (based on last_updated)."""
+        import time as _time
+        cutoff = _time.time() - stale_days * 86400
+        stale_keys = []
+        for key, entry in self._data.items():
+            updated = entry.get("last_updated", "")
+            if updated:
+                try:
+                    ts = _time.mktime(_time.strptime(updated, "%Y-%m-%dT%H:%M:%S"))
+                    if ts < cutoff:
+                        stale_keys.append(key)
+                except (ValueError, OverflowError):
+                    pass
+        for key in stale_keys:
+            del self._data[key]
+        if stale_keys:
+            self._save()
 
     def reset_key(self, key: Optional[str] = None):
         """Remove a specific key or clear all state."""
