@@ -9,7 +9,7 @@ lalu menandai selesai. Ulangi terus sampai semua file selesai.
 State management: file-based di _state/ folder (hindari JSON merge conflict).
 
 Session ID auto-generated (UUID), saved to _session_id.txt on first run.
-Restart worker akan memakai ID yang sama — sehingga claim sebelumnya tetap valid.
+Restart worker akan memakai ID yang sama.
 
 Usage (dari Mac Mini, 3 terminal):
     colab exec -s colab-1 --timeout 86400 -f colab_worker.py
@@ -19,18 +19,15 @@ import os, sys, json, time, glob, subprocess, uuid
 from datetime import datetime
 from typing import List, Set, Tuple
 
-# ============================================================
-# CONFIG — edit if needed
-# ============================================================
+# ── Config ──────────────────────────────────────────────────
 
 GD_BASE       = "/drive/MyDrive"
 LOCATION      = "2A400"
 RPIID         = "RPiID-0000000091668b26"
-IR_TYPES_LIST = ["LabIR", "SPIR1", "SPIR2"]  # 19 + 24 + 7 = 50 arah per file
+IR_TYPES_LIST = ["LabIR", "SPIR1", "SPIR2"]
 MAX_FILES     = 5
-CLAIM_WAIT    = 30  # detik — tunggu GDrive sync setelah claim
+CLAIM_WAIT    = 30
 
-# GDrive paths
 MONITORING_DIR = f"{GD_BASE}/monitoring_data/{RPIID}"
 OUTPUT_BASE    = f"{GD_BASE}/sea-data/{LOCATION}"
 STATE_DIR      = f"{OUTPUT_BASE}/_state"
@@ -38,103 +35,114 @@ IR_BASE        = f"{GD_BASE}/MAARU-Impulse-Response"
 REPO_DIR       = "spatial-ecoacoustic-analysis"
 SESSION_FILE   = f"{STATE_DIR}/_session_id.txt"
 
-# Env vars for config.py
 os.environ["MONITORING_DATA"] = os.path.join(GD_BASE, "monitoring_data")
 os.environ["ANALYSIS_OUTPUT"]  = os.path.join(GD_BASE, "sea-data")
 os.environ["IR_BASE_PATH"]     = IR_BASE
 
 
+# ── Helpers ─────────────────────────────────────────────────
+
+def log(msg: str):
+    """Print and flush immediately so user sees live output."""
+    print(msg)
+    sys.stdout.flush()
+
+
+def run_stream(cmd: list, desc: str = "") -> bool:
+    """Run a command with LIVE streaming output (not captured)."""
+    if desc:
+        log(f"  {desc}...")
+    try:
+        result = subprocess.run(cmd, timeout=600)
+        if result.returncode != 0:
+            log(f"  ⚠ {desc} exited with code {result.returncode}")
+            return False
+        return True
+    except subprocess.TimeoutExpired:
+        log(f"  ❌ {desc}: timeout (10 min)")
+        return False
+    except Exception as e:
+        log(f"  ❌ {desc}: {e}")
+        return False
+
+
 def get_session_id() -> str:
-    """Get or create a persistent session ID."""
     os.makedirs(STATE_DIR, exist_ok=True)
     if os.path.isfile(SESSION_FILE):
         with open(SESSION_FILE) as f:
             sid = f.read().strip()
             if sid:
                 return sid
-    # Generate new unique ID
     sid = f"worker-{uuid.uuid4().hex[:8]}"
     with open(SESSION_FILE, "w") as f:
         f.write(sid)
     return sid
 
 
-SESSION_ID = get_session_id()  # set after STATE_DIR exists
+SESSION_ID = get_session_id()
 
-# ============================================================
-# SETUP
-# ============================================================
 
-def run(cmd: list, desc: str = "") -> bool:
-    if desc:
-        print(f"  {desc}...")
-    try:
-        result = subprocess.run(cmd, capture_output=True, text=True, timeout=600)
-        if result.returncode != 0:
-            print(f"  ❌ {desc}: {result.stderr[:300]}")
-            return False
-        return True
-    except subprocess.TimeoutExpired:
-        print(f"  ❌ {desc}: timeout")
-        return False
-    except Exception as e:
-        print(f"  ❌ {desc}: {e}")
-        return False
-
+# ── Setup ───────────────────────────────────────────────────
 
 def setup_environment():
-    print("=" * 50)
-    print(f"🔧 Colab Worker Setup — {SESSION_ID}")
-    print("=" * 50)
+    log("=" * 50)
+    log(f"🔧 Colab Worker Setup — {SESSION_ID}")
+    log("=" * 50)
 
     if not os.path.isdir(GD_BASE):
-        print("❌ GDrive not mounted at /drive/MyDrive/")
-        print("   Run: colab drivemount -s <session> /drive")
+        log("❌ GDrive not mounted at /drive/MyDrive/")
+        log("   Run: colab drivemount -s <session> /drive")
         sys.exit(1)
-    print(f"  ✅ GDrive mounted at {GD_BASE}")
+    log(f"  ✅ GDrive mounted at {GD_BASE}")
 
     os.makedirs(STATE_DIR, exist_ok=True)
 
+    # Clone repo
     if not os.path.isdir(REPO_DIR):
-        print("  Cloning spatial-ecoacoustic-analysis...")
-        if not run(["git", "clone", "https://github.com/ikhwanuddin/spatial-ecoacoustic-analysis.git"],
-                   "git clone"):
+        log("  Cloning spatial-ecoacoustic-analysis...")
+        if not run_stream(["git", "clone",
+                           "https://github.com/ikhwanuddin/spatial-ecoacoustic-analysis.git"],
+                          "git clone"):
             sys.exit(1)
 
-    print("  Installing Python dependencies (this may take a few minutes)...")
-    ok = run([sys.executable, "-m", "pip", "install", "-q",
-              "-r", f"{REPO_DIR}/requirements.txt"], "pip install")
+    # pip install — live streaming, NO -q flag
+    log("  Installing Python dependencies (streaming output)...")
+    ok = run_stream(
+        [sys.executable, "-m", "pip", "install",
+         "-r", f"{REPO_DIR}/requirements-colab.txt"],
+        "pip install",
+    )
     if not ok:
-        print("  ⚠ Retrying individual packages...")
+        log("  ⚠ Fallback: installing packages one by one...")
         for pkg in ["librosa", "soundfile", "scipy", "numpy", "resampy", "pydub",
                      "birdnetlib", "tensorflow"]:
-            run([sys.executable, "-m", "pip", "install", "-q", pkg], f"pip {pkg}")
+            run_stream([sys.executable, "-m", "pip", "install", pkg], f"pip {pkg}")
 
+    # Add repo to path
     if REPO_DIR not in sys.path:
         sys.path.insert(0, REPO_DIR)
 
+    # Verify imports
     try:
         import config
-        print(f"  ✅ Pipeline modules loaded (monitoring: {config.MONITORING_DATA})")
+        log(f"  ✅ Pipeline modules loaded")
     except ImportError as e:
-        print(f"  ❌ Import error: {e}")
+        log(f"  ❌ Import error: {e}")
         sys.exit(1)
 
-    # Precompute IR caches
+    # Precompute IR caches (takes ~2-3 min, streaming output)
+    log("  Building IR steering-vector caches (this may take 2-3 minutes)...")
     from ircache import build_all_caches
-    print("  Building IR steering-vector caches...")
     build_all_caches()
+    log("  ✅ IR caches ready")
 
 
-# ============================================================
-# STATE MANAGEMENT
-# ============================================================
+# ── State Management ────────────────────────────────────────
 
 def list_all_flac() -> List[Tuple[str, str]]:
-    """List all (date_dir, basename) FLAC tuples."""
     flacs = []
     if not os.path.isdir(MONITORING_DIR):
-        return []
+        return flacs
     for date_dir in sorted(os.listdir(MONITORING_DIR)):
         dp = os.path.join(MONITORING_DIR, date_dir)
         if not os.path.isdir(dp) or date_dir == "logs" or date_dir.startswith("."):
@@ -150,7 +158,6 @@ def get_flac_full_path(date_dir: str, basename: str) -> str:
 
 
 def list_state() -> Tuple[Set[str], Set[str]]:
-    """Return (done_basenames, claimed_basenames) from _state/ directory."""
     done = set()
     claimed = set()
     if not os.path.isdir(STATE_DIR):
@@ -161,27 +168,26 @@ def list_state() -> Tuple[Set[str], Set[str]]:
         if fname.endswith(".done"):
             done.add(fname[:-5])
         else:
-            # Non-done files are claim files
-            claimed.add(fname)  # full filename as claim key
+            claimed.add(fname)
     return done, claimed
 
 
 def claim_files(flac_basenames: List[str]) -> List[str]:
-    """Create claim files. Returns successfully claimed."""
-    claimed = []
+    claimed_ok = []
     for bn in flac_basenames:
         claim_path = os.path.join(STATE_DIR, f"{bn}.{SESSION_ID}")
         try:
             with open(claim_path, "w") as f:
-                f.write(json.dumps({"session": SESSION_ID, "claimed_at": datetime.now().isoformat(), "flac": bn}))
-            claimed.append(bn)
+                json.dump({"session": SESSION_ID,
+                           "claimed_at": datetime.now().isoformat(),
+                           "flac": bn}, f)
+            claimed_ok.append(bn)
         except Exception as e:
-            print(f"  ⚠ Failed to claim {bn}: {e}")
-    return claimed
+            log(f"  ⚠ Failed to claim {bn}: {e}")
+    return claimed_ok
 
 
 def verify_claims(flac_basenames: List[str]) -> List[str]:
-    """Re-read state, filter out files claimed by other sessions."""
     verified = []
     for bn in flac_basenames:
         claim_path = os.path.join(STATE_DIR, f"{bn}.{SESSION_ID}")
@@ -189,11 +195,12 @@ def verify_claims(flac_basenames: List[str]) -> List[str]:
             verified.append(bn)
         else:
             others = glob.glob(os.path.join(STATE_DIR, f"{bn}.*"))
-            others = [f for f in others if not f.endswith(".done") and SESSION_ID not in f]
+            others = [f for f in others
+                      if not f.endswith(".done") and SESSION_ID not in f]
             if others:
-                print(f"  ⚠ {bn} claimed by another session, skipping")
+                log(f"  ⚠ {bn} claimed by another session, skipping")
             else:
-                print(f"  ⚠ {bn} claim lost, re-claiming...")
+                log(f"  ⚠ {bn} claim lost, re-claiming...")
                 with open(claim_path, "w") as f:
                     f.write("retry")
                 verified.append(bn)
@@ -201,12 +208,12 @@ def verify_claims(flac_basenames: List[str]) -> List[str]:
 
 
 def mark_done(flac_basename: str):
-    """Write .done and remove claim file."""
     done_path = os.path.join(STATE_DIR, f"{flac_basename}.done")
     claim_path = os.path.join(STATE_DIR, f"{flac_basename}.{SESSION_ID}")
     try:
         with open(done_path, "w") as f:
-            f.write(json.dumps({"session": SESSION_ID, "done_at": datetime.now().isoformat()}))
+            json.dump({"session": SESSION_ID,
+                       "done_at": datetime.now().isoformat()}, f)
     except:
         pass
     try:
@@ -216,9 +223,7 @@ def mark_done(flac_basename: str):
         pass
 
 
-# ============================================================
-# PIPELINE
-# ============================================================
+# ── Pipeline ────────────────────────────────────────────────
 
 def monochannel_baseline(flac_path: str, output_base: str, base_name: str) -> str:
     import librosa, soundfile as sf
@@ -232,7 +237,9 @@ def monochannel_baseline(flac_path: str, output_base: str, base_name: str) -> st
     amax = max(abs(raw))
     if amax > 1.0:
         raw = raw / amax
-    sf.write(out_path, (raw * 32767).clip(-32768, 32767).astype("int16"), FS_TARGET, subtype="PCM_16")
+    sf.write(out_path,
+             (raw * 32767).clip(-32768, 32767).astype("int16"),
+             FS_TARGET, subtype="PCM_16")
     return out_path
 
 
@@ -250,7 +257,7 @@ def process_one_flac(flac_path: str, date_dir: str, flac_basename: str):
 
     output_dirs = []
 
-    # Beamforming
+    # Beamforming (LabIR + SPIR1 + SPIR2)
     for ir_name in IR_TYPES_LIST:
         ir_type = PRODUCTION_IR_SUBSETS[ir_name]
         bf_dir = os.path.join(loc_out, f"beamforming_{ir_name}")
@@ -262,18 +269,20 @@ def process_one_flac(flac_path: str, date_dir: str, flac_basename: str):
         if ir_type.zenith_speakers:
             n_expected -= len(ir_type.zenith_speakers) * (len(ir_type.degree_values) - 1)
 
-        existing = len([f for f in os.listdir(bf_dir) if f.endswith(".wav") and not f.startswith("._")]) \
+        existing = len([f for f in os.listdir(bf_dir)
+                        if f.endswith(".wav") and not f.startswith("._")]) \
                    if os.path.isdir(bf_dir) else 0
         if existing >= n_expected:
-            print(f"    ↳ {ir_name}: {existing}/{n_expected} WAVs already done, skipping")
+            log(f"    ↳ {ir_name}: {existing}/{n_expected} WAVs already done, skipping")
             continue
 
         try:
-            print(f"    Beamforming [{ir_name}]...")
-            bf = Beamformer(flac_path=flac_path, output_dir=bf_dir, ir_type_or_name=ir_type)
+            log(f"    Beamforming [{ir_name}]...")
+            bf = Beamformer(flac_path=flac_path, output_dir=bf_dir,
+                           ir_type_or_name=ir_type)
             bf.run()
         except Exception as e:
-            print(f"    ❌ {ir_name}: {e}")
+            log(f"    ❌ {ir_name}: {e}")
 
     # Signal Averaging
     sa_dir = os.path.join(loc_out, "signal_averaging")
@@ -281,23 +290,23 @@ def process_one_flac(flac_path: str, date_dir: str, flac_basename: str):
     output_dirs.append(sa_dir)
     if not os.path.isfile(sa_out):
         try:
-            print(f"    Signal Averaging...")
+            log(f"    Signal Averaging...")
             sa = SignalAverager(flac_path=flac_path, output_dir=sa_dir)
             sa.run()
         except Exception as e:
-            print(f"    ❌ SA: {e}")
+            log(f"    ❌ SA: {e}")
 
-    # Monochannel
+    # Monochannel baseline
     mono_path = monochannel_baseline(flac_path, loc_out, base_name)
     output_dirs.append(os.path.dirname(mono_path))
 
-    # BirdNET on all
-    print(f"    BirdNET analysis ({len(output_dirs)} dirs)...")
+    # BirdNET
+    log(f"    BirdNET analysis ({len(output_dirs)} dirs)...")
     for out_dir in output_dirs:
         if not os.path.isdir(out_dir):
             continue
         if os.path.isfile(os.path.join(out_dir, "results.json")):
-            print(f"    ↳ {os.path.basename(out_dir)}: results.json exists, skipping")
+            log(f"    ↳ {os.path.basename(out_dir)}: results.json exists, skipping")
             continue
         try:
             process_directory_pipeline(
@@ -305,19 +314,18 @@ def process_one_flac(flac_path: str, date_dir: str, flac_basename: str):
                 cleanup=False, dry_run=False, lat=lat, lon=lon,
             )
         except Exception as e:
-            print(f"    ❌ BirdNET [{os.path.basename(out_dir)}]: {e}")
+            log(f"    ❌ BirdNET [{os.path.basename(out_dir)}]: {e}")
 
-    print(f"    ✅ {flac_basename} done")
+    log(f"    ✅ {flac_basename} done")
 
 
-# ============================================================
-# MAIN LOOP
-# ============================================================
+# ── Main Loop ───────────────────────────────────────────────
 
 def worker_loop():
-    print("\n" + "=" * 50)
-    print(f"🔄 Worker Loop — {SESSION_ID}")
-    print("=" * 50)
+    log("")
+    log("=" * 50)
+    log(f"🔄 Worker Loop — {SESSION_ID}")
+    log("=" * 50)
 
     total_done = 0
     total_failed = 0
@@ -327,16 +335,16 @@ def worker_loop():
         done_set, claimed_set = list_state()
 
         if not all_flacs:
+            log("  ❌ No FLAC files found. Check MONITORING_DIR. Retrying in 60s...")
             time.sleep(60)
             continue
 
-        # Filter available
+        # Find available files
         available = []
         for date_dir, basename in all_flacs:
             bn = os.path.splitext(basename)[0]
             claim_fname = f"{bn}.{SESSION_ID}"
             if bn not in done_set and claim_fname not in claimed_set:
-                # Also check no other session claimed it
                 other_claims = [c for c in claimed_set if c.startswith(f"{bn}.")]
                 if not other_claims:
                     available.append((date_dir, basename))
@@ -345,56 +353,63 @@ def worker_loop():
         n_done = len(done_set)
         n_avail = len(available)
 
-        print(f"\n  ── {datetime.now().strftime('%H:%M:%S')} ──")
-        print(f"  Total: {total_all} | Done: {n_done} | Avail: {n_avail} | Done: {total_done} | Failed: {total_failed}")
+        log(f"\n  ── {datetime.now().strftime('%H:%M:%S')} ──")
+        log(f"  Total: {total_all} | Done: {n_done} | Avail: {n_avail}"
+            f" | ✅: {total_done} | ❌: {total_failed}")
 
         if n_avail == 0:
             if n_done >= total_all:
-                print(f"\n  🎉 ALL DONE! {n_done}/{total_all}")
+                log(f"\n  🎉 ALL DONE! {n_done}/{total_all}")
                 break
-            print(f"  ⏳ No available files, waiting {CLAIM_WAIT * 2}s...")
+            log(f"  ⏳ No available files, waiting {CLAIM_WAIT * 2}s...")
             time.sleep(CLAIM_WAIT * 2)
             continue
 
+        # Claim
         batch = available[:MAX_FILES]
         batch_bn = [os.path.splitext(b)[0] for _, b in batch]
-
-        print(f"  🎯 Claiming {len(batch)}: {[b for _, b in batch]}")
+        log(f"  🎯 Claiming {len(batch)}: {[b for _, b in batch]}")
         claimed_ok = claim_files(batch_bn)
-
         if not claimed_ok:
             time.sleep(CLAIM_WAIT)
             continue
 
-        print(f"  ⏳ Waiting {CLAIM_WAIT}s for GDrive sync...")
+        # Wait for GDrive sync
+        log(f"  ⏳ Waiting {CLAIM_WAIT}s for GDrive sync...")
         time.sleep(CLAIM_WAIT)
 
+        # Verify
         verified = verify_claims(claimed_ok)
         if not verified:
+            log(f"  ⚠ No verified claims, retrying...")
             continue
 
-        verified_batch = [(d, b) for d, b in batch if os.path.splitext(b)[0] in verified]
+        # Process verified files
+        verified_batch = [(d, b) for d, b in batch
+                          if os.path.splitext(b)[0] in verified]
 
         for date_dir, basename in verified_batch:
             flac_path = get_flac_full_path(date_dir, basename)
             if not os.path.isfile(flac_path):
-                print(f"  ❌ FLAC not found: {flac_path}")
+                log(f"  ❌ FLAC not found: {flac_path}")
                 total_failed += 1
                 mark_done(os.path.splitext(basename)[0])
                 continue
 
-            print(f"\n  🎙  Processing: {basename} ({date_dir})")
+            log(f"\n  🎙  Processing: {basename} ({date_dir})")
             t0 = time.time()
             try:
                 process_one_flac(flac_path, date_dir, basename)
                 mark_done(os.path.splitext(basename)[0])
                 total_done += 1
-                print(f"  ✅ Done ({time.time() - t0:.0f}s)")
+                log(f"  ✅ Done ({time.time() - t0:.0f}s)")
             except Exception as e:
-                print(f"  ❌ Failed: {e}")
+                log(f"  ❌ Failed: {e}")
                 total_failed += 1
                 mark_done(os.path.splitext(basename)[0])
-                import traceback; traceback.print_exc()
+                import traceback
+                traceback.print_exc()
+                sys.stdout.flush()
 
 
 if __name__ == "__main__":
