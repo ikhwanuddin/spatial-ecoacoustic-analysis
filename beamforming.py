@@ -24,6 +24,7 @@ from config import (
     FRAME_LEN_SEC,
     IRType,
 )
+from audio_utils import safe_load_audio
 from ircache import IRCache
 
 
@@ -89,7 +90,7 @@ class Beamformer:
 
         # Load and filter audio
         print(f"  Reading audio: {flac_path}")
-        self.raw, _ = librosa.load(flac_path, sr=self.fs, mono=False)
+        self.raw = safe_load_audio(flac_path, sr=self.fs, mono=False)
         self.filtered_audio = self._apply_filters(self.raw)
 
         # Precompute STFT of filtered audio (shared across all directions)

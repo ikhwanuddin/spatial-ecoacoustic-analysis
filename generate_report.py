@@ -6,7 +6,7 @@ Usage:
     python generate_report.py --location 2A400
     python generate_report.py --location 2A400 --dates 2026-04-16,2026-04-19
 
-Reads ANALYSIS_OUTPUT from config, or can be overridden with --data-dir.
+Reads ANALYSIS_OUTPUT from config (SSD: /Volumes/WD2TB/sea-data), or can be overridden with --data-dir.
 """
 
 import argparse
@@ -21,7 +21,7 @@ from typing import Any, Dict, List, Optional, Tuple
 try:
     from config import ANALYSIS_OUTPUT
 except ImportError:
-    ANALYSIS_OUTPUT = "/Volumes/HD Data/sea-data"
+    ANALYSIS_OUTPUT = "/Volumes/WD2TB/sea-data"
 
 # ============================================================
 # LABIR SPEAKER -> ELEVATION MAPPING
@@ -52,7 +52,7 @@ RE_SA    = re.compile(r"_sa\.wav$")
 class Detection:
     """A single BirdNET detection row with parsed direction fields."""
     __slots__ = (
-        "date", "method", "species", "confidence",
+        "date", "hour", "method", "species", "confidence",
         "start_time", "time_str",
         "distance", "azimuth", "elevation",
         "direction_label", "raw_filename",
@@ -61,6 +61,7 @@ class Detection:
     def __init__(
         self,
         date: str,
+        hour: str,
         method: str,
         species: str,
         confidence: float,
@@ -73,6 +74,7 @@ class Detection:
         raw_filename: str,
     ):
         self.date = date
+        self.hour = hour
         self.method = method
         self.species = species
         self.confidence = confidence
@@ -87,6 +89,7 @@ class Detection:
     def to_dict(self) -> Dict[str, Any]:
         return {
             "date": self.date,
+            "hour": self.hour,
             "method": self.method,
             "species": self.species,
             "confidence": self.confidence,
@@ -169,14 +172,17 @@ def find_processed_json_files(
     base_dir: str,
     location: str,
     date_filter: Optional[List[str]] = None,
-) -> List[Tuple[str, str, str]]:
-    """Walk tree, return [(date_str, method, full_path), ...]."""
+) -> List[Tuple[str, str, str, str]]:
+    """Walk tree, return [(date_str, hour_str, method, full_path), ...].
+    
+    New structure: sea-data/{location}/{date}/{method}/hour_XX/processed.json
+    """
     location_dir = os.path.join(base_dir, location)
     if not os.path.isdir(location_dir):
         print(f"Location directory not found: {location_dir}")
         return []
 
-    found: List[Tuple[str, str, str]] = []
+    found: List[Tuple[str, str, str, str]] = []
 
     for entry in sorted(os.listdir(location_dir)):
         date_path = os.path.join(location_dir, entry)
@@ -186,25 +192,34 @@ def find_processed_json_files(
             continue
 
         for subdir in PROCESSING_DIRS:
-            proc_json = os.path.join(date_path, subdir, "processed.json")
-            if os.path.isfile(proc_json):
-                method_map = {
-                    "beamforming_LabIR": "LabIR",
-                    "beamforming_SPIR1": "SPIR1",
-                    "beamforming_SPIR2": "SPIR2",
-                    "signal_averaging": "SA",
-                }
-                method = method_map.get(subdir, subdir)
-                found.append((entry, method, proc_json))
+            method_dir = os.path.join(date_path, subdir)
+            if not os.path.isdir(method_dir):
+                continue
+            for hour_entry in sorted(os.listdir(method_dir)):
+                if not hour_entry.startswith("hour_"):
+                    continue
+                hour_dir = os.path.join(method_dir, hour_entry)
+                if not os.path.isdir(hour_dir):
+                    continue
+                proc_json = os.path.join(hour_dir, "processed.json")
+                if os.path.isfile(proc_json):
+                    method_map = {
+                        "beamforming_LabIR": "LabIR",
+                        "beamforming_SPIR1": "SPIR1",
+                        "beamforming_SPIR2": "SPIR2",
+                        "signal_averaging": "SA",
+                    }
+                    method = method_map.get(subdir, subdir)
+                    found.append((entry, hour_entry, method, proc_json))
 
     return found
 
 
-def collect_detections(processed_files: List[Tuple[str, str, str]]) -> List[Detection]:
+def collect_detections(processed_files: List[Tuple[str, str, str, str]]) -> List[Detection]:
     """Read processed.json files, flatten into Detection objects."""
     detections: List[Detection] = []
 
-    for date_str, method, json_path in processed_files:
+    for date_str, hour_str, method, json_path in processed_files:
         try:
             with open(json_path, "r", encoding="utf-8") as f:
                 data: Dict[str, Any] = json.load(f)
@@ -227,6 +242,7 @@ def collect_detections(processed_files: List[Tuple[str, str, str]]) -> List[Dete
 
                 detections.append(Detection(
                     date=date_str,
+                    hour=hour_str.replace("hour_", ""),
                     method=method,
                     species=species_name,
                     confidence=conf,
@@ -531,6 +547,7 @@ footer {{
         <thead>
             <tr>
                 <th data-col="date">Date <span class="arrow"></span></th>
+                <th data-col="hour">Hr <span class="arrow"></span></th>
                 <th data-col="time_str">Time <span class="arrow"></span></th>
                 <th data-col="species">Species <span class="arrow"></span></th>
                 <th data-col="confidence">Conf <span class="arrow"></span></th>
@@ -545,15 +562,14 @@ footer {{
 </div>
 
 <div class="suggestions">
-    <h2>Visualization Ideas for Supervisor Discussion</h2>
+    <h2>Future Report Enhancements</h2>
     <ul>
-        <li><strong>Polar Azimuth-Elevation Scatter</strong> — plot each detection on polar coordinates (radius = elevation, angle = azimuth). Colored by species. Visually reveals WHERE in 3D space the birds are vocalising.</li>
+        <li><strong>Polar Azimuth-Elevation Scatter</strong> — plot each detection on polar coordinates (radius = elevation, angle = azimuth). Colored by species to reveal where in 3D space birds vocalise.</li>
         <li><strong>Time-of-Day Activity Heatmap</strong> — X = hour of day (0&ndash;24), Y = species, color intensity = detection count. Reveals diurnal/nocturnal patterns per species.</li>
-        <li><strong>Confidence Box-Plot Comparison</strong> — side-by-side box plots comparing mono (SA) vs beamformed confidence scores per species. Quantifies the SNR gain from beamforming.</li>
-        <li><strong>Directional Rose Diagram</strong> — circular histogram where each petal = detection count in that azimuth bin. Shows whether the soundscape has directional bias.</li>
-        <li><strong>Species Accumulation Curve</strong> — X = cumulative dates, Y = unique species discovered. Shows whether we are reaching saturation or still discovering new species at this site.</li>
-        <li><strong>Hourly Confidence Timeline</strong> — scatter plot of confidence vs time-of-day, faceted by species. Identifies optimal recording windows for target species.</li>
-        <li><strong>Method Comparison Radar Chart</strong> — per-species radar chart comparing LabIR vs SPIR1 vs SPIR2 vs SA across metrics (max conf, detection count, mean conf). Highlights which processing method works best for which species.</li>
+        <li><strong>Confidence Box-Plot Comparison</strong> — side-by-side box plots comparing omnidirectional vs beamformed confidence scores per species.</li>
+        <li><strong>Directional Rose Diagram</strong> — circular histogram showing azimuth-wise detection distribution to identify directional bias in the soundscape.</li>
+        <li><strong>Species Accumulation Curve</strong> — cumulative species count across dates to assess sampling saturation.</li>
+        <li><strong>Method Comparison Radar</strong> — per-species radar chart comparing LabIR, SPIR1, SPIR2 & SA across confidence and detection count metrics.</li>
     </ul>
 </div>
 
@@ -580,6 +596,7 @@ function confidenceClass(conf) {{
 function buildTooltip(r) {{
     // Full detail shown on row hover
     return 'Date: ' + r.date + '\\n' +
+           'Hour: ' + (r.hour || '—') + '\\n' +
            'Time: ' + r.time_str + ' (' + r.start_time.toFixed(1) + 's)\\n' +
            'Species: ' + r.species + '\\n' +
            'Confidence: ' + r.confidence.toFixed(3) + '\\n' +
@@ -597,7 +614,7 @@ function renderTable() {{
     if (filterText) {{
         var q = filterText.toLowerCase();
         rows = rows.filter(function(d) {{
-            return (d.date + ' ' + d.time_str + ' ' + d.species + ' ' +
+            return (d.date + ' ' + d.hour + ' ' + d.time_str + ' ' + d.species + ' ' +
                     d.confidence + ' ' + d.method + ' ' + d.azimuth +
                     ' ' + d.elevation + ' ' + d.distance)
                     .toLowerCase().indexOf(q) !== -1;
@@ -609,7 +626,7 @@ function renderTable() {{
         if (sortCol === 'confidence' || sortCol === 'start_time') {{
             return (va - vb) * sortDir;
         }}
-        if (sortCol === 'azimuth' || sortCol === 'elevation') {{
+        if (sortCol === 'hour' || sortCol === 'azimuth' || sortCol === 'elevation') {{
             var na = va === '' ? -999 : parseInt(va);
             var nb = vb === '' ? -999 : parseInt(vb);
             return (na - nb) * sortDir;
@@ -624,6 +641,7 @@ function renderTable() {{
         var tip = buildTooltip(r).replace(/"/g, '&quot;').replace(/\\n/g, '&#10;');
         html += '<tr data-tooltip="' + tip + '">' +
             '<td>' + esc(r.date) + '</td>' +
+            '<td>' + (r.hour || '—') + '</td>' +
             '<td>' + esc(r.time_str) + '</td>' +
             '<td>' + esc(r.species) + '</td>' +
             '<td class="' + confidenceClass(r.confidence) + '">' + r.confidence.toFixed(3) + '</td>' +

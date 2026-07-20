@@ -13,6 +13,7 @@ import librosa
 import soundfile as sf
 
 from config import FS_TARGET, N_CHANNELS_EXPECTED
+from audio_utils import safe_load_audio
 
 
 class SignalAverager:
@@ -39,7 +40,7 @@ class SignalAverager:
 
         # Load
         print(f"  Reading audio: {flac_path}")
-        self.raw, _ = librosa.load(flac_path, sr=self.fs, mono=False)
+        self.raw = safe_load_audio(flac_path, sr=self.fs, mono=False)
 
         if self.raw.shape[0] != N_CHANNELS_EXPECTED:
             raise ValueError(
