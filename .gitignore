@@ -5,3 +5,4 @@ __pycache__/
 *.log
 *.ipynb
 ir_cache/
+pipeline_state.json

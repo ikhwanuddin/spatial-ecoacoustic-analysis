@@ -9,13 +9,18 @@ Orchestrates:
   4. Confidence comparison → processed.json
   5. Cleanup: keep only best-variant beamforming files
 
+Resume support: pipeline_state.json on the output volume tracks which
+steps are complete per FLAC file. Interrupted runs resume automatically.
+
+State management:
+    python run_pipeline.py --state-status    # show all entries
+    python run_pipeline.py --reset-state all # clear everything
+    python run_pipeline.py --reset-state "<key>"  # reset one entry
+
 Selector-based: manually choose RPiID, date, and file(s) to process.
 
 Usage (quick prototype):
     python run_pipeline.py
-
-The SELECTOR section at the top of __main__ controls which files
-are processed — edit it for your prototype runs.
 
 When the pipeline is mature, a CLI/batch mode can be added.
 """
@@ -36,10 +41,10 @@ from config import (
     RPIID_TO_LOCATION,
     SITE_COORDS,
 )
-from ircache import IRCache
 from beamforming import Beamformer
 from signal_averaging import SignalAverager
 from birdnet_processor import process_directory_pipeline
+from pipeline_state import PipelineState, STEP_BF_PREFIX, STEP_SA, STEP_BIRNET_PREFIX, STEP_BIRNET_SA
 
 
 # ============================================================
@@ -68,9 +73,12 @@ def get_flac_files(rpiid: str, date_str: str, max_files: int = 1) -> List[str]:
     return flacs
 
 
-def build_output_path(location_name: str, date_str: str, processing_type: str) -> str:
-    """Build structured output path under sea-data/."""
-    return os.path.join(ANALYSIS_OUTPUT, location_name, date_str, processing_type)
+def build_output_path(location_name: str, date_str: str, processing_type: str, hour_subdir: str = "") -> str:
+    """Build structured output path under sea-data/, optionally with hour subfolder."""
+    path = os.path.join(ANALYSIS_OUTPUT, location_name, date_str, processing_type)
+    if hour_subdir:
+        path = os.path.join(path, hour_subdir)
+    return path
 
 
 def get_location_name_from_rpiid(rpiid: str) -> str:
@@ -124,6 +132,13 @@ def _sa_complete(output_dir: str, base_name: str):
     return os.path.isfile(os.path.join(output_dir, base_name + "_sa.wav"))
 
 
+def _extract_hour(flac_path: str) -> str:
+    """Extract hour from FLAC filename (e.g., '08-17-52_dur=120secs.flac' -> 'hour_08')."""
+    base = os.path.basename(flac_path)
+    hour = base[:2]
+    return f"hour_{hour}"
+
+
 # ============================================================
 # SINGLE-FILE PIPELINE
 # ============================================================
@@ -139,18 +154,35 @@ def process_one_flac(
     dry_run: bool = False,
     use_prototype_subsets: bool = False,
     force_bf: bool = False,
+    state: Optional["PipelineState"] = None,
 ):
-    """Run the full pipeline for ONE FLAC file."""
+    """Run the full pipeline for ONE FLAC file, with resume support."""
     base_name = os.path.splitext(os.path.basename(flac_path))[0]
+    hour_subdir = _extract_hour(flac_path)
+    key = None
+    if state:
+        key = state.make_key(location_name, date_str, hour_subdir, base_name)
+        # Auto-detect any already-done steps from disk (one-time scan)
+        state.auto_detect_from_disk(
+            location_name, date_str, hour_subdir, base_name,
+            ir_types, run_sa=run_sa, run_birdnet=run_birdnet,
+        )
+
     print(f"\n{'='*60}")
     print(f"🎙  Processing: {base_name}")
     print(f"📍 Location:  {location_name}")
     print(f"📅 Date:      {date_str}")
+    print(f"🕐 Hour:      {hour_subdir}")
     print(f"📡 IR Types:  {', '.join(ir_types)}")
+    if state and key:
+        entry = state.get_entry(key)
+        if entry:
+            statuses = {k: v for k, v in entry.items() if k != "last_updated"}
+            print(f"📋 Resume:   {statuses}")
     print(f"{'='*60}")
 
     overall_start = time.time()
-    bf_dirs = []
+    bf_dirs = []          # list of (bf_dir, ir_name)
     sa_dir = ""
 
     # Choose IR config
@@ -163,29 +195,47 @@ def process_one_flac(
             continue
 
         ir_type = ir_configs[ir_name]
-        bf_dir = build_output_path(location_name, date_str, f"beamforming_{ir_name}")
-        bf_dirs.append(bf_dir)
+        bf_dir = build_output_path(location_name, date_str, f"beamforming_{ir_name}", hour_subdir)
+        bf_dirs.append((bf_dir, ir_name))
 
-        print(f"\n── Beamforming [{ir_name}] ──")
+        print(f"\n── Beamforming [{ir_name}] → {bf_dir} ──")
+
+        # Check pipeline state first, then disk
+        bf_step = f"{STEP_BF_PREFIX}{ir_name}"
+        if not force_bf and state and key and state.is_complete(key, bf_step):
+            print(f"  ✓ {ir_name} already complete (state) — skipping beamforming")
+            continue
         if not force_bf and _beamforming_complete(bf_dir, base_name, ir_type):
             print(f"  ✓ {ir_name} outputs already exist — skipping beamforming")
-        else:
-            bf = Beamformer(
-                flac_path=flac_path,
-                output_dir=bf_dir,
-                ir_type_or_name=ir_type,
-            )
-            bf.run()
+            if state and key:
+                state.mark_complete(key, bf_step)
+            continue
+
+        bf = Beamformer(
+            flac_path=flac_path,
+            output_dir=bf_dir,
+            ir_type_or_name=ir_type,
+        )
+        bf.run()
+        if state and key:
+            state.mark_complete(key, bf_step)
 
     # ── Step 2: Signal Averaging ─────────────────────────────
     if run_sa:
-        sa_dir = build_output_path(location_name, date_str, "signal_averaging")
-        print(f"\n── Signal Averaging ──")
-        if not force_bf and _sa_complete(sa_dir, base_name):
+        sa_dir = build_output_path(location_name, date_str, "signal_averaging", hour_subdir)
+        print(f"\n── Signal Averaging → {sa_dir} ──")
+
+        if not force_bf and state and key and state.is_complete(key, STEP_SA):
+            print(f"  ✓ SA already complete (state) — skipping")
+        elif not force_bf and _sa_complete(sa_dir, base_name):
             print(f"  ✓ SA output already exists — skipping")
+            if state and key:
+                state.mark_complete(key, STEP_SA)
         else:
             sa = SignalAverager(flac_path=flac_path, output_dir=sa_dir)
             sa.run()
+            if state and key:
+                state.mark_complete(key, STEP_SA)
 
     # ── Step 3-5: BirdNET → processed.json → cleanup ────────
     if run_birdnet:
@@ -194,11 +244,24 @@ def process_one_flac(
         if lat is not None:
             print(f"\n  🌍 Site coordinates: {lat}, {lon}")
 
-        # Process each beamforming directory
-        for bf_dir in bf_dirs:
-            ir_label = os.path.basename(bf_dir).replace("beamforming_", "")
-            pattern = f"_{ir_label}("
+        # Process each beamforming directory (already at hour level)
+        for bf_dir, ir_name in bf_dirs:
+            ir_label = os.path.basename(os.path.dirname(bf_dir)).replace("beamforming_", "")
+            bn_step = f"{STEP_BIRNET_PREFIX}{ir_name}"
 
+            if state and key and state.is_complete(key, bn_step):
+                print(f"  ✓ BirdNET [{ir_label}] already complete (state) — skipping")
+                continue
+
+            results_json = os.path.join(bf_dir, "results.json")
+            processed_json = os.path.join(bf_dir, "processed.json")
+            if os.path.isfile(results_json) and os.path.isfile(processed_json):
+                print(f"  ✓ BirdNET [{ir_label}] results already exist — skipping")
+                if state and key:
+                    state.mark_complete(key, bn_step)
+                continue
+
+            pattern = f"_{ir_label}("
             process_directory_pipeline(
                 directory=bf_dir,
                 date=recording_date,
@@ -208,18 +271,30 @@ def process_one_flac(
                 lat=lat,
                 lon=lon,
             )
+            if state and key:
+                state.mark_complete(key, bn_step)
 
-        # Process signal averaging directory
+        # Process signal averaging directory (already at hour level)
         if run_sa and sa_dir:
-            process_directory_pipeline(
-                directory=sa_dir,
-                date=recording_date,
-                identifier_pattern="",
-                cleanup=False,
-                dry_run=dry_run,
-                lat=lat,
-                lon=lon,
-            )
+            if state and key and state.is_complete(key, STEP_BIRNET_SA):
+                print(f"  ✓ BirdNET [SA] already complete (state) — skipping")
+            elif os.path.isfile(os.path.join(sa_dir, "results.json")) and \
+                 os.path.isfile(os.path.join(sa_dir, "processed.json")):
+                print(f"  ✓ BirdNET [SA] results already exist — skipping")
+                if state and key:
+                    state.mark_complete(key, STEP_BIRNET_SA)
+            else:
+                process_directory_pipeline(
+                    directory=sa_dir,
+                    date=recording_date,
+                    identifier_pattern="",
+                    cleanup=False,
+                    dry_run=dry_run,
+                    lat=lat,
+                    lon=lon,
+                )
+                if state and key:
+                    state.mark_complete(key, STEP_BIRNET_SA)
 
     elapsed = time.time() - overall_start
     print(f"\n{'='*60}")
@@ -228,7 +303,7 @@ def process_one_flac(
 
     return {
         "flac": flac_path,
-        "beamforming_dirs": bf_dirs,
+        "beamforming_dirs": [d for d, _ in bf_dirs],
         "sa_dir": sa_dir,
         "elapsed": elapsed,
     }
@@ -294,8 +369,32 @@ def main():
         "--force-bf", action="store_true",
         help="Force re-run beamforming even if outputs already exist",
     )
+    parser.add_argument(
+        "--state-status", action="store_true",
+        help="Show detailed pipeline state and exit",
+    )
+    parser.add_argument(
+        "--reset-state", type=str, default=None,
+        help="Reset state for a specific key or 'all' to clear everything",
+    )
 
     args = parser.parse_args()
+
+    # ── State management commands (no RPiID needed) ──────────
+    if args.reset_state is not None:
+        state = PipelineState()
+        key = None if args.reset_state == "all" else args.reset_state
+        print(f"Resetting state: {args.reset_state}")
+        state.reset_key(key)
+        print(state.detailed_summary())
+        sys.exit(0)
+
+    if args.state_status:
+        state = PipelineState()
+        print(state.summary())
+        print()
+        print(state.detailed_summary())
+        sys.exit(0)
 
     # ── Precompute IR caches (if requested) ──────────────────
     if args.precompute:
@@ -390,10 +489,13 @@ def main():
     # ── Validate output volume ───────────────────────────────
     if not os.path.exists(ANALYSIS_OUTPUT):
         print(f"❌ Output volume not mounted: {ANALYSIS_OUTPUT}")
-        print("   Please connect your external HDD.")
+        print("   Please connect your external SSD (WD2TB).")
         sys.exit(1)
 
     # ── Run pipeline ─────────────────────────────────────────
+    state = PipelineState()
+    print(f"📋 {state.summary()}")
+
     results = []
     for flac_path in flac_paths:
         result = process_one_flac(
@@ -407,8 +509,11 @@ def main():
             dry_run=args.dry_run,
             use_prototype_subsets=use_prototype,
             force_bf=args.force_bf,
+            state=state,
         )
         results.append(result)
+
+    print(f"\n📋 {state.summary()}")
 
     # ── Summary ──────────────────────────────────────────────
     print(f"\n{'='*60}")
