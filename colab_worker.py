@@ -10,11 +10,11 @@ State di _state/:
     {date_dir}_{hour}.done     → hour group selesai
     {date_dir}_{hour}.{sid}    → hour group diklaim
 
-Session ID auto-generated via UUID, saved to _session_id.txt.
+Semua output diflush segera agar terminal tetap interaktif.
 """
 
 import os, sys, json, time, glob, subprocess, uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List, Set, Tuple, Dict
 
 # ── Config ──────────────────────────────────────────────────
@@ -36,11 +36,33 @@ os.environ["MONITORING_DATA"] = os.path.join(GD_BASE, "monitoring_data")
 os.environ["ANALYSIS_OUTPUT"]  = os.path.join(GD_BASE, "sea-data")
 os.environ["IR_BASE_PATH"]     = IR_BASE
 
+# Global start time
+SESSION_START = datetime.now(timezone.utc)
+
 
 # ── Helpers ─────────────────────────────────────────────────
 
+def ts() -> str:
+    """Current timestamp string."""
+    return datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
+
+
+def elapsed_since(start: datetime) -> str:
+    """Human-readable elapsed time."""
+    secs = (datetime.now(timezone.utc) - start).total_seconds()
+    if secs < 60:
+        return f"{secs:.0f}s"
+    elif secs < 3600:
+        return f"{secs/60:.1f}m"
+    else:
+        h = int(secs // 3600)
+        m = int((secs % 3600) // 60)
+        return f"{h}h {m}m"
+
+
 def log(msg: str):
-    print(msg)
+    """Print timestamped message, flush immediately."""
+    print(f"[{ts()}] {msg}")
     sys.stdout.flush()
 
 
@@ -78,8 +100,6 @@ SESSION_ID = get_session_id()
 
 
 def parse_hour(basename: str) -> str:
-    """Extract hour from FLAC filename like '13-27-10_dur=120secs.flac' -> '13'."""
-    # Format: HH-MM-SS_dur=XXXsecs.flac
     try:
         return basename.split("-")[0]
     except:
@@ -100,7 +120,14 @@ def setup_environment():
 
     os.makedirs(STATE_DIR, exist_ok=True)
 
-    # Clone repo
+    # Clone or pull repo to get latest code
+    if os.path.isdir(REPO_DIR):
+        log("  Repo exists, pulling latest...")
+        if not run_stream(["git", "-C", REPO_DIR, "pull", "origin", "main"],
+                          "git pull"):
+            log("  git pull failed, recloning...")
+            import shutil
+            shutil.rmtree(REPO_DIR, ignore_errors=True)
     if not os.path.isdir(REPO_DIR):
         log("  Cloning repo...")
         if not run_stream(["git", "clone",
@@ -137,14 +164,10 @@ def setup_environment():
 # ── State Management ────────────────────────────────────────
 
 def list_hour_groups() -> Dict[str, List[Tuple[str, str]]]:
-    """
-    List all (date_dir, hour) groups with their FLACs.
-    Returns: {group_key: [(date_dir, basename), ...]}
-    """
+    """List all (date_dir, hour) groups with their FLAC basenames."""
     groups: Dict[str, List[Tuple[str, str]]] = {}
     if not os.path.isdir(MONITORING_DIR):
         return groups
-
     for date_dir in sorted(os.listdir(MONITORING_DIR)):
         dp = os.path.join(MONITORING_DIR, date_dir)
         if not os.path.isdir(dp) or date_dir == "logs" or date_dir.startswith("."):
@@ -153,13 +176,12 @@ def list_hour_groups() -> Dict[str, List[Tuple[str, str]]]:
             if not f.lower().endswith(".flac") or f.startswith("._"):
                 continue
             hour = parse_hour(f)
-            key = f"{date_dir}_{hour}"  # e.g. "2026-04-21_13"
+            key = f"{date_dir}_{hour}"
             groups.setdefault(key, []).append((date_dir, f))
     return groups
 
 
 def list_state() -> Tuple[Set[str], Set[str]]:
-    """Return (done_keys, claimed_keys). Key format: {date_dir}_{hour}."""
     done = set()
     claimed = set()
     if not os.path.isdir(STATE_DIR):
@@ -168,7 +190,7 @@ def list_state() -> Tuple[Set[str], Set[str]]:
         if fname.startswith("_session_id"):
             continue
         if fname.endswith(".done"):
-            done.add(fname[:-5])  # remove .done suffix
+            done.add(fname[:-5])
         else:
             claimed.add(fname)
     return done, claimed
@@ -179,7 +201,7 @@ def claim_hour_group(key: str) -> bool:
     try:
         with open(claim_path, "w") as f:
             json.dump({"session": SESSION_ID,
-                       "claimed_at": datetime.now().isoformat(),
+                       "claimed_at": datetime.now(timezone.utc).isoformat(),
                        "group": key}, f)
         return True
     except Exception as e:
@@ -192,8 +214,7 @@ def verify_claim(key: str) -> bool:
     if os.path.isfile(claim_path):
         return True
     others = glob.glob(os.path.join(STATE_DIR, f"{key}.*"))
-    others = [f for f in others
-              if not f.endswith(".done") and SESSION_ID not in f]
+    others = [f for f in others if not f.endswith(".done") and SESSION_ID not in f]
     if others:
         log(f"  ⚠ {key} diklaim session lain")
     return False
@@ -205,7 +226,7 @@ def mark_done(key: str):
     try:
         with open(done_path, "w") as f:
             json.dump({"session": SESSION_ID,
-                       "done_at": datetime.now().isoformat()}, f)
+                       "done_at": datetime.now(timezone.utc).isoformat()}, f)
     except:
         pass
     try:
@@ -217,39 +238,28 @@ def mark_done(key: str):
 
 # ── Pipeline per hour group ─────────────────────────────────
 
-def process_hour_group(date_dir: str, hour: str, flac_basenames: List[str]):
+def process_hour_group(date_dir: str, hour: str, flac_basenames: List[str]) -> float:
     """
     Process all FLACs in one hour group.
-    1. Beamforming for each FLAC → output/{date}/{ir_type}/{hour}/
-    2. Signal Averaging for each FLAC → output/{date}/signal_averaging/{hour}/
-    3. Monochannel for each FLAC → output/{date}/mono_baseline/{hour}/
-    4. BirdNET on each output directory
+    Returns elapsed time in seconds.
     """
-    from config import PRODUCTION_IR_SUBSETS, SITE_COORDS, BIRDNET_FP16_MODEL
+    from config import PRODUCTION_IR_SUBSETS, SITE_COORDS
     from beamforming import Beamformer
     from signal_averaging import SignalAverager
 
-    # Monkey-patch FP16 model BEFORE importing birdnet_processor
-    if BIRDNET_FP16_MODEL:
-        import birdnetlib.analyzer as ba
-        fp16_path = os.path.join(os.path.dirname(ba.MODEL_PATH),
-                                 "BirdNET_GLOBAL_6K_V2.4_MData_Model_V2_FP16.tflite")
-        if os.path.isfile(fp16_path):
-            ba.MODEL_PATH = fp16_path
-            log("    📡 BirdNET using FP16 model")
-        else:
-            log("    ⚠ FP16 model not found, using FP32")
-
+    # birdnet_processor auto-applies FP16 monkey-patch at import time
     from birdnet_processor import process_directory_pipeline
 
+    t_start = datetime.now(timezone.utc)
     lat = SITE_COORDS.get(LOCATION, {}).get("lat")
     lon = SITE_COORDS.get(LOCATION, {}).get("lon")
     rec_date = datetime.strptime(date_dir, "%Y-%m-%d")
 
     date_out = os.path.join(OUTPUT_BASE, date_dir)
-
     n_flac = len(flac_basenames)
-    log(f"    📂 {n_flac} FLAC files in hour {hour}")
+
+    log(f"    🎙  Hour group: {date_dir} hour {hour} ({n_flac} FLACs)")
+    log(f"    ⏱  Started at {t_start.strftime('%H:%M:%S UTC')}")
 
     # ── Beamforming ──────────────────────────────────────────
     for ir_name in IR_TYPES_LIST:
@@ -263,7 +273,6 @@ def process_hour_group(date_dir: str, hour: str, flac_basenames: List[str]):
         if ir_type.zenith_speakers:
             n_expected -= len(ir_type.zenith_speakers) * (len(ir_type.degree_values) - 1)
 
-        # Check if already done
         existing = len([f for f in os.listdir(bf_hour_dir)
                         if f.endswith(".wav") and not f.startswith("._")]) \
                    if os.path.isdir(bf_hour_dir) else 0
@@ -272,7 +281,7 @@ def process_hour_group(date_dir: str, hour: str, flac_basenames: List[str]):
             log(f"    ↳ BF [{ir_name}]: {existing}/{expected_total} WAVs, skipping")
             continue
 
-        log(f"    Beamforming [{ir_name}] — {n_flac} files, {n_expected} dirs each — {bf_hour_dir}")
+        log(f"    Beamforming [{ir_name}] — {n_flac} files × {n_expected} dirs → {bf_hour_dir}")
         for basename in flac_basenames:
             flac_path = os.path.join(MONITORING_DIR, date_dir, basename)
             try:
@@ -285,7 +294,7 @@ def process_hour_group(date_dir: str, hour: str, flac_basenames: List[str]):
     # ── Signal Averaging ─────────────────────────────────────
     sa_hour_dir = os.path.join(date_out, "signal_averaging", hour)
     os.makedirs(sa_hour_dir, exist_ok=True)
-    log(f"    Signal Averaging — {sa_hour_dir}")
+    log(f"    Signal Averaging → {sa_hour_dir}")
     for basename in flac_basenames:
         base_name = os.path.splitext(basename)[0]
         sa_out = os.path.join(sa_hour_dir, f"{base_name}_sa.wav")
@@ -302,8 +311,9 @@ def process_hour_group(date_dir: str, hour: str, flac_basenames: List[str]):
     # ── Monochannel Baseline ─────────────────────────────────
     mono_hour_dir = os.path.join(date_out, "mono_baseline", hour)
     os.makedirs(mono_hour_dir, exist_ok=True)
-    log(f"    Monochannel baseline — {mono_hour_dir}")
-    import librosa, soundfile as sf
+    log(f"    Monochannel baseline → {mono_hour_dir}")
+    import librosa as _librosa
+    import soundfile as _sf
     from config import FS_TARGET
     for basename in flac_basenames:
         base_name = os.path.splitext(basename)[0]
@@ -312,13 +322,13 @@ def process_hour_group(date_dir: str, hour: str, flac_basenames: List[str]):
             continue
         try:
             flac_path = os.path.join(MONITORING_DIR, date_dir, basename)
-            raw, _ = librosa.load(flac_path, sr=FS_TARGET, mono=True)
+            raw, _ = _librosa.load(flac_path, sr=FS_TARGET, mono=True)
             amax = max(abs(raw))
             if amax > 1.0:
                 raw = raw / amax
-            sf.write(out_path,
-                     (raw * 32767).clip(-32768, 32767).astype("int16"),
-                     FS_TARGET, subtype="PCM_16")
+            _sf.write(out_path,
+                      (raw * 32767).clip(-32768, 32767).astype("int16"),
+                      FS_TARGET, subtype="PCM_16")
         except Exception as e:
             log(f"    ❌ Mono {basename}: {e}")
 
@@ -343,17 +353,22 @@ def process_hour_group(date_dir: str, hour: str, flac_basenames: List[str]):
         except Exception as e:
             log(f"    ❌ BirdNET [{os.path.basename(out_dir)}]: {e}")
 
+    elapsed = (datetime.now(timezone.utc) - t_start).total_seconds()
+    log(f"    ✅ Hour group {date_dir}_{hour} done in {elapsed_since(t_start)}")
+    return elapsed
+
 
 # ── Main Loop ───────────────────────────────────────────────
 
 def worker_loop():
-    log("")
     log("=" * 50)
-    log(f"🔄 Worker Loop — {SESSION_ID}")
+    log(f"🔄 Worker Loop Started — {SESSION_ID}")
+    log(f"   Started at: {SESSION_START.strftime('%Y-%m-%d %H:%M:%S UTC')}")
     log("=" * 50)
 
     total_done = 0
     total_failed = 0
+    total_hours = 0.0  # cumulative processing seconds
 
     while True:
         groups = list_hour_groups()
@@ -378,13 +393,23 @@ def worker_loop():
         n_done = len(done_set)
         n_avail = len(available)
 
-        log(f"\n  ── {datetime.now().strftime('%H:%M:%S')} ──")
-        log(f"  Groups: {total_grp} | Done: {n_done} | Avail: {n_avail}"
+        log(f"\n{'─' * 50}")
+        log(f"  📊 Total groups: {total_grp} | Done: {n_done} | Avail: {n_avail}"
             f" | ✅: {total_done} | ❌: {total_failed}")
+        log(f"  ⏱  Session runtime: {elapsed_since(SESSION_START)}"
+            f" | Processing time: {total_hours/60:.1f} min")
+        log(f"{'─' * 50}")
 
         if n_avail == 0:
             if n_done >= total_grp:
-                log(f"\n  🎉 ALL DONE! {n_done}/{total_grp} hour groups")
+                total_elapsed = (datetime.now(timezone.utc) - SESSION_START).total_seconds()
+                log("")
+                log("=" * 50)
+                log(f"  🎉 ALL DONE! {n_done}/{total_grp} hour groups")
+                log(f"  ⏱  Total session: {elapsed_since(SESSION_START)}")
+                log(f"  ⏱  Total processing: {total_hours/60:.1f} min")
+                log(f"  ⏱  End: {ts()}")
+                log("=" * 50)
                 break
             log(f"  ⏳ No available groups, waiting {CLAIM_WAIT * 2}s...")
             time.sleep(CLAIM_WAIT * 2)
@@ -393,9 +418,9 @@ def worker_loop():
         # Pick one hour group
         key, n_flac = available[0]
         date_dir, hour = key.rsplit("_", 1)
-        flac_list = [b for d, b in groups[key]]  # just basenames
+        flac_list = [b for d, b in groups[key]]
 
-        log(f"  🎯 Claiming {key} ({n_flac} FLACs in hour {hour})")
+        log(f"  🎯 Claiming {key} ({n_flac} FLACs, hour {hour})")
 
         if not claim_hour_group(key):
             time.sleep(CLAIM_WAIT)
@@ -409,14 +434,11 @@ def worker_loop():
             continue
 
         # Process
-        log(f"\n  🎙  Processing: {key} ({n_flac} files)")
-        t0 = time.time()
         try:
-            process_hour_group(date_dir, hour, flac_list)
+            elapsed = process_hour_group(date_dir, hour, flac_list)
             mark_done(key)
             total_done += 1
-            elapsed = time.time() - t0
-            log(f"  ✅ {key} done ({elapsed:.0f}s, {elapsed/60:.1f} min)")
+            total_hours += elapsed
         except Exception as e:
             log(f"  ❌ {key} failed: {e}")
             total_failed += 1
