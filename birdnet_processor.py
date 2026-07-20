@@ -59,7 +59,7 @@ def run_birdnet_on_dir(
     wav_files = sorted([
         os.path.join(directory, f)
         for f in os.listdir(directory)
-        if f.lower().endswith(".wav")
+        if f.lower().endswith(".wav") and not f.startswith("._")
     ])
 
     total = len(wav_files)
