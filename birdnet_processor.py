@@ -8,6 +8,8 @@ selection and confidence metrics.
 
 import os
 import json
+from concurrent.futures import ThreadPoolExecutor, as_completed
+import threading
 
 import numpy as np
 from datetime import datetime
@@ -18,10 +20,43 @@ from birdnetlib.main import Recording
 
 from config import SITE_COORDS, BIRDNET_MIN_CONF, BIRDNET_OVERLAP
 
+# Number of parallel BirdNET workers.  4 works well on M2; the
+# bottleneck is I/O from the external HDD, so more threads beyond
+# the disk's queue depth won't help.
+BIRDNET_WORKERS = int(os.environ.get("BIRDNET_WORKERS", "4"))
+
 
 # ============================================================
 # BIRDNET ANALYSIS
 # ============================================================
+
+# Thread-local Analyzer to avoid creating one per WAV file.
+# Each thread lazily instantiates its own Analyzer on first use.
+_thread_local = threading.local()
+
+
+def _get_analyzer() -> Analyzer:
+    """Return a per-thread BirdNET Analyzer instance (lazy init)."""
+    if not hasattr(_thread_local, "analyzer"):
+        _thread_local.analyzer = Analyzer()
+    return _thread_local.analyzer
+
+
+def _analyze_one(wav_path: str, rec_kwargs: dict) -> Tuple[str, List[Dict], str]:
+    """
+    Analyze a single WAV file with BirdNET.
+
+    Returns (filename, detections, error_message_or_empty_string).
+    """
+    fname = os.path.basename(wav_path)
+    try:
+        analyzer = _get_analyzer()
+        rec = Recording(analyzer, wav_path, **rec_kwargs)
+        rec.analyze()
+        return fname, rec.detections, ""
+    except Exception as e:
+        return fname, [], str(e)
+
 
 def run_birdnet_on_dir(
     directory: str,
@@ -30,13 +65,13 @@ def run_birdnet_on_dir(
     overlap: float = BIRDNET_OVERLAP,
     lat: Optional[float] = None,
     lon: Optional[float] = None,
+    workers: int = BIRDNET_WORKERS,
 ) -> str:
     """
-    Run BirdNET sequentially on all WAV files in a directory.
+    Run BirdNET on all WAV files in a directory using a thread pool.
 
-    Uses individual Recording objects rather than the batch
-    DirectoryMultiProcessingAnalyzer to avoid race conditions
-    with external HDD files on macOS.
+    Uses ThreadPoolExecutor so multiple files are analysed in parallel.
+    Each thread lazily creates its own Analyzer (TF Lite model).
 
     Args:
         directory: Path containing WAV files
@@ -44,6 +79,7 @@ def run_birdnet_on_dir(
         min_conf:  Minimum confidence threshold
         overlap:   Overlap between segments
         lat, lon:  GPS coordinates for species location filter
+        workers:   Number of parallel threads (default 4)
 
     Returns:
         Path to the written results.json
@@ -53,9 +89,6 @@ def run_birdnet_on_dir(
     if date is None:
         date = datetime.now()
 
-    analyzer = Analyzer()
-    results_dict: Dict = {}
-
     wav_files = sorted([
         os.path.join(directory, f)
         for f in os.listdir(directory)
@@ -64,47 +97,67 @@ def run_birdnet_on_dir(
 
     total = len(wav_files)
     if total == 0:
-        print("    ⚠ No WAV files found in directory")
+        print("    No WAV files found in directory")
         with open(results_path, "w") as f:
             json.dump({}, f, indent=4)
         return results_path
 
-    print(f"    Processing {total} WAV files sequentially ...")
+    # Prepare kwargs shared across all recordings
+    rec_kwargs: dict = {
+        "date": date,
+        "min_conf": min_conf,
+        "overlap": overlap,
+    }
+    if lat is not None and lon is not None:
+        rec_kwargs["lat"] = lat
+        rec_kwargs["lon"] = lon
 
-    for i, wav_path in enumerate(wav_files, 1):
-        fname = os.path.basename(wav_path)
+    print(f"    Processing {total} WAV files ({workers} workers) ...")
 
-        rec_kwargs: dict = {
-            "date": date,
-            "min_conf": min_conf,
-            "overlap": overlap,
+    results_dict: Dict[str, List] = {}
+    errors = 0
+    completed = 0
+    files_with_dets = 0
+    total_dets = 0
+
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        futures = {
+            pool.submit(_analyze_one, wav, rec_kwargs): wav
+            for wav in wav_files
         }
-        if lat is not None and lon is not None:
-            rec_kwargs["lat"] = lat
-            rec_kwargs["lon"] = lon
 
-        try:
-            rec = Recording(analyzer, wav_path, **rec_kwargs)
-            rec.analyze()
-            results_dict[fname] = rec.detections
-            n_dets = len(rec.detections)
-            if n_dets > 0:
-                print(f"    [{i:3d}/{total}] {fname}: {n_dets} detections")
+        for future in as_completed(futures):
+            fname, detections, error = future.result()
+            completed += 1
+
+            if error:
+                errors += 1
+                if errors <= 5:
+                    print(f"    [{completed:3d}/{total}] {fname}: {error}")
             else:
-                # Only show every 10th empty result to keep output clean
-                if i % 10 == 0 or i == total:
-                    print(f"    [{i:3d}/{total}] {fname}: 0 (progress check)")
-        except Exception as e:
-            print(f"    [{i:3d}/{total}] ⚠ {fname}: {e}")
-            results_dict[fname] = []
+                results_dict[fname] = detections
+                n = len(detections)
+                if n > 0:
+                    files_with_dets += 1
+                    total_dets += n
+
+            # Progress update every ~20 files or at the end
+            if completed % 20 == 0 or completed == total:
+                pct = completed * 100 // total
+                print(
+                    f"    [{completed:3d}/{total}] {pct}%  "
+                    f"({files_with_dets} files with {total_dets} dets, {errors} errors)"
+                )
 
     # Write results
     with open(results_path, "w") as f:
         json.dump(results_dict, f, indent=4)
 
-    total_dets = sum(len(v) for v in results_dict.values())
-    files_with_dets = sum(1 for v in results_dict.values() if v)
-    print(f"    ✓ results.json written ({files_with_dets}/{total} files with detections, {total_dets} total)")
+    print(
+        f"    results.json written "
+        f"({files_with_dets}/{total} files with detections, "
+        f"{total_dets} total, {errors} errors)"
+    )
 
     return results_path
 
@@ -119,7 +172,7 @@ def read_results(file_path: str) -> Dict:
         with open(file_path, "r") as f:
             return json.load(f)
     except Exception as e:
-        print(f"  ❌ Error reading {file_path}: {e}")
+        print(f"  Error reading {file_path}: {e}")
         return {}
 
 
@@ -129,18 +182,8 @@ def extract_unique_bf_detections(
     identifier_pattern: str = "",
 ) -> List[Dict]:
     """
-    For each species × start_time, keep ONLY the detection with
+    For each species x start_time, keep ONLY the detection with
     highest confidence across all beamforming channels.
-
-    Args:
-        results_dict:       Loaded results.json
-        conf_thresh:        Minimum confidence to consider
-        identifier_pattern: Only consider channels matching this pattern
-                            (e.g. "_LabIR" for LabIR beamformed files)
-
-    Returns:
-        List of unique detections, each with 'primary_channel' set
-        to the WAV filename that achieved the highest confidence.
     """
     best_per_key: Dict[str, Dict] = {}
 
@@ -171,11 +214,7 @@ def build_processed(
     identifier_pattern: str = "",
     conf_thresh: float = BIRDNET_MIN_CONF,
 ) -> Dict:
-    """
-    Build processed.json structure from a BirdNET results.json.
-
-    Returns a dict with per-species confidence lists and metrics.
-    """
+    """Build processed.json structure from a BirdNET results.json."""
     detections = extract_unique_bf_detections(results_dict, conf_thresh, identifier_pattern)
 
     species_data: Dict[str, Dict] = {}
@@ -196,7 +235,6 @@ def build_processed(
         species_data[sp]["start_time_list"].append(start_t)
         species_data[sp]["primary_channel_list"].append(channel)
 
-    # Compute metrics
     for sp, sd in species_data.items():
         cl = sd["conf_list"]
         n = len(cl)
@@ -217,15 +255,14 @@ def write_processed(processed: Dict, directory: str) -> str:
     path = os.path.join(directory, "processed.json")
     with open(path, "w") as f:
         json.dump(processed, f, indent=4, ensure_ascii=False)
-    print(f"    ✓ processed.json written ({len(processed)} species)")
+    print(f"    processed.json written ({len(processed)} species)")
     return path
 
 
 def get_files_to_keep(processed: Dict) -> set:
     """
     From processed.json, return the set of WAV filenames that are
-    the 'primary_channel' for any detection. All other beamforming
-    WAVs in the same directory can be deleted to save space.
+    the 'primary_channel' for any detection.
     """
     keep: set = set()
     for sp_data in processed.values():
@@ -239,11 +276,7 @@ def cleanup_beamforming_files(
     keep_files: set,
     dry_run: bool = False,
 ) -> int:
-    """
-    Delete WAV files in `directory` that are NOT in `keep_files`.
-
-    Returns count of deleted files.
-    """
+    """Delete WAV files in `directory` that are NOT in `keep_files`."""
     deleted = 0
     for fname in os.listdir(directory):
         full = os.path.join(directory, fname)
@@ -253,11 +286,16 @@ def cleanup_beamforming_files(
             continue
         if fname in keep_files:
             continue
+        if fname.startswith("._"):
+            # Also clean up resource fork files
+            os.remove(full)
+            deleted += 1
+            continue
         if dry_run:
             print(f"    [DRY RUN] Would delete: {fname}")
         else:
             os.remove(full)
-            print(f"    🗑  Deleted: {fname}")
+            print(f"    Deleted: {fname}")
         deleted += 1
     return deleted
 
@@ -277,22 +315,27 @@ def process_directory_pipeline(
 ) -> Tuple[str, str, int]:
     """
     Full pipeline for one output directory:
-      1. Run BirdNET → results.json
-      2. Build confidence comparison → processed.json
+      1. Run BirdNET -> results.json
+      2. Build confidence comparison -> processed.json
       3. Optionally delete low-confidence beamforming files
 
     Returns:
         (results_path, processed_path, files_deleted)
     """
-    print(f"\n  🐦 BirdNET: {directory}")
+    import time
+    print(f"\n  BirdNET: {directory}")
 
-    # Step 1: BirdNET (sequential, no multiprocessing)
+    t0 = time.time()
+
+    # Step 1: BirdNET (threaded)
     results_path = run_birdnet_on_dir(directory, date=date, lat=lat, lon=lon)
+    t1 = time.time()
+    print(f"    BirdNET: {t1 - t0:.1f}s")
 
     # Step 2: Confidence comparison
     results = read_results(results_path)
     if not results:
-        print("    ⚠ No BirdNET results — skipping processed.json & cleanup")
+        print("    No BirdNET results - skipping processed.json & cleanup")
         return results_path, "", 0
 
     processed = build_processed(results, identifier_pattern)
@@ -305,5 +348,12 @@ def process_directory_pipeline(
         print(f"    Keeping {len(keep)} best-variant files")
         deleted = cleanup_beamforming_files(directory, keep, dry_run=dry_run)
         print(f"    Cleanup: {deleted} files removed")
+        # Also purge macOS resource fork files
+        for fname in os.listdir(directory):
+            if fname.startswith("._"):
+                full = os.path.join(directory, fname)
+                if os.path.isfile(full):
+                    os.remove(full)
 
+    print(f"    Total: {time.time() - t0:.1f}s")
     return results_path, processed_path, deleted
