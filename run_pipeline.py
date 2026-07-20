@@ -4,47 +4,38 @@ Spatial Ecoacoustic Analysis Pipeline — Main Entry Point.
 
 Orchestrates:
   1. Beamforming (LabIR / SPIR1 / SPIR2) on FLAC recordings
-  2. Signal Averaging (6-ch → 1-ch direct sum)
-  3. BirdNET analysis on outputs (with site-specific GPS)
-  4. Confidence comparison → processed.json
+  2. Signal Averaging (6-ch -> 1-ch direct sum)
+  3. BirdNET analysis on outputs (with site-specific GPS) — PARALLEL
+  4. Confidence comparison -> processed.json
   5. Cleanup: keep only best-variant beamforming files
 
 Resume support: pipeline_state.json on the output volume tracks which
 steps are complete per FLAC file. Interrupted runs resume automatically.
 
-State management:
-    python run_pipeline.py --state-status    # show all entries
-    python run_pipeline.py --reset-state all # clear everything
-    python run_pipeline.py --reset-state "<key>"  # reset one entry
-
-Selector-based: manually choose RPiID, date, and file(s) to process.
-
-Usage (quick prototype):
+Usage:
     python run_pipeline.py
-
-When the pipeline is mature, a CLI/batch mode can be added.
+    python run_pipeline.py --location 2A400 --date 2026-04-21 --max-files 10 --ir-types LabIR,SPIR1,SPIR2
 """
 
 import os
 import sys
 import time
 import argparse
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
 from typing import List, Optional
 
 from config import (
-    MONITORING_DATA,
-    ANALYSIS_OUTPUT,
-    IR_TYPES,
-    PROTOTYPE_IR_SUBSETS,
-    LOCATION_MAP,
-    RPIID_TO_LOCATION,
-    SITE_COORDS,
+    MONITORING_DATA, ANALYSIS_OUTPUT, IR_TYPES, PROTOTYPE_IR_SUBSETS,
+    LOCATION_MAP, RPIID_TO_LOCATION, SITE_COORDS,
 )
 from beamforming import Beamformer
 from signal_averaging import SignalAverager
 from birdnet_processor import process_directory_pipeline
 from pipeline_state import PipelineState, STEP_BF_PREFIX, STEP_SA, STEP_BIRNET_PREFIX, STEP_BIRNET_SA
+
+# Max parallel BirdNET directories (all beamforming + SA = up to 4 dirs at once)
+BIRDNET_PARALLEL_DIRS = int(os.environ.get("BIRDNET_PARALLEL_DIRS", "4"))
 
 
 # ============================================================
@@ -52,21 +43,17 @@ from pipeline_state import PipelineState, STEP_BF_PREFIX, STEP_SA, STEP_BIRNET_P
 # ============================================================
 
 def get_flac_files(rpiid: str, date_str: str, max_files: int = 1) -> List[str]:
-    """Return absolute paths to .flac files for a given RPiID and date."""
     date_dir = os.path.join(MONITORING_DATA, rpiid, date_str)
     if not os.path.isdir(date_dir):
         print(f"❌ Directory not found: {date_dir}")
         return []
-
     flacs = sorted([
         os.path.join(date_dir, f)
         for f in os.listdir(date_dir)
         if f.lower().endswith(".flac")
     ])
-
     if max_files and len(flacs) > max_files:
         flacs = flacs[:max_files]
-
     print(f"📁 {len(flacs)} FLAC file(s) selected from {date_dir}")
     for f in flacs:
         print(f"    → {os.path.basename(f)}")
@@ -74,7 +61,6 @@ def get_flac_files(rpiid: str, date_str: str, max_files: int = 1) -> List[str]:
 
 
 def build_output_path(location_name: str, date_str: str, processing_type: str, hour_subdir: str = "") -> str:
-    """Build structured output path under sea-data/, optionally with hour subfolder."""
     path = os.path.join(ANALYSIS_OUTPUT, location_name, date_str, processing_type)
     if hour_subdir:
         path = os.path.join(path, hour_subdir)
@@ -82,14 +68,12 @@ def build_output_path(location_name: str, date_str: str, processing_type: str, h
 
 
 def get_location_name_from_rpiid(rpiid: str) -> str:
-    """Map full RPiID folder name → short location name."""
     if rpiid in RPIID_TO_LOCATION:
         return RPIID_TO_LOCATION[rpiid]
     return rpiid
 
 
 def parse_flac_date(flac_path: str, folder_date_str: str) -> datetime:
-    """Extract date from folder context; fallback to now."""
     try:
         return datetime.strptime(folder_date_str, "%Y-%m-%d")
     except ValueError:
@@ -97,7 +81,6 @@ def parse_flac_date(flac_path: str, folder_date_str: str) -> datetime:
 
 
 def get_site_coords(location_name: str):
-    """Return (lat, lon) for a given location name, or (None, None)."""
     if location_name in SITE_COORDS:
         c = SITE_COORDS[location_name]
         return c["lat"], c["lon"]
@@ -133,7 +116,6 @@ def _sa_complete(output_dir: str, base_name: str):
 
 
 def _extract_hour(flac_path: str) -> str:
-    """Extract hour from FLAC filename (e.g., '08-17-52_dur=120secs.flac' -> 'hour_08')."""
     base = os.path.basename(flac_path)
     hour = base[:2]
     return f"hour_{hour}"
@@ -144,25 +126,17 @@ def _extract_hour(flac_path: str) -> str:
 # ============================================================
 
 def process_one_flac(
-    flac_path: str,
-    location_name: str,
-    date_str: str,
-    ir_types: List[str],
-    run_sa: bool = True,
-    run_birdnet: bool = True,
-    cleanup: bool = False,
-    dry_run: bool = False,
-    use_prototype_subsets: bool = False,
-    force_bf: bool = False,
+    flac_path: str, location_name: str, date_str: str,
+    ir_types: List[str], run_sa: bool = True, run_birdnet: bool = True,
+    cleanup: bool = False, dry_run: bool = False,
+    use_prototype_subsets: bool = False, force_bf: bool = False,
     state: Optional["PipelineState"] = None,
 ):
-    """Run the full pipeline for ONE FLAC file, with resume support."""
     base_name = os.path.splitext(os.path.basename(flac_path))[0]
     hour_subdir = _extract_hour(flac_path)
     key = None
     if state:
         key = state.make_key(location_name, date_str, hour_subdir, base_name)
-        # Auto-detect any already-done steps from disk (one-time scan)
         state.auto_detect_from_disk(
             location_name, date_str, hour_subdir, base_name,
             ir_types, run_sa=run_sa, run_birdnet=run_birdnet,
@@ -182,10 +156,9 @@ def process_one_flac(
     print(f"{'='*60}")
 
     overall_start = time.time()
-    bf_dirs = []          # list of (bf_dir, ir_name)
+    bf_dirs = []
     sa_dir = ""
 
-    # Choose IR config
     ir_configs = PROTOTYPE_IR_SUBSETS if use_prototype_subsets else IR_TYPES
 
     # ── Step 1: Beamforming ──────────────────────────────────
@@ -199,23 +172,17 @@ def process_one_flac(
         bf_dirs.append((bf_dir, ir_name))
 
         print(f"\n── Beamforming [{ir_name}] → {bf_dir} ──")
-
-        # Check pipeline state first, then disk
         bf_step = f"{STEP_BF_PREFIX}{ir_name}"
         if not force_bf and state and key and state.is_complete(key, bf_step):
-            print(f"  ✓ {ir_name} already complete (state) — skipping beamforming")
+            print(f"  ✓ {ir_name} already complete (state) — skipping")
             continue
         if not force_bf and _beamforming_complete(bf_dir, base_name, ir_type):
-            print(f"  ✓ {ir_name} outputs already exist — skipping beamforming")
+            print(f"  ✓ {ir_name} outputs already exist — skipping")
             if state and key:
                 state.mark_complete(key, bf_step)
             continue
 
-        bf = Beamformer(
-            flac_path=flac_path,
-            output_dir=bf_dir,
-            ir_type_or_name=ir_type,
-        )
+        bf = Beamformer(flac_path=flac_path, output_dir=bf_dir, ir_type_or_name=ir_type)
         bf.run()
         if state and key:
             state.mark_complete(key, bf_step)
@@ -224,7 +191,6 @@ def process_one_flac(
     if run_sa:
         sa_dir = build_output_path(location_name, date_str, "signal_averaging", hour_subdir)
         print(f"\n── Signal Averaging → {sa_dir} ──")
-
         if not force_bf and state and key and state.is_complete(key, STEP_SA):
             print(f"  ✓ SA already complete (state) — skipping")
         elif not force_bf and _sa_complete(sa_dir, base_name):
@@ -237,64 +203,78 @@ def process_one_flac(
             if state and key:
                 state.mark_complete(key, STEP_SA)
 
-    # ── Step 3-5: BirdNET → processed.json → cleanup ────────
+    # ── Step 3: BirdNET — PARALLEL across all dirs ───────────
     if run_birdnet:
         recording_date = parse_flac_date(flac_path, date_str)
         lat, lon = get_site_coords(location_name)
         if lat is not None:
             print(f"\n  🌍 Site coordinates: {lat}, {lon}")
 
-        # Process each beamforming directory (already at hour level)
+        # Collect all BirdNET tasks
+        birdnet_tasks = []
+
         for bf_dir, ir_name in bf_dirs:
             ir_label = os.path.basename(os.path.dirname(bf_dir)).replace("beamforming_", "")
             bn_step = f"{STEP_BIRNET_PREFIX}{ir_name}"
 
             if state and key and state.is_complete(key, bn_step):
-                print(f"  ✓ BirdNET [{ir_label}] already complete (state) — skipping")
+                print(f"  ✓ BirdNET [{ir_label}] already complete — skipping")
                 continue
-
-            results_json = os.path.join(bf_dir, "results.json")
-            processed_json = os.path.join(bf_dir, "processed.json")
-            if os.path.isfile(results_json) and os.path.isfile(processed_json):
-                print(f"  ✓ BirdNET [{ir_label}] results already exist — skipping")
+            if os.path.isfile(os.path.join(bf_dir, "results.json")) and \
+               os.path.isfile(os.path.join(bf_dir, "processed.json")):
+                print(f"  ✓ BirdNET [{ir_label}] results exist — skipping")
                 if state and key:
                     state.mark_complete(key, bn_step)
                 continue
 
             pattern = f"_{ir_label}("
-            process_directory_pipeline(
-                directory=bf_dir,
-                date=recording_date,
-                identifier_pattern=pattern,
-                cleanup=cleanup,
-                dry_run=dry_run,
-                lat=lat,
-                lon=lon,
-            )
-            if state and key:
-                state.mark_complete(key, bn_step)
+            birdnet_tasks.append((bf_dir, ir_label, bn_step, pattern))
 
-        # Process signal averaging directory (already at hour level)
         if run_sa and sa_dir:
             if state and key and state.is_complete(key, STEP_BIRNET_SA):
-                print(f"  ✓ BirdNET [SA] already complete (state) — skipping")
+                print(f"  ✓ BirdNET [SA] already complete — skipping")
             elif os.path.isfile(os.path.join(sa_dir, "results.json")) and \
                  os.path.isfile(os.path.join(sa_dir, "processed.json")):
-                print(f"  ✓ BirdNET [SA] results already exist — skipping")
+                print(f"  ✓ BirdNET [SA] results exist — skipping")
                 if state and key:
                     state.mark_complete(key, STEP_BIRNET_SA)
             else:
-                process_directory_pipeline(
-                    directory=sa_dir,
-                    date=recording_date,
-                    identifier_pattern="",
-                    cleanup=False,
-                    dry_run=dry_run,
-                    lat=lat,
-                    lon=lon,
-                )
-                if state and key:
-                    state.mark_complete(key, STEP_BIRNET_SA)
+                birdnet_tasks.append((sa_dir, "SA", STEP_BIRNET_SA, ""))
+
+        if birdnet_tasks:
+            print(f"\n  🚀 BirdNET parallel: {len(birdnet_tasks)} directories, "
+                  f"{min(BIRDNET_PARALLEL_DIRS, len(birdnet_tasks))} concurrent")
+
+            def _run_birdnet_dir(directory, label, step_name, pattern):
+                """Wrapper for parallel BirdNET execution."""
+                try:
+                    process_directory_pipeline(
+                        directory=directory, date=recording_date,
+                        identifier_pattern=pattern,
+                        cleanup=(cleanup and label != "SA"),
+                        dry_run=dry_run, lat=lat, lon=lon,
+                    )
+                    if state and key:
+                        state.mark_complete(key, step_name)
+                    return (label, True, "")
+                except Exception as e:
+                    return (label, False, str(e))
+
+            t0 = time.time()
+            n_workers = min(BIRDNET_PARALLEL_DIRS, len(birdnet_tasks))
+            with ThreadPoolExecutor(max_workers=n_workers) as pool:
+                futures = {
+                    pool.submit(_run_birdnet_dir, d, l, s, p): l
+                    for d, l, s, p in birdnet_tasks
+                }
+                for future in as_completed(futures):
+                    label, ok, err = future.result()
+                    if ok:
+                        print(f"    ✅ BirdNET [{label}] done")
+                    else:
+                        print(f"    ❌ BirdNET [{label}] failed: {err}")
+
+            print(f"    ⏱  BirdNET parallel: {time.time() - t0:.1f}s")
 
     elapsed = time.time() - overall_start
     print(f"\n{'='*60}")
@@ -314,73 +294,25 @@ def process_one_flac(
 # ============================================================
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="Spatial Ecoacoustic Analysis Pipeline"
-    )
-    parser.add_argument(
-        "--rpiid", type=str, default=None,
-        help="Full RPiID name (default: first available with data)",
-    )
-    parser.add_argument(
-        "--location", type=str, default=None,
-        help="Short location code, e.g. '2A400' (overrides --rpiid)",
-    )
-    parser.add_argument(
-        "--date", type=str, default=None,
-        help="Date string YYYY-MM-DD (default: earliest available)",
-    )
-    parser.add_argument(
-        "--max-files", type=int, default=1,
-        help="Max FLAC files to process (default 1 for prototype)",
-    )
-    parser.add_argument(
-        "--ir-types", type=str, default="LabIR",
-        help="Comma-separated IR types: LabIR,SPIR1,SPIR2",
-    )
-    parser.add_argument(
-        "--no-sa", action="store_true",
-        help="Skip signal averaging",
-    )
-    parser.add_argument(
-        "--no-birdnet", action="store_true",
-        help="Skip BirdNET analysis",
-    )
-    parser.add_argument(
-        "--cleanup", action="store_true",
-        help="Delete low-confidence beamforming files after processing",
-    )
-    parser.add_argument(
-        "--dry-run", action="store_true",
-        help="Show what would be deleted without actually deleting",
-    )
-    parser.add_argument(
-        "--full", action="store_true",
-        help="Use full IR parameter sets (not prototype subsets)",
-    )
-    parser.add_argument(
-        "--list", action="store_true",
-        help="List available RPiIDs and dates, then exit",
-    )
-    parser.add_argument(
-        "--precompute", action="store_true",
-        help="Precompute IR steering-vector caches before running",
-    )
-    parser.add_argument(
-        "--force-bf", action="store_true",
-        help="Force re-run beamforming even if outputs already exist",
-    )
-    parser.add_argument(
-        "--state-status", action="store_true",
-        help="Show detailed pipeline state and exit",
-    )
-    parser.add_argument(
-        "--reset-state", type=str, default=None,
-        help="Reset state for a specific key or 'all' to clear everything",
-    )
+    parser = argparse.ArgumentParser(description="Spatial Ecoacoustic Analysis Pipeline")
+    parser.add_argument("--rpiid", type=str, default=None)
+    parser.add_argument("--location", type=str, default=None)
+    parser.add_argument("--date", type=str, default=None)
+    parser.add_argument("--max-files", type=int, default=1)
+    parser.add_argument("--ir-types", type=str, default="LabIR")
+    parser.add_argument("--no-sa", action="store_true")
+    parser.add_argument("--no-birdnet", action="store_true")
+    parser.add_argument("--cleanup", action="store_true")
+    parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument("--full", action="store_true")
+    parser.add_argument("--list", action="store_true")
+    parser.add_argument("--precompute", action="store_true")
+    parser.add_argument("--force-bf", action="store_true")
+    parser.add_argument("--state-status", action="store_true")
+    parser.add_argument("--reset-state", type=str, default=None)
 
     args = parser.parse_args()
 
-    # ── State management commands (no RPiID needed) ──────────
     if args.reset_state is not None:
         state = PipelineState()
         key = None if args.reset_state == "all" else args.reset_state
@@ -396,7 +328,6 @@ def main():
         print(state.detailed_summary())
         sys.exit(0)
 
-    # ── Precompute IR caches (if requested) ──────────────────
     if args.precompute:
         from ircache import build_all_caches
         print("🔧 Precomputing IR steering-vector caches ...")
@@ -405,7 +336,7 @@ def main():
         if not args.location and not args.rpiid and not args.list:
             sys.exit(0)
 
-    # ── Resolve RPiID ────────────────────────────────────────
+    # Resolve RPiID
     if args.location:
         loc_code = args.location
         if loc_code not in LOCATION_MAP:
@@ -429,7 +360,6 @@ def main():
         location_name = get_location_name_from_rpiid(rpiid)
         print(f"🔍 Auto-selected RPiID: {rpiid} ({location_name})")
 
-    # ── List mode ────────────────────────────────────────────
     if args.list:
         print(f"\n📂 Monitoring data at: {MONITORING_DATA}\n")
         for rp in sorted(os.listdir(MONITORING_DATA)):
@@ -442,33 +372,28 @@ def main():
                 if os.path.isdir(os.path.join(rp_path, d)) and d != "logs"
             ])
             print(f"  {loc:>6s}  {rp}  ({len(dates)} dates: {dates[0]} → {dates[-1]})")
-
         print(f"\n📡 Available IR types: {list(IR_TYPES.keys())}")
-        print(f"   (prototype subsets use reduced param sets)")
         sys.exit(0)
 
-    # ── Resolve date ─────────────────────────────────────────
+    # Resolve date
     rpiid_dir = os.path.join(MONITORING_DATA, rpiid)
     if not os.path.isdir(rpiid_dir):
         print(f"❌ RPiID directory not found: {rpiid_dir}")
         sys.exit(1)
-
     available_dates = sorted([
         d for d in os.listdir(rpiid_dir)
         if os.path.isdir(os.path.join(rpiid_dir, d)) and d != "logs"
     ])
-
     if args.date:
         date_str = args.date
     else:
         date_str = available_dates[0]
         print(f"📅 Auto-selected date: {date_str}")
-
     if date_str not in available_dates:
         print(f"❌ Date {date_str} not found. Available: {available_dates}")
         sys.exit(1)
 
-    # ── Parse IR types ───────────────────────────────────────
+    # Parse IR types
     ir_types = [t.strip() for t in args.ir_types.split(",")]
     for t in ir_types:
         if t not in IR_TYPES:
@@ -480,42 +405,34 @@ def main():
     if use_prototype:
         print(f"🧪 Prototype mode: reduced IR parameter sets")
 
-    # ── Get FLAC files ───────────────────────────────────────
+    # Get FLAC files
     flac_paths = get_flac_files(rpiid, date_str, max_files=args.max_files)
     if not flac_paths:
         print("❌ No FLAC files found.")
         sys.exit(1)
 
-    # ── Validate output volume ───────────────────────────────
+    # Validate output volume
     if not os.path.exists(ANALYSIS_OUTPUT):
         print(f"❌ Output volume not mounted: {ANALYSIS_OUTPUT}")
-        print("   Please connect your external SSD (WD2TB).")
         sys.exit(1)
 
-    # ── Run pipeline ─────────────────────────────────────────
+    # Pipeline state
     state = PipelineState()
-    print(f"📋 {state.summary()}")
+    state.clean_stale_keys(stale_days=7)
 
+    # Run pipeline
     results = []
     for flac_path in flac_paths:
         result = process_one_flac(
-            flac_path=flac_path,
-            location_name=location_name,
-            date_str=date_str,
-            ir_types=ir_types,
-            run_sa=not args.no_sa,
-            run_birdnet=not args.no_birdnet,
-            cleanup=args.cleanup,
-            dry_run=args.dry_run,
-            use_prototype_subsets=use_prototype,
-            force_bf=args.force_bf,
+            flac_path=flac_path, location_name=location_name, date_str=date_str,
+            ir_types=ir_types, run_sa=not args.no_sa, run_birdnet=not args.no_birdnet,
+            cleanup=args.cleanup, dry_run=args.dry_run,
+            use_prototype_subsets=use_prototype, force_bf=args.force_bf,
             state=state,
         )
         results.append(result)
 
-    print(f"\n📋 {state.summary()}")
-
-    # ── Summary ──────────────────────────────────────────────
+    # Summary
     print(f"\n{'='*60}")
     print(f"🏁 Pipeline Complete")
     print(f"{'='*60}")
