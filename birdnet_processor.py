@@ -8,16 +8,15 @@ selection and confidence metrics.
 
 import os
 import json
-import tempfile
 
 import numpy as np
 from datetime import datetime
 from typing import Dict, List, Optional, Tuple
 
 from birdnetlib.analyzer import Analyzer
-from birdnetlib.batch import DirectoryMultiProcessingAnalyzer
+from birdnetlib.main import Recording
 
-from config import LOCATION_COORDS, BIRDNET_MIN_CONF, BIRDNET_OVERLAP
+from config import SITE_COORDS, BIRDNET_MIN_CONF, BIRDNET_OVERLAP
 
 
 # ============================================================
@@ -26,20 +25,25 @@ from config import LOCATION_COORDS, BIRDNET_MIN_CONF, BIRDNET_OVERLAP
 
 def run_birdnet_on_dir(
     directory: str,
-    location: str = "waycanguk",
     date: Optional[datetime] = None,
     min_conf: float = BIRDNET_MIN_CONF,
     overlap: float = BIRDNET_OVERLAP,
+    lat: Optional[float] = None,
+    lon: Optional[float] = None,
 ) -> str:
     """
-    Run BirdNET on all audio files in a directory.
+    Run BirdNET sequentially on all WAV files in a directory.
+
+    Uses individual Recording objects rather than the batch
+    DirectoryMultiProcessingAnalyzer to avoid race conditions
+    with external HDD files on macOS.
 
     Args:
-        directory: Path containing WAV/MP3 files
-        location:  "waycanguk" or "silwood" (for species filter)
+        directory: Path containing WAV files
         date:      Recording date
         min_conf:  Minimum confidence threshold
         overlap:   Overlap between segments
+        lat, lon:  GPS coordinates for species location filter
 
     Returns:
         Path to the written results.json
@@ -49,50 +53,58 @@ def run_birdnet_on_dir(
     if date is None:
         date = datetime.now()
 
-    results_dict: Dict = {}
     analyzer = Analyzer()
+    results_dict: Dict = {}
 
-    def on_complete(recordings):
-        for recording in recordings:
-            if recording.error:
-                print(f"    ⚠ BirdNET error: {recording.error_message}")
-            else:
-                fname = os.path.basename(recording.path)
-                results_dict[fname] = recording.detections
+    wav_files = sorted([
+        os.path.join(directory, f)
+        for f in os.listdir(directory)
+        if f.lower().endswith(".wav")
+    ])
 
+    total = len(wav_files)
+    if total == 0:
+        print("    ⚠ No WAV files found in directory")
         with open(results_path, "w") as f:
-            json.dump(results_dict, f, indent=4)
+            json.dump({}, f, indent=4)
+        return results_path
 
-        print(f"    ✓ results.json written ({len(results_dict)} files)")
+    print(f"    Processing {total} WAV files sequentially ...")
 
-    # Configure analyzer
-    kwargs = {
-        "directory": directory,
-        "analyzers": [analyzer],
-        "date": date,
-        "min_conf": min_conf,
-        "overlap": overlap,
-    }
+    for i, wav_path in enumerate(wav_files, 1):
+        fname = os.path.basename(wav_path)
 
-    if location in LOCATION_COORDS:
-        kwargs["lat"] = LOCATION_COORDS[location]["lat"]
-        kwargs["lon"] = LOCATION_COORDS[location]["lon"]
+        rec_kwargs: dict = {
+            "date": date,
+            "min_conf": min_conf,
+            "overlap": overlap,
+        }
+        if lat is not None and lon is not None:
+            rec_kwargs["lat"] = lat
+            rec_kwargs["lon"] = lon
 
-    # Workaround: BirdNET's DirectoryMultiProcessingAnalyzer uses
-    # multiprocessing.Manager which creates a Unix socket. External
-    # HDD paths may cause macOS "AF_UNIX path too long" (104-byte limit).
-    # Force TMPDIR to a short path during batch processing.
-    saved_tmpdir = os.environ.get("TMPDIR")
-    os.environ["TMPDIR"] = "/tmp"
-    try:
-        batch = DirectoryMultiProcessingAnalyzer(**kwargs)
-        batch.on_analyze_directory_complete = on_complete
-        batch.process()
-    finally:
-        if saved_tmpdir:
-            os.environ["TMPDIR"] = saved_tmpdir
-        else:
-            os.environ.pop("TMPDIR", None)
+        try:
+            rec = Recording(analyzer, wav_path, **rec_kwargs)
+            rec.analyze()
+            results_dict[fname] = rec.detections
+            n_dets = len(rec.detections)
+            if n_dets > 0:
+                print(f"    [{i:3d}/{total}] {fname}: {n_dets} detections")
+            else:
+                # Only show every 10th empty result to keep output clean
+                if i % 10 == 0 or i == total:
+                    print(f"    [{i:3d}/{total}] {fname}: 0 (progress check)")
+        except Exception as e:
+            print(f"    [{i:3d}/{total}] ⚠ {fname}: {e}")
+            results_dict[fname] = []
+
+    # Write results
+    with open(results_path, "w") as f:
+        json.dump(results_dict, f, indent=4)
+
+    total_dets = sum(len(v) for v in results_dict.values())
+    files_with_dets = sum(1 for v in results_dict.values() if v)
+    print(f"    ✓ results.json written ({files_with_dets}/{total} files with detections, {total_dets} total)")
 
     return results_path
 
@@ -256,11 +268,12 @@ def cleanup_beamforming_files(
 
 def process_directory_pipeline(
     directory: str,
-    location: str = "waycanguk",
     date: Optional[datetime] = None,
     identifier_pattern: str = "",
     cleanup: bool = True,
     dry_run: bool = False,
+    lat: Optional[float] = None,
+    lon: Optional[float] = None,
 ) -> Tuple[str, str, int]:
     """
     Full pipeline for one output directory:
@@ -273,8 +286,8 @@ def process_directory_pipeline(
     """
     print(f"\n  🐦 BirdNET: {directory}")
 
-    # Step 1: BirdNET
-    results_path = run_birdnet_on_dir(directory, location, date)
+    # Step 1: BirdNET (sequential, no multiprocessing)
+    results_path = run_birdnet_on_dir(directory, date=date, lat=lat, lon=lon)
 
     # Step 2: Confidence comparison
     results = read_results(results_path)

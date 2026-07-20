@@ -151,6 +151,16 @@ LOCATION_COORDS = {
     "silwood":   {"lat": 51.409111,  "lon": -0.637820},
 }
 
+# Per-site coordinates (currently all Way Canguk for BirdNET species filtering).
+SITE_COORDS: Dict[str, Dict[str, float]] = {
+    "S0":    {"lat": -5.6585004, "lon": 104.4046997},
+    "2D400": {"lat": -5.6585004, "lon": 104.4046997},
+    "Q0":    {"lat": -5.6585004, "lon": 104.4046997},
+    "2A400": {"lat": -5.6585004, "lon": 104.4046997},
+    "O0":    {"lat": -5.6585004, "lon": 104.4046997},
+    "2B400": {"lat": -5.6585004, "lon": 104.4046997},
+}
+
 BIRDNET_MIN_CONF = 0.4
 BIRDNET_OVERLAP = 0.0
 
