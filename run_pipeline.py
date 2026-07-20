@@ -96,6 +96,34 @@ def get_site_coords(location_name: str):
     return None, None
 
 
+def _beamforming_complete(output_dir: str, base_name: str, ir_type):
+    if not os.path.isdir(output_dir):
+        return False
+    zenith = ir_type.zenith_speakers or set()
+    for param in ir_type.param_values:
+        degrees = [0] if param in zenith else ir_type.degree_values
+        for deg in degrees:
+            reps = ir_type.rep_values or [None]
+            for rep in reps:
+                fmt_kwargs = {}
+                if ir_type.param_label == "speaker":
+                    fmt_kwargs["speaker"] = param
+                else:
+                    fmt_kwargs["distance"] = param
+                fmt_kwargs["degrees"] = deg
+                if rep is not None:
+                    fmt_kwargs["rep"] = rep
+                suffix = ir_type.output_suffix_pattern.format(**fmt_kwargs)
+                fname = base_name + "_" + suffix + ".wav"
+                if not os.path.isfile(os.path.join(output_dir, fname)):
+                    return False
+    return True
+
+
+def _sa_complete(output_dir: str, base_name: str):
+    return os.path.isfile(os.path.join(output_dir, base_name + "_sa.wav"))
+
+
 # ============================================================
 # SINGLE-FILE PIPELINE
 # ============================================================
@@ -138,19 +166,25 @@ def process_one_flac(
         bf_dirs.append(bf_dir)
 
         print(f"\n── Beamforming [{ir_name}] ──")
-        bf = Beamformer(
-            flac_path=flac_path,
-            output_dir=bf_dir,
-            ir_type_or_name=ir_type,  # pass IRType to respect subsets
-        )
-        bf.run()
+        if _beamforming_complete(bf_dir, base_name, ir_type):
+            print(f"  ✓ {ir_name} outputs already exist — skipping beamforming")
+        else:
+            bf = Beamformer(
+                flac_path=flac_path,
+                output_dir=bf_dir,
+                ir_type_or_name=ir_type,
+            )
+            bf.run()
 
     # ── Step 2: Signal Averaging ─────────────────────────────
     if run_sa:
         sa_dir = build_output_path(location_name, date_str, "signal_averaging")
         print(f"\n── Signal Averaging ──")
-        sa = SignalAverager(flac_path=flac_path, output_dir=sa_dir)
-        sa.run()
+        if _sa_complete(sa_dir, base_name):
+            print(f"  ✓ SA output already exists — skipping")
+        else:
+            sa = SignalAverager(flac_path=flac_path, output_dir=sa_dir)
+            sa.run()
 
     # ── Step 3-5: BirdNET → processed.json → cleanup ────────
     if run_birdnet:
