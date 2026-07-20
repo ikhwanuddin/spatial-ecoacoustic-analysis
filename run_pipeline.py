@@ -138,6 +138,7 @@ def process_one_flac(
     cleanup: bool = False,
     dry_run: bool = False,
     use_prototype_subsets: bool = False,
+    force_bf: bool = False,
 ):
     """Run the full pipeline for ONE FLAC file."""
     base_name = os.path.splitext(os.path.basename(flac_path))[0]
@@ -166,7 +167,7 @@ def process_one_flac(
         bf_dirs.append(bf_dir)
 
         print(f"\n── Beamforming [{ir_name}] ──")
-        if _beamforming_complete(bf_dir, base_name, ir_type):
+        if not force_bf and _beamforming_complete(bf_dir, base_name, ir_type):
             print(f"  ✓ {ir_name} outputs already exist — skipping beamforming")
         else:
             bf = Beamformer(
@@ -180,7 +181,7 @@ def process_one_flac(
     if run_sa:
         sa_dir = build_output_path(location_name, date_str, "signal_averaging")
         print(f"\n── Signal Averaging ──")
-        if _sa_complete(sa_dir, base_name):
+        if not force_bf and _sa_complete(sa_dir, base_name):
             print(f"  ✓ SA output already exists — skipping")
         else:
             sa = SignalAverager(flac_path=flac_path, output_dir=sa_dir)
@@ -288,6 +289,10 @@ def main():
     parser.add_argument(
         "--precompute", action="store_true",
         help="Precompute IR steering-vector caches before running",
+    )
+    parser.add_argument(
+        "--force-bf", action="store_true",
+        help="Force re-run beamforming even if outputs already exist",
     )
 
     args = parser.parse_args()
@@ -401,6 +406,7 @@ def main():
             cleanup=args.cleanup,
             dry_run=args.dry_run,
             use_prototype_subsets=use_prototype,
+            force_bf=args.force_bf,
         )
         results.append(result)
 
