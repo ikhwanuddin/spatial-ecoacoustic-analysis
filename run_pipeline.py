@@ -30,13 +30,13 @@ from typing import List, Optional
 from config import (
     MONITORING_DATA,
     ANALYSIS_OUTPUT,
-    IR_BASE_PATH,
-    LOCATION_MAP,
-    RPIID_TO_LOCATION,
     IR_TYPES,
     PROTOTYPE_IR_SUBSETS,
+    LOCATION_MAP,
+    RPIID_TO_LOCATION,
     SITE_COORDS,
 )
+from ircache import IRCache
 from beamforming import Beamformer
 from signal_averaging import SignalAverager
 from birdnet_processor import process_directory_pipeline
@@ -141,8 +141,7 @@ def process_one_flac(
         bf = Beamformer(
             flac_path=flac_path,
             output_dir=bf_dir,
-            ir_type=ir_type,
-            ir_base_path=IR_BASE_PATH,
+            ir_type_or_name=ir_type,  # pass IRType to respect subsets
         )
         bf.run()
 
@@ -252,8 +251,21 @@ def main():
         "--list", action="store_true",
         help="List available RPiIDs and dates, then exit",
     )
+    parser.add_argument(
+        "--precompute", action="store_true",
+        help="Precompute IR steering-vector caches before running",
+    )
 
     args = parser.parse_args()
+
+    # ── Precompute IR caches (if requested) ──────────────────
+    if args.precompute:
+        from ircache import build_all_caches
+        print("🔧 Precomputing IR steering-vector caches ...")
+        build_all_caches()
+        print("Ready.\n")
+        if not args.location and not args.rpiid and not args.list:
+            sys.exit(0)
 
     # ── Resolve RPiID ────────────────────────────────────────
     if args.location:
