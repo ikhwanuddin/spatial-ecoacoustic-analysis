@@ -480,8 +480,35 @@ def main():
         results.append(result)
 
     # Summary
+    total_elapsed = sum(r["elapsed"] for r in results)
+    n_files = len(results)
+    total_wavs = 0
+    for r in results:
+        for d in r["beamforming_dirs"]:
+            try:
+                total_wavs += len([f for f in os.listdir(d) if f.endswith(".wav")])
+            except:
+                pass
+        for sub in ["sa_dir", "mono_dir"]:
+            d = r.get(sub)
+            if d:
+                try:
+                    total_wavs += len([f for f in os.listdir(d) if f.endswith(".wav")])
+                except:
+                    pass
+
     print(f"\n{'='*60}")
     print(f"🏁 Pipeline Complete")
+    print(f"{'='*60}")
+    print(f"  📂 Files processed : {n_files}")
+    print(f"  🔊 WAV generated   : {total_wavs}")
+    print(f"  ⏱  Total elapsed   : {total_elapsed:.0f}s ({total_elapsed/60:.1f} min)")
+    if n_files > 1:
+        print(f"  ⏱  Avg per file    : {total_elapsed/n_files:.1f}s")
+    print(f"  📍 Location        : {location_name}")
+    print(f"  📅 Date            : {date_str}")
+    print(f"  📡 IR Types        : {', '.join(ir_types)}")
+    print(f"  💾 Output          : {ANALYSIS_OUTPUT}")
     print(f"{'='*60}")
     for r in results:
         bname = os.path.splitext(os.path.basename(r["flac"]))[0]
