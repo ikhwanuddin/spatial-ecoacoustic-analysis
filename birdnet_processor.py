@@ -59,8 +59,10 @@ def run_birdnet_on_dir(
     lat: Optional[float] = None,
     lon: Optional[float] = None,
     workers: int = BIRDNET_WORKERS,
+    base_name: Optional[str] = None,
 ) -> str:
-    results_path = os.path.join(directory, "results.json")
+    results_fname = f"results_{base_name}.json" if base_name else "results.json"
+    results_path = os.path.join(directory, results_fname)
     if date is None:
         date = datetime.now()
 
@@ -69,6 +71,8 @@ def run_birdnet_on_dir(
         for f in os.listdir(directory)
         if f.lower().endswith(".wav") and not f.startswith("._")
     ])
+    if base_name:
+        wav_files = [w for w in wav_files if os.path.basename(w).startswith(base_name)]
 
     total = len(wav_files)
     if total == 0:
@@ -198,7 +202,7 @@ def get_files_to_keep(processed: Dict) -> set:
     return keep
 
 
-def cleanup_beamforming_files(directory: str, keep_files: set, dry_run: bool = False) -> int:
+def cleanup_beamforming_files(directory: str, keep_files: set, dry_run: bool = False, base_name: Optional[str] = None) -> int:
     deleted = 0
     for fname in os.listdir(directory):
         full = os.path.join(directory, fname)
@@ -207,6 +211,9 @@ def cleanup_beamforming_files(directory: str, keep_files: set, dry_run: bool = F
         if not fname.lower().endswith(".wav"):
             continue
         if fname in keep_files:
+            continue
+        # Only delete WAVs belonging to this FLAC (prevent cross-FLAC deletion)
+        if base_name and not fname.startswith(base_name):
             continue
         if fname.startswith("._"):
             os.remove(full)
@@ -229,12 +236,13 @@ def process_directory_pipeline(
     dry_run: bool = False,
     lat: Optional[float] = None,
     lon: Optional[float] = None,
+    base_name: Optional[str] = None,
 ) -> Tuple[str, str, int]:
     import time
     print(f"\n  BirdNET: {directory}")
     t0 = time.time()
 
-    results_path = run_birdnet_on_dir(directory, date=date, lat=lat, lon=lon)
+    results_path = run_birdnet_on_dir(directory, date=date, lat=lat, lon=lon, base_name=base_name)
     t1 = time.time()
     print(f"    BirdNET: {t1 - t0:.1f}s")
 
@@ -244,13 +252,17 @@ def process_directory_pipeline(
         return results_path, "", 0
 
     processed = build_processed(results, identifier_pattern)
-    processed_path = write_processed(processed, directory)
+    processed_fname = f"processed_{base_name}.json" if base_name else "processed.json"
+    processed_path = os.path.join(directory, processed_fname)
+    with open(processed_path, "w") as f:
+        json.dump(processed, f, indent=4, ensure_ascii=False)
+    print(f"    {processed_fname} written ({len(processed)} species)")
 
     deleted = 0
     if cleanup:
         keep = get_files_to_keep(processed)
         print(f"    Keeping {len(keep)} best-variant files")
-        deleted = cleanup_beamforming_files(directory, keep, dry_run=dry_run)
+        deleted = cleanup_beamforming_files(directory, keep, dry_run=dry_run, base_name=base_name)
         print(f"    Cleanup: {deleted} files removed")
         for fname in os.listdir(directory):
             if fname.startswith("._"):

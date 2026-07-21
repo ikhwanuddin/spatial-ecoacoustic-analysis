@@ -184,7 +184,9 @@ def process_one_flac(
 
         bf = Beamformer(flac_path=flac_path, output_dir=bf_dir, ir_type_or_name=ir_type)
         bf.run()
-        if state and key:
+        if not _beamforming_complete(bf_dir, base_name, ir_type):
+            print(f"  ⚠ Beamforming [{ir_name}] incomplete — some IR cache/raw files missing")
+        elif state and key:
             state.mark_complete(key, bf_step)
 
     # ── Step 2: Signal Averaging ─────────────────────────────
@@ -254,8 +256,9 @@ def process_one_flac(
             if state and key and state.is_complete(key, bn_step):
                 print(f"  ✓ BirdNET [{ir_label}] already complete — skipping")
                 continue
-            if os.path.isfile(os.path.join(bf_dir, "results.json")) and \
-               os.path.isfile(os.path.join(bf_dir, "processed.json")):
+            results_file = os.path.join(bf_dir, f"results_{base_name}.json")
+            processed_file = os.path.join(bf_dir, f"processed_{base_name}.json")
+            if os.path.isfile(results_file) and os.path.isfile(processed_file):
                 print(f"  ✓ BirdNET [{ir_label}] results exist — skipping")
                 if state and key:
                     state.mark_complete(key, bn_step)
@@ -267,20 +270,21 @@ def process_one_flac(
         if run_sa and sa_dir:
             if state and key and state.is_complete(key, STEP_BIRNET_SA):
                 print(f"  ✓ BirdNET [SA] already complete — skipping")
-            elif os.path.isfile(os.path.join(sa_dir, "results.json")) and \
-                 os.path.isfile(os.path.join(sa_dir, "processed.json")):
+            elif os.path.isfile(os.path.join(sa_dir, f"results_{base_name}.json")) and \
+                 os.path.isfile(os.path.join(sa_dir, f"processed_{base_name}.json")):
                 print(f"  ✓ BirdNET [SA] results exist — skipping")
                 if state and key:
                     state.mark_complete(key, STEP_BIRNET_SA)
             else:
                 birdnet_tasks.append((sa_dir, "SA", STEP_BIRNET_SA, ""))
 
+
         # Monochannel baseline BirdNET
         if os.path.isfile(mono_out):
             if state and key and state.is_complete(key, STEP_BIRNET_MONO):
                 print(f"  ✓ BirdNET [Mono] already complete — skipping")
-            elif os.path.isfile(os.path.join(mono_dir, "results.json")) and \
-                 os.path.isfile(os.path.join(mono_dir, "processed.json")):
+            elif os.path.isfile(os.path.join(mono_dir, f"results_{base_name}.json")) and \
+                 os.path.isfile(os.path.join(mono_dir, f"processed_{base_name}.json")):
                 print(f"  ✓ BirdNET [Mono] results exist — skipping")
                 if state and key:
                     state.mark_complete(key, STEP_BIRNET_MONO)
@@ -299,6 +303,7 @@ def process_one_flac(
                         identifier_pattern=pattern,
                         cleanup=(cleanup and label not in ("SA", "Mono")),
                         dry_run=dry_run, lat=lat, lon=lon,
+                        base_name=base_name,
                     )
                     if state and key:
                         state.mark_complete(key, step_name)

@@ -152,10 +152,13 @@ class IRCache:
             verbose: Print progress.
 
         Returns:
-            Number of steering vectors cached.
+            Number of steering vectors newly cached.
         """
-        total = 0
+        new_cached = 0
+        already_cached = 0
+        missing_raw = 0
         combo_count = 0
+        missing_paths: list = []
 
         start = time.time()
 
@@ -168,29 +171,43 @@ class IRCache:
                     path = self._cache_path(key)
 
                     if not force and os.path.isfile(path):
+                        already_cached += 1
                         continue
 
                     ir_path = self._ir_path(param, deg, rep)
                     if not os.path.isfile(ir_path):
+                        missing_raw += 1
+                        if len(missing_paths) < 10:
+                            missing_paths.append(ir_path)
                         continue
 
                     try:
                         irr = _compute_irr(ir_path, self.framelen)
                         np.savez_compressed(path, irr=irr)
-                        total += 1
+                        new_cached += 1
                     except Exception as e:
                         if verbose:
                             print(f"  ⚠ Failed {key}: {e}")
+                        missing_raw += 1
 
         elapsed = time.time() - start
         if verbose:
-            existing = combo_count - total
             print(
-                f"  ✓ IR cache [{self.name}]: {total} new, {existing} already cached "
-                f"({combo_count} total combos, {elapsed:.1f}s)"
+                f"  ✓ IR cache [{self.name}]: {new_cached} new, {already_cached} already cached, "
+                f"{missing_raw} missing raw files ({combo_count} total combos, {elapsed:.1f}s)"
             )
+            if missing_raw > 0 and missing_paths:
+                shown = missing_paths[:5]
+                print(f"    Missing raw IR examples:")
+                for p in shown:
+                    print(f"      - {p}")
+                if missing_raw > len(shown):
+                    print(f"      ... and {missing_raw - len(shown)} more")
+                print(f"    IR base folder: {self.ir_folder}")
+                if not os.path.isdir(self.ir_folder):
+                    print(f"    ⚠ IR folder does not exist!")
 
-        return total
+        return new_cached
 
     def stats(self) -> Dict:
         """Return cache statistics."""

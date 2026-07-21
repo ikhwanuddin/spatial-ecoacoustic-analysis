@@ -156,10 +156,10 @@ class PipelineState:
                 f"beamforming_{ir_name}", hour_subdir,
             )
             if os.path.isdir(bf_dir):
-                results_json = os.path.join(bf_dir, "results.json")
-                processed_json = os.path.join(bf_dir, "processed.json")
+                results_json = os.path.join(bf_dir, f"results_{base_name}.json")
+                processed_json = os.path.join(bf_dir, f"processed_{base_name}.json")
                 try:
-                    wavs = [f for f in os.listdir(bf_dir) if f.endswith(".wav")]
+                    wavs = [f for f in os.listdir(bf_dir) if f.endswith(".wav") and f.startswith(base_name)]
                 except OSError:
                     wavs = []
                 if wavs:
@@ -180,8 +180,8 @@ class PipelineState:
             self.mark_complete(key, STEP_SA)
             completed.add(STEP_SA)
             if run_birdnet:
-                sa_results = os.path.join(sa_dir, "results.json")
-                sa_processed = os.path.join(sa_dir, "processed.json")
+                sa_results = os.path.join(sa_dir, f"results_{base_name}.json")
+                sa_processed = os.path.join(sa_dir, f"processed_{base_name}.json")
                 if os.path.isfile(sa_results) and os.path.isfile(sa_processed):
                     self.mark_complete(key, STEP_BIRNET_SA)
                     completed.add(STEP_BIRNET_SA)
@@ -196,8 +196,8 @@ class PipelineState:
             self.mark_complete(key, STEP_MONO)
             completed.add(STEP_MONO)
             if run_birdnet:
-                mono_results = os.path.join(mono_dir, "results.json")
-                mono_processed = os.path.join(mono_dir, "processed.json")
+                mono_results = os.path.join(mono_dir, f"results_{base_name}.json")
+                mono_processed = os.path.join(mono_dir, f"processed_{base_name}.json")
                 if os.path.isfile(mono_results) and os.path.isfile(mono_processed):
                     self.mark_complete(key, STEP_BIRNET_MONO)
                     completed.add(STEP_BIRNET_MONO)

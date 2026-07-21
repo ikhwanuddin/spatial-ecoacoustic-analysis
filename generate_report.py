@@ -175,7 +175,8 @@ def find_processed_json_files(
 ) -> List[Tuple[str, str, str, str]]:
     """Walk tree, return [(date_str, hour_str, method, full_path), ...].
     
-    New structure: sea-data/{location}/{date}/{method}/hour_XX/processed.json
+    New structure: sea-data/{location}/{date}/{method}/hour_XX/processed_{base_name}.json
+    Also supports legacy: .../processed.json
     """
     location_dir = os.path.join(base_dir, location)
     if not os.path.isdir(location_dir):
@@ -201,16 +202,23 @@ def find_processed_json_files(
                 hour_dir = os.path.join(method_dir, hour_entry)
                 if not os.path.isdir(hour_dir):
                     continue
-                proc_json = os.path.join(hour_dir, "processed.json")
-                if os.path.isfile(proc_json):
-                    method_map = {
-                        "beamforming_LabIR": "LabIR",
-                        "beamforming_SPIR1": "SPIR1",
-                        "beamforming_SPIR2": "SPIR2",
-                        "signal_averaging": "SA",
-                    }
-                    method = method_map.get(subdir, subdir)
-                    found.append((entry, hour_entry, method, proc_json))
+                proc_jsons = sorted([
+                    f for f in os.listdir(hour_dir)
+                    if f.startswith("processed") and f.endswith(".json")
+                ])
+                if not proc_jsons:
+                    continue
+                for proc_fname in proc_jsons:
+                    proc_json = os.path.join(hour_dir, proc_fname)
+                    if os.path.isfile(proc_json):
+                        method_map = {
+                            "beamforming_LabIR": "LabIR",
+                            "beamforming_SPIR1": "SPIR1",
+                            "beamforming_SPIR2": "SPIR2",
+                            "signal_averaging": "SA",
+                        }
+                        method = method_map.get(subdir, subdir)
+                        found.append((entry, hour_entry, method, proc_json))
 
     return found
 
