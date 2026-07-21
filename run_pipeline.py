@@ -509,16 +509,39 @@ def main():
     print(f"  📅 Date            : {date_str}")
     print(f"  📡 IR Types        : {', '.join(ir_types)}")
     print(f"  💾 Output          : {ANALYSIS_OUTPUT}")
-    print(f"{'='*60}")
+    print(f"{'-'*60}")
     for r in results:
         bname = os.path.splitext(os.path.basename(r["flac"]))[0]
         print(f"  {bname}: {r['elapsed']:.1f}s")
-        for d in r["beamforming_dirs"]:
-            print(f"    BF: {d}")
-        if r["sa_dir"]:
-            print(f"    SA: {r['sa_dir']}")
-        if r.get("mono_dir"):
-            print(f"    Mono: {r['mono_dir']}")
+    print(f"{'='*60}")
+
+    # ── Write JSON run report ───────────────────────────────
+    import json as _json
+    from datetime import datetime as _dt
+    report_path = os.path.join(ANALYSIS_OUTPUT, location_name, date_str,
+                               f"_run_report_{_dt.now().strftime('%Y%m%d_%H%M%S')}.json")
+    os.makedirs(os.path.dirname(report_path), exist_ok=True)
+    report = {
+        "run_at": _dt.now().isoformat(),
+        "hostname": os.uname().nodename,
+        "location": location_name,
+        "date": date_str,
+        "ir_types": ir_types,
+        "files_processed": n_files,
+        "wavs_generated": total_wavs,
+        "total_elapsed_s": round(total_elapsed, 1),
+        "avg_per_file_s": round(total_elapsed / n_files, 1) if n_files else 0,
+        "files": [
+            {
+                "name": os.path.splitext(os.path.basename(r["flac"]))[0],
+                "elapsed_s": round(r["elapsed"], 1),
+            }
+            for r in results
+        ],
+    }
+    with open(report_path, "w") as f:
+        _json.dump(report, f, indent=2, ensure_ascii=False)
+    print(f"  📋 Report: {report_path}")
 
 
 if __name__ == "__main__":
