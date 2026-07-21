@@ -303,18 +303,33 @@ class PipelineState:
             self._data = {}
 
     def _save(self):
-        """Write state to JSON with file locking for safety."""
+        """Write state to JSON with optional file locking.
+
+        Attempts fcntl.flock for local filesystem safety.
+        Falls back to lock-free write on network mounts (SMB/NFS)
+        where flock is not supported.
+        """
         os.makedirs(os.path.dirname(self.state_path), exist_ok=True)
 
         try:
             with open(self.state_path, "w") as f:
-                fcntl.flock(f, fcntl.LOCK_EX)
+                _locked = False
+                try:
+                    fcntl.flock(f, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                    _locked = True
+                except (IOError, OSError):
+                    # flock not supported on this filesystem (SMB, NFS, etc.)
+                    pass
                 try:
                     json.dump(self._data, f, indent=2, ensure_ascii=False)
                     f.flush()
                     os.fsync(f.fileno())
                 finally:
-                    fcntl.flock(f, fcntl.LOCK_UN)
+                    if _locked:
+                        try:
+                            fcntl.flock(f, fcntl.LOCK_UN)
+                        except (IOError, OSError):
+                            pass
             self._dirty = False
         except IOError as e:
             print(f"(!) Could not save pipeline state: {e}")
