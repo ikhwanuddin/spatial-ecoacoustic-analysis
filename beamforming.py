@@ -84,13 +84,17 @@ class Beamformer:
             W[ifreq, :, :] = np.conj(invRd / projection)
         return W
 
-    def _process_one(self, speaker: int, degrees: int, rep: Optional[int] = None):
-        """Beamform towards one direction using cached steering vector."""
+    def _process_one(self, speaker: int, degrees: int, rep: Optional[int] = None) -> bool:
+        """Beamform towards one direction using cached steering vector.
+
+        Returns:
+            True on success, False if skipped (cache/IR file missing).
+        """
         try:
             IRR = self.ir_cache.load(speaker, degrees, rep)
         except FileNotFoundError:
             print(f"    SKIP (not in cache): p={speaker} d={degrees}")
-            return
+            return False
 
         print(f"    Beamforming: p={speaker} d={degrees} ...")
         IRR = IRR.reshape(IRR.shape[0], IRR.shape[1], 1)
@@ -119,11 +123,17 @@ class Beamformer:
         out_path = os.path.join(self.output_dir, out_filename)
         sf.write(out_path, (z * 32767).clip(-32768, 32767).astype("int16"), self.fs, subtype="PCM_16")
         print(f"      -> {out_filename}")
+        return True
 
     def run(self):
-        """Run beamforming for ALL (param x degree) combinations."""
+        """Run beamforming for ALL (param x degree) combinations.
+
+        Returns:
+            (output_count, skip_count) — total successful vs skipped outputs.
+        """
         start = time.time()
         total = 0
+        skipped = 0
         zenith = self.ir_type.zenith_speakers or set()
         for param in self.ir_type.param_values:
             if param in zenith:
@@ -133,7 +143,14 @@ class Beamformer:
             for deg in degrees:
                 reps = self.ir_type.rep_values or [None]
                 for rep in reps:
-                    self._process_one(param, deg, rep)
+                    ok = self._process_one(param, deg, rep)
                     total += 1
+                    if not ok:
+                        skipped += 1
         elapsed = time.time() - start
-        print(f"  Beamforming complete: {total} outputs in {elapsed:.1f}s")
+        if skipped > 0:
+            print(f"  ⚠ Beamforming: {total - skipped}/{total} outputs in {elapsed:.1f}s "
+                  f"({skipped} skipped — IR cache/raw files missing)")
+        else:
+            print(f"  Beamforming complete: {total} outputs in {elapsed:.1f}s")
+        return (total - skipped, skipped)
