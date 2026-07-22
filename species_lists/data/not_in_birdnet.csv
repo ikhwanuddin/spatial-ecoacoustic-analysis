@@ -1,0 +1,35 @@
+scientific_name_original,scientific_name_matched,common_name_en,iucn,at_way_canguk,at_way_titias,at_danau_ranau,habitat_tier,wcrs_text,wc_from_text_only,sources,birdnet_label,in_birdnet_v24
+Aerodramus salangana,,Mossy-nest Swiftlet,,True,False,False,lowland,False,False,gooddie2015,,False
+Alcedo peninsulae,,Malay Blue-banded Kingfisher,NT,True,True,False,lowland,True,False,gooddie2015;brickle_wcrs;ebird_ID-SM-LA;ebird_Bengkunat,,False
+Alophoixus bres,,Grey-cheeked Bulbul,,True,True,True,lowland,False,False,gooddie2015,,False
+Anthreptes rhodolaema,,Red-throated Sunbird,NT,True,False,False,lowland,False,False,gooddie2015,,False
+Anthreptes simplex,,Plain Sunbird,,True,False,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Belimbing;ebird_Bengkunat;ebird_ForestTrail,,False
+Arachnothera affinis,,Grey-breasted Spiderhunter,,True,True,False,lowland,False,False,gooddie2015,,False
+Arachnothera robusta,,Long-billed Spiderhunter,,True,True,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Bengkunat;ebird_hotspot_L7940372,,False
+Asarcornis scutulata,,White-winged Duck,EN,True,False,False,lowland,True,False,gooddie2015;brickle_wcrs;ebird_ID-SM-LA;ebird_Belimbing;ebird_Bengkunat;ebird_DanauMenjukut,,False
+Ciconia stormi,,Storm’s Stork,EN,True,False,False,lowland,True,False,gooddie2015;brickle_wcrs;ebird_ID-SM-LA;ebird_Belimbing;ebird_Bengkunat,,False
+Dicaeum trochileum,,Scarlet-headed Flowerpecker,,True,False,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Bengkunat,,False
+Dicrurus sumatranus,,Sumatran Drongo,NT,True,True,True,lowland,True,False,gooddie2015;brickle_wcrs;ebird_ID-SM-LA;ebird_Bengkunat;ebird_ForestTrail,,False
+Enicurus ruficapillus,,Chestnut-naped Forktail,,True,False,False,lowland,True,False,andriyani2022;ebird_ID-SM-LA;ebird_Bengkunat;ebird_hotspot_L7940372,,False
+Falco severus,,Oriental Hobby,,True,False,False,lowland,False,False,gooddie2015,,False
+Hirundapus cochinchinensis,,Silver-backed Needletail,,True,False,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA,,False
+Indicator archipelagicus,,Malaysian Honeyguide,NT,True,False,False,lowland,True,False,gooddie2015;brickle_wcrs;ebird_ID-SM-LA;ebird_Bengkunat,,False
+Lophura inornata,,Salvadori’s Pheasant,NT,True,True,False,lowland,True,False,gooddie2015;brickle_wcrs;ebird_ID-SM-LA,,False
+Nycticorax caledonicus,,Rufous Night Heron,,True,False,False,lowland,False,False,gooddie2015,,False
+Pericrocotus igneus,,Fiery Minivet,NT,True,False,False,lowland,True,False,gooddie2015;brickle_wcrs;ebird_ID-SM-LA;ebird_Bengkunat;ebird_ForestTrail,,False
+Phaenicophaeus curvirostris,,Chestnut-breasted Malkoha,,True,True,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Bengkunat;ebird_ForestTrail;ebird_hotspot_L7940372,,False
+Phaenicophaeus diardi,,Black-bellied Malkoha,NT,True,True,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Bengkunat;ebird_ForestTrail,,False
+Pitta schneideri,,Schneider’s Pitta,VU,True,False,True,lowland,True,True,gooddie2015;brickle_wcrs,,False
+Prionochilus percussus,,Crimson-breasted Flowerpecker,,True,True,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Bengkunat;ebird_ForestTrail;ebird_hotspot_L7940372,,False
+Pycnonotus cyaniventris,,Grey-bellied Bulbul,NT,True,True,True,lowland,True,False,gooddie2015;brickle_wcrs,,False
+Pycnonotus dispar,,Ruby-throated Bulbul,,True,True,True,lowland,True,False,gooddie2015;andriyani2022,,False
+Pycnonotus erythropthalmos,,Spectacled Bulbul,,True,False,False,lowland,False,False,gooddie2015,,False
+Pycnonotus eutilotus,,Puff-backed Bulbul,,True,False,False,lowland,False,False,gooddie2015,,False
+Pycnonotus squamatus,,Scaly-breasted Bulbul,NT,True,False,False,lowland,True,False,gooddie2015;brickle_wcrs,,False
+Ramphiculus jambu,,Jambu Fruit Dove,NT,True,False,False,lowland,True,False,gooddie2015;brickle_wcrs;ebird_ID-SM-LA,,False
+Rhinoplax vigil,,"Collar, N. J. (2015) Helmeted Hornbills",CR,True,True,True,lowland,True,False,gooddie2015;brickle_wcrs;ebird_ID-SM-LA,,False
+Spilopelia chinensis,,Eastern Spotted Dove,,True,False,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Belimbing;ebird_Bengkunat;ebird_ForestTrail;ebird_hotspot_L7940372,,False
+Treron capellei,,Large Green Pigeon,VU,True,False,False,lowland,True,False,gooddie2015;brickle_wcrs;ebird_ID-SM-LA;ebird_Bengkunat;ebird_ForestTrail,,False
+Treron oxyurus,,Sumatran Green Pigeon,NT,True,True,True,lowland,True,False,gooddie2015;brickle_wcrs;ebird_ID-SM-LA;ebird_hotspot_L7940372,,False
+Zanclostomus javanicus,,Red-billed Malkoha,,True,True,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Bengkunat;ebird_ForestTrail,,False
+Zoothera interpres,,Chestnut-capped Thrush,NT,True,True,False,lowland,True,False,gooddie2015;brickle_wcrs,,False

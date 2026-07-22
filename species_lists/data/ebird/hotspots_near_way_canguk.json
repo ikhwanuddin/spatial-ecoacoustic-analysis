@@ -1,0 +1,62 @@
+[
+  {
+    "locId": "L6349760",
+    "locName": "Belimbing",
+    "countryCode": "ID",
+    "subnational1Code": "ID-SM",
+    "subnational2Code": "ID-SM-LA",
+    "lat": -5.9209775,
+    "lng": 104.55549,
+    "latestObsDt": "2025-10-20 06:13",
+    "numSpeciesAllTime": 111,
+    "numChecklistsAllTime": 10
+  },
+  {
+    "locId": "L5865707",
+    "locName": "Bukit Barisan Selatan, Bengkunat",
+    "countryCode": "ID",
+    "subnational1Code": "ID-SM",
+    "subnational2Code": "ID-SM-LA",
+    "lat": -5.6686868,
+    "lng": 104.4162083,
+    "latestObsDt": "2025-04-28 15:42",
+    "numSpeciesAllTime": 163,
+    "numChecklistsAllTime": 43
+  },
+  {
+    "locId": "L6349792",
+    "locName": "Bukit Barisan Selatan, Forest Trail",
+    "countryCode": "ID",
+    "subnational1Code": "ID-SM",
+    "subnational2Code": "ID-SM-LA",
+    "lat": -5.8948955,
+    "lng": 104.644475,
+    "latestObsDt": "2025-10-13 05:31",
+    "numSpeciesAllTime": 160,
+    "numChecklistsAllTime": 6
+  },
+  {
+    "locId": "L7940372",
+    "locName": "Camp Linggo (Tanggamus)",
+    "countryCode": "ID",
+    "subnational1Code": "ID-SM",
+    "subnational2Code": "ID-SM-LA",
+    "lat": -5.286453,
+    "lng": 104.419117,
+    "latestObsDt": "2023-03-09 06:00",
+    "numSpeciesAllTime": 62,
+    "numChecklistsAllTime": 2
+  },
+  {
+    "locId": "L6349779",
+    "locName": "Danau Menjukut",
+    "countryCode": "ID",
+    "subnational1Code": "ID-SM",
+    "subnational2Code": "ID-SM-LA",
+    "lat": -5.9322039,
+    "lng": 104.6765971,
+    "latestObsDt": "1996-11-01 00:00",
+    "numSpeciesAllTime": 28,
+    "numChecklistsAllTime": 0
+  }
+]
