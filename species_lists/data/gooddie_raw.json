@@ -1,0 +1,4721 @@
+[
+  {
+    "common_name_en": "Yellow-bellied Warbler",
+    "scientific_name_original": "Abroscopus superciliaris",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Japanese Sparrowhawk",
+    "scientific_name_original": "Accipiter gularis",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": true,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Besra",
+    "scientific_name_original": "Accipiter virgatus",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": true,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Crested Goshawk",
+    "scientific_name_original": "Accipter trivirgatus",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Rufous-collared Kingfisher",
+    "scientific_name_original": "Actenoides concretus",
+    "iucn": "NT",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Common Sandpiper",
+    "scientific_name_original": "Actitis hypoleucos",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Common Iora",
+    "scientific_name_original": "Aegithina tiphia",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Green Iora",
+    "scientific_name_original": "Aegithina viridissima",
+    "iucn": "NT",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Edible-nest Swiftlet",
+    "scientific_name_original": "Aerodramus fuciphagus",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Black-nest Swiftlet",
+    "scientific_name_original": "Aerodramus maximus",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Mossy-nest Swiftlet",
+    "scientific_name_original": "Aerodramus salangana",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Crimson Sunbird",
+    "scientific_name_original": "Aethopyga siparaja",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Temminck’s Sunbird",
+    "scientific_name_original": "Aethopyga temminckii",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": true,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Common Kingfisher",
+    "scientific_name_original": "Alcedo atthis",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Blue-eared Kingfisher",
+    "scientific_name_original": "Alcedo meninting",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Malay Blue-banded Kingfisher",
+    "scientific_name_original": "Alcedo peninsulae",
+    "iucn": "NT",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Brown Fulvetta",
+    "scientific_name_original": "Alcippe brunneicauda",
+    "iucn": "NT",
+    "at_way_canguk": false,
+    "at_way_titias": true,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Grey-cheeked Bulbul",
+    "scientific_name_original": "Alophoixus bres",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Finsch’s Bulbul",
+    "scientific_name_original": "Alophoixus finschii",
+    "iucn": "NT",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Ochraceous Bulbul",
+    "scientific_name_original": "Alophoixus ochraceus",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Yellow-bellied Bulbul",
+    "scientific_name_original": "Alophoixus phaeocephalus",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "White-browed Crake",
+    "scientific_name_original": "Amaurornis cinerea",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "White-breasted Waterhen",
+    "scientific_name_original": "Amaurornis phoenicurus",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": true,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Bushy-crested Hornbill",
+    "scientific_name_original": "Anorrhinus galeritus",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Brown Noddy",
+    "scientific_name_original": "Anous stolidus",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Oriental Pied Hornbill",
+    "scientific_name_original": "Anthracoceros albirostris",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Black Hornbill",
+    "scientific_name_original": "Anthracoceros malayanus",
+    "iucn": "NT",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Brown-throated Sunbird",
+    "scientific_name_original": "Anthreptes malacensis",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Red-throated Sunbird",
+    "scientific_name_original": "Anthreptes rhodolaema",
+    "iucn": "NT",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Plain Sunbird",
+    "scientific_name_original": "Anthreptes simplex",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Paddyfield Pipit",
+    "scientific_name_original": "Anthus rufulus",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Sumatran Trogon",
+    "scientific_name_original": "Apalharpactes mackloti",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": true,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Asian Glossy Starling",
+    "scientific_name_original": "Aplonis panayensis",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": false,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "House Swift",
+    "scientific_name_original": "Apus nipalensis",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Pacific Swift",
+    "scientific_name_original": "Apus pacificus",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": false,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Grey-breasted Spiderhunter",
+    "scientific_name_original": "Arachnothera affinis",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Yellow-eared Spiderhunter",
+    "scientific_name_original": "Arachnothera chrysogenys",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Thick-billed Spiderhunter",
+    "scientific_name_original": "Arachnothera crassirostris",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Spectacled Spiderhunter",
+    "scientific_name_original": "Arachnothera flavigaster",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Little Spiderhunter",
+    "scientific_name_original": "Arachnothera longirostra",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Long-billed Spiderhunter",
+    "scientific_name_original": "Arachnothera robusta",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Red-billed Partridge",
+    "scientific_name_original": "Arborophila rubrirostris",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": true,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Sumatran Partridge",
+    "scientific_name_original": "Arborophila sumatrana",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": true,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Intermediate Egret",
+    "scientific_name_original": "Ardea intermedia",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Purple Heron",
+    "scientific_name_original": "Ardea purpurea",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Great-billed Heron",
+    "scientific_name_original": "Ardea sumatrana",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Ruddy Turnstone",
+    "scientific_name_original": "Arenaria interpres",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Great Argus",
+    "scientific_name_original": "Argusianus argus",
+    "iucn": "NT",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "White-breasted Woodswallow",
+    "scientific_name_original": "Artamus leucorhynchus",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": true,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "White-winged Duck",
+    "scientific_name_original": "Asarcornis scutulata",
+    "iucn": "EN",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "UNESCO (2004) Tropical rainforest of Sumatra.",
+    "scientific_name_original": "Available at",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Jerdon’s Baza",
+    "scientific_name_original": "Aviceda jerdoni",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Sunda Frogmouth",
+    "scientific_name_original": "Batrachostomus cornutus",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Short-tailed Frogmouth",
+    "scientific_name_original": "Batrachostomus poliolophus",
+    "iucn": "NT",
+    "at_way_canguk": false,
+    "at_way_titias": false,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "White-crowned Hornbill",
+    "scientific_name_original": "Berenicornis comatus",
+    "iucn": "NT",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "O’Brien, G. & Kinnaird, M. F. (1996)",
+    "scientific_name_original": "Birds and",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Buij, R., Fox, E. A. & Wich, S. A. (2006)",
+    "scientific_name_original": "Birds of",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Maroon Woodpecker",
+    "scientific_name_original": "Blythipicus rubiginosus",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Lesser Shortwing",
+    "scientific_name_original": "Brachypteryx leucophrys",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": false,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "information and many of whom (in particular Nick",
+    "scientific_name_original": "Brickle and",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Barred Eagle Owl",
+    "scientific_name_original": "Bubo sumatranus",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Cattle Egret",
+    "scientific_name_original": "Bubulcus ibis",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": true,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Great Hornbill",
+    "scientific_name_original": "Buceros bicornis",
+    "iucn": "NT",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Rhinoceros Hornbill",
+    "scientific_name_original": "Buceros rhinoceros",
+    "iucn": "NT",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Green-backed Heron",
+    "scientific_name_original": "Butorides striata",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Plaintive Cuckoo",
+    "scientific_name_original": "Cacomantis merulinus",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Banded Bay Cuckoo",
+    "scientific_name_original": "Cacomantis sonneratii",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Brush Cuckoo",
+    "scientific_name_original": "Cacomantis variolosus",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": true,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Sanderling",
+    "scientific_name_original": "Calidris alba",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Curlew Sandpiper",
+    "scientific_name_original": "Calidris ferruginea",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Ferruginous Partridge",
+    "scientific_name_original": "Caloperdix oculeus",
+    "iucn": "NT",
+    "at_way_canguk": false,
+    "at_way_titias": true,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Malay Brown Barbet",
+    "scientific_name_original": "Calorhamphus hayii",
+    "iucn": "NT",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Green Broadbill",
+    "scientific_name_original": "Calyptomena viridis",
+    "iucn": "NT",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Savanna Nightjar",
+    "scientific_name_original": "Caprimulgus affinis",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": true,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Large-tailed Nightjar",
+    "scientific_name_original": "Caprimulgus macrurus",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Salvadori’s Nightjar",
+    "scientific_name_original": "Caprimulgus pulchellus",
+    "iucn": "NT",
+    "at_way_canguk": false,
+    "at_way_titias": false,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Sumatran Ground Cuckoo",
+    "scientific_name_original": "Carpococcyx viridis",
+    "iucn": "CR",
+    "at_way_canguk": false,
+    "at_way_titias": true,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Lesser Coucal",
+    "scientific_name_original": "Centropus bengalensis",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Greater Coucal",
+    "scientific_name_original": "Centropus sinensis",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Oriental Dwarf Kingfisher",
+    "scientific_name_original": "Ceyx erithaca",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Horsfield’s Bronze Cuckoo",
+    "scientific_name_original": "Chalcites basalis",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Little Bronze Cuckoo",
+    "scientific_name_original": "Chalcites minutillus",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": false,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Ruby-cheeked Sunbird",
+    "scientific_name_original": "Chalcoparia singalensis",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Grey-capped Emerald Dove",
+    "scientific_name_original": "Chalcophaps indica",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Greater Sand Plover",
+    "scientific_name_original": "Charadrius leschenaultii",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Lesser Sand Plover",
+    "scientific_name_original": "Charadrius mongolus",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Malay Plover",
+    "scientific_name_original": "Charadrius peronii",
+    "iucn": "NT",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Whiskered Tern",
+    "scientific_name_original": "Chlidonias hybrida",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Lesser Green Leafbird",
+    "scientific_name_original": "Chloropsis cyanopogon",
+    "iucn": "NT",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Greater Green Leafbird",
+    "scientific_name_original": "Chloropsis sonnerati",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Violet Cuckoo",
+    "scientific_name_original": "Chrysococcyx xanthorhynchus",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Greater Flameback",
+    "scientific_name_original": "Chrysocolaptes guttacristatus",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Orange-backed Woodpecker",
+    "scientific_name_original": "Chrysocolaptes validus",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Greater Yellownape",
+    "scientific_name_original": "Chrysophlegma flavinucha",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": false,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Chequer-throated Yellownape",
+    "scientific_name_original": "Chrysophlegma humii",
+    "iucn": "NT",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Banded Woodpecker",
+    "scientific_name_original": "Chrysophlegma miniaceum",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Asian Woollyneck",
+    "scientific_name_original": "Ciconia episcopus",
+    "iucn": "VU",
+    "at_way_canguk": false,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Storm’s Stork",
+    "scientific_name_original": "Ciconia stormi",
+    "iucn": "EN",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Common Green Magpie",
+    "scientific_name_original": "Cissa chinensis",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": false,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Zitting Cisticola",
+    "scientific_name_original": "Cisticola juncidis",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": false,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Chestnut-winged Cuckoo",
+    "scientific_name_original": "Clamator coromandus",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Sumatran Cochoa",
+    "scientific_name_original": "Cochoa beccarii",
+    "iucn": "VU",
+    "at_way_canguk": false,
+    "at_way_titias": true,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Glossy Swiftlet",
+    "scientific_name_original": "Collocalia esculenta",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "White-rumped Shama",
+    "scientific_name_original": "Copsychus malabaricus",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Oriental Magpie Robin",
+    "scientific_name_original": "Copsychus saularis",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Lesser Cuckooshrike",
+    "scientific_name_original": "Coracina fimbriata",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Sunda Cuckooshrike",
+    "scientific_name_original": "Coracina larvata",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": true,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Bar-bellied Cuckooshrike",
+    "scientific_name_original": "Coracina striata",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Slender-billed Crow",
+    "scientific_name_original": "Corvus enca",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Large-billed Crow",
+    "scientific_name_original": "Corvus macrorhynchos",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": true,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Dusky Broadbill",
+    "scientific_name_original": "Corydon sumatranus",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": true,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Sunda Cuckoo",
+    "scientific_name_original": "Cuculus lepidus",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": false,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Indian Cuckoo",
+    "scientific_name_original": "Cuculus micropterus",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Grey-headed Canary Flycatcher",
+    "scientific_name_original": "Culicicapa ceylonensis",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Black-and-red Broadbill",
+    "scientific_name_original": "Cymbirhynchus macrorhynchos",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "White-tailed Flycatcher",
+    "scientific_name_original": "Cyornis concretus",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": true,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Mangrove Blue Flycatcher",
+    "scientific_name_original": "Cyornis rufigastra",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Malaysian Blue Flycatcher",
+    "scientific_name_original": "Cyornis turcosus",
+    "iucn": "NT",
+    "at_way_canguk": false,
+    "at_way_titias": false,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Pale Blue Flycatcher",
+    "scientific_name_original": "Cyornis unicolor",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Asian Palm Swift",
+    "scientific_name_original": "Cypsiurus balasiensis",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "(2003)",
+    "scientific_name_original": "Deforestation trends",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Asian House Martin",
+    "scientific_name_original": "Delichon dasypus",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": false,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Sumatran Treepie",
+    "scientific_name_original": "Dendrocitta occipitalis",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": false,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Wandering Whistling Duck",
+    "scientific_name_original": "Dendrocygna arcuata",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": true,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Thick-billed Flowerpecker",
+    "scientific_name_original": "Dicaeum agile",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Yellow-vented Flowerpecker",
+    "scientific_name_original": "Dicaeum chrysorrheum",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Plain Flowerpecker",
+    "scientific_name_original": "Dicaeum concolor",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": true,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Scarlet-backed Flowerpecker",
+    "scientific_name_original": "Dicaeum cruentatum",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Fire-breasted Flowerpecker",
+    "scientific_name_original": "Dicaeum ignipectus",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": false,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Orange-bellied Flowerpecker",
+    "scientific_name_original": "Dicaeum trigonostigma",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Scarlet-headed Flowerpecker",
+    "scientific_name_original": "Dicaeum trochileum",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Bronzed Drongo",
+    "scientific_name_original": "Dicrurus aeneus",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Ashy Drongo",
+    "scientific_name_original": "Dicrurus leucophaeus",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": true,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Greater Racket-tailed Drongo",
+    "scientific_name_original": "Dicrurus paradiseus",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Lesser Racket-tailed Drongo",
+    "scientific_name_original": "Dicrurus remifer",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": true,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Sumatran Drongo",
+    "scientific_name_original": "Dicrurus sumatranus",
+    "iucn": "NT",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Common Flameback",
+    "scientific_name_original": "Dinopium javanense",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": true,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Olive-backed Woodpecker",
+    "scientific_name_original": "Dinopium rafflesii",
+    "iucn": "NT",
+    "at_way_canguk": false,
+    "at_way_titias": true,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "White-bellied Woodpecker",
+    "scientific_name_original": "Dryocopus javensis",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Green Imperial Pigeon",
+    "scientific_name_original": "Ducula aenea",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Mountain Imperial Pigeon",
+    "scientific_name_original": "Ducula badia",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Pied Imperial Pigeon",
+    "scientific_name_original": "Ducula bicolor",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Black Bittern",
+    "scientific_name_original": "Dupetor flavicollis",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Little Egret",
+    "scientific_name_original": "Egretta garzetta",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Pacific Reef Egret",
+    "scientific_name_original": "Egretta sacra",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Black-winged Kite",
+    "scientific_name_original": "Elanus caeruleus",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Pin-tailed Parrotfinch",
+    "scientific_name_original": "Erythrura prasina",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": false,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Beach Thick-knee",
+    "scientific_name_original": "Esacus magnirostris",
+    "iucn": "NT",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Western Koel",
+    "scientific_name_original": "Eudynamys scolopaceus",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Indigo Flycatcher",
+    "scientific_name_original": "Eumyias indigo",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": false,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Verditer Flycatcher",
+    "scientific_name_original": "Eumyias thalassina",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Railbabbler",
+    "scientific_name_original": "Eupetes macrocerus",
+    "iucn": "NT",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Banded Broadbill",
+    "scientific_name_original": "Eurylaimus javanicus",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Black-and-yellow Broadbill",
+    "scientific_name_original": "Eurylaimus ochromalus",
+    "iucn": "NT",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Dollarbird",
+    "scientific_name_original": "Eurystomus orientalis",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Oriental Hobby",
+    "scientific_name_original": "Falco severus",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Rufous-chested Flycatcher",
+    "scientific_name_original": "Ficedula dumetoria",
+    "iucn": "NT",
+    "at_way_canguk": false,
+    "at_way_titias": true,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Snowy-browed Flycatcher",
+    "scientific_name_original": "Ficedula hyperythra",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": true,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Mugimaki Flycatcher",
+    "scientific_name_original": "Ficedula mugimaki",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": true,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Rufous-browed Flycatcher",
+    "scientific_name_original": "Ficedula solitaris",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": true,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Yellow-rumped Flycatcher",
+    "scientific_name_original": "Ficedula zanthopygia",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Christmas Frigatebird",
+    "scientific_name_original": "Fregata andrewsi",
+    "iucn": "CR",
+    "at_way_canguk": false,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Lesser Frigatebird",
+    "scientific_name_original": "Fregata ariel",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Red Junglefowl",
+    "scientific_name_original": "Gallus gallus",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Sumatran Laughingthrush",
+    "scientific_name_original": "Garrulax bicolor",
+    "iucn": "VU",
+    "at_way_canguk": false,
+    "at_way_titias": false,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Black Laughingthrush",
+    "scientific_name_original": "Garrulax lugubris",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": false,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Chestnut-capped Laughingthrush",
+    "scientific_name_original": "Garrulax mitratus",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": true,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Sunda Laughingthrush",
+    "scientific_name_original": "Garrulax palliatus",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": false,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Zebra Dove",
+    "scientific_name_original": "Geopelia striata",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Golden-bellied Gerygone",
+    "scientific_name_original": "Gerygone sulphurea",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": true,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Collared Owlet",
+    "scientific_name_original": "Glaucidium brodiei",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": true,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Malay Night Heron",
+    "scientific_name_original": "Gorsachius melanolophus",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Hill Myna",
+    "scientific_name_original": "Gracula religiosa",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Asian Pied Starling",
+    "scientific_name_original": "Gracupica contra",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Ruddy Kingfisher",
+    "scientific_name_original": "Halcyon coromanda",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Black-capped Kingfisher",
+    "scientific_name_original": "Halcyon pileata",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "White-breasted Kingfisher",
+    "scientific_name_original": "Halcyon smyrnensis",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "White-bellied Sea Eagle",
+    "scientific_name_original": "Haliaeetus leucogaster",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Brahminy Kite",
+    "scientific_name_original": "Haliastur indus",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": false,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Elliott & J. Sargatal, eds.",
+    "scientific_name_original": "Handbook of",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Diard’s Trogon",
+    "scientific_name_original": "Harpactes diardii",
+    "iucn": "NT",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Scarlet-rumped Trogon",
+    "scientific_name_original": "Harpactes duvaucelii",
+    "iucn": "NT",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Red-headed Trogon",
+    "scientific_name_original": "Harpactes erythrocephalus",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": false,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Red-naped Trogon",
+    "scientific_name_original": "Harpactes kasumba",
+    "iucn": "NT",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Orange-breasted Trogon",
+    "scientific_name_original": "Harpactes oreskios",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": true,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Cinnamon-rumped Trogon",
+    "scientific_name_original": "Harpactes orrhophaeus",
+    "iucn": "NT",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Grey-and-buff Woodpecker",
+    "scientific_name_original": "Hemicircus sordidus",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Whiskered Treeswift",
+    "scientific_name_original": "Hemiprocne comata",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Grey-rumped Treeswift",
+    "scientific_name_original": "Hemiprocne longipennis",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Black-winged Flycatcher-shrike",
+    "scientific_name_original": "Hemipus hirundinaceus",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Bar-winged Flycatcher-shrike",
+    "scientific_name_original": "Hemipus picatus",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": true,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Ashy Bulbul",
+    "scientific_name_original": "Hemixos flavala",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Long-tailed Sibia",
+    "scientific_name_original": "Heterophasia picaoides",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": false,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Malay Hawk Cuckoo",
+    "scientific_name_original": "Hierococcyx fugax",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Large Hawk Cuckoo",
+    "scientific_name_original": "Hierococcyx sparveroides",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Moustached Hawk Cuckoo",
+    "scientific_name_original": "Hierococcyx vagans",
+    "iucn": "NT",
+    "at_way_canguk": false,
+    "at_way_titias": true,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Silver-backed Needletail",
+    "scientific_name_original": "Hirundapus cochinchinensis",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Barn Swallow",
+    "scientific_name_original": "Hirundo rustica",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": false,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Pacific Swallow",
+    "scientific_name_original": "Hirundo tahitica",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "field. I am indebted to James Eaton, Rob",
+    "scientific_name_original": "Hutchinson and",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Purple-naped Sunbird",
+    "scientific_name_original": "Hypogramma hypogrammicum",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Black-naped Monarch",
+    "scientific_name_original": "Hypothymis azurea",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Lesser Fish Eagle",
+    "scientific_name_original": "Icthyophaga humilis",
+    "iucn": "NT",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Grey-headed Fish Eagle",
+    "scientific_name_original": "Icthyophaga ichthyaetus",
+    "iucn": "NT",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Black Eagle",
+    "scientific_name_original": "Ictinaetus malaiensis",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Malaysian Honeyguide",
+    "scientific_name_original": "Indicator archipelagicus",
+    "iucn": "NT",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "del Hoyo, J. & Collar, N. J. (2014) The HBW and BirdLife",
+    "scientific_name_original": "International illustrated",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "BirdLife International (2001) Threatened birds of Asia: the BirdLife",
+    "scientific_name_original": "International van",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Buff-vented Bulbul",
+    "scientific_name_original": "Iole olivacea",
+    "iucn": "NT",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Asian Fairy Bluebird",
+    "scientific_name_original": "Irena puella",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Cinnamon Bittern",
+    "scientific_name_original": "Ixobrychus cinnamomeus",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Schrenck’s Bittern",
+    "scientific_name_original": "Ixobrychus eurhythmus",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Streaked Bulbul",
+    "scientific_name_original": "Ixos malaccensis",
+    "iucn": "NT",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Sunda Bulbul",
+    "scientific_name_original": "Ixos virescens",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": true,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "to be endemic to",
+    "scientific_name_original": "Java and",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Buffy Fish Owl",
+    "scientific_name_original": "Ketupa ketupu",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Banded Kingfisher",
+    "scientific_name_original": "Lacedo pulchella",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Pied Triller",
+    "scientific_name_original": "Lalage nigra",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Long-tailed Shrike",
+    "scientific_name_original": "Lanius schach",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": true,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Tiger Shrike",
+    "scientific_name_original": "Lanius tigrinus",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Silver-eared Mesia",
+    "scientific_name_original": "Leiothrix argentauris",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Purple-throated Sunbird",
+    "scientific_name_original": "Leptocoma sperata",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Lesser Adjutant",
+    "scientific_name_original": "Leptoptilos javanicus",
+    "iucn": "VU",
+    "at_way_canguk": false,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Slaty-breasted Rail",
+    "scientific_name_original": "Lewinia striata",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Lanceolated Warbler",
+    "scientific_name_original": "Locustella lanceolata",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Chestnut Munia",
+    "scientific_name_original": "Lonchura atricapilla",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Iqbal, M. (2011) First records of White-capped Munia",
+    "scientific_name_original": "Lonchura ferruginosa",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": true,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "White-bellied Munia",
+    "scientific_name_original": "Lonchura leucogastra",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": true,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Javan Munia",
+    "scientific_name_original": "Lonchura leucogastroides",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "White-headed Munia",
+    "scientific_name_original": "Lonchura maja",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": true,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Scaly-breasted Munia",
+    "scientific_name_original": "Lonchura punctulata",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": true,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "White-rumped Munia",
+    "scientific_name_original": "Lonchura striata",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": true,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Rufous-bellied Eagle",
+    "scientific_name_original": "Lophotriorchis kienerii",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": true,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Salvadori’s Pheasant",
+    "scientific_name_original": "Lophura inornata",
+    "iucn": "NT",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Malay Crested Fireback",
+    "scientific_name_original": "Lophura rufa",
+    "iucn": "NT",
+    "at_way_canguk": false,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Blue-crowned Hanging Parrot",
+    "scientific_name_original": "Loriculus galgulus",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Malaysian Eared Nightjar",
+    "scientific_name_original": "Lyncornis temminckii",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": true,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Bat Hawk",
+    "scientific_name_original": "Macheiramphus alcinus",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Pin-striped Tit Babbler",
+    "scientific_name_original": "Macronous gularis",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Fluffy-backed Tit Babbler",
+    "scientific_name_original": "Macronous ptilosus",
+    "iucn": "NT",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Little Cuckoo Dove",
+    "scientific_name_original": "Macropygia ruficeps",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Barred Cuckoo Dove",
+    "scientific_name_original": "Macropygia unchall",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": true,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Abbott’s Babbler",
+    "scientific_name_original": "Malacocincla abbotti",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Short-tailed Babbler",
+    "scientific_name_original": "Malacocincla malaccensis",
+    "iucn": "NT",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Horsfield’s Babbler",
+    "scientific_name_original": "Malacocincla sepiaria",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Sooty-capped Babbler",
+    "scientific_name_original": "Malacopteron affine",
+    "iucn": "NT",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Scaly-crowned Babbler",
+    "scientific_name_original": "Malacopteron cinereum",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Moustached Babbler",
+    "scientific_name_original": "Malacopteron magnirostre",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Rufous-crowned Babbler",
+    "scientific_name_original": "Malacopteron magnum",
+    "iucn": "NT",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "grateful to Andy",
+    "scientific_name_original": "Mears for",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Buff-rumped Woodpecker",
+    "scientific_name_original": "Meiglyptes grammithorax",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Buff-necked Woodpecker",
+    "scientific_name_original": "Meiglyptes tukki",
+    "iucn": "NT",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Chestnut-headed Bee-eater",
+    "scientific_name_original": "Merops leschenaulti",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Blue-throated Bee-eater",
+    "scientific_name_original": "Merops viridis",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Black-thighed Falconet",
+    "scientific_name_original": "Microhierax fringillarius",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Rufous Woodpecker",
+    "scientific_name_original": "Micropternus brachyurus",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Grey Wagtail",
+    "scientific_name_original": "Motacilla cinerea",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": true,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Yellow Wagtail",
+    "scientific_name_original": "Motacilla flava",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Asian Brown Flycatcher",
+    "scientific_name_original": "Muscicapa dauurica",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Ferruginous Flycatcher",
+    "scientific_name_original": "Muscicapa ferruginea",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": true,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Dark-sided Flycatcher",
+    "scientific_name_original": "Muscicapa sibirica",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": true,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Pygmy Blue Flycatcher",
+    "scientific_name_original": "Muscicapella hodgsoni",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": false,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Milky Stork",
+    "scientific_name_original": "Mycteria cinerea",
+    "iucn": "EN",
+    "at_way_canguk": false,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Sunda Robin",
+    "scientific_name_original": "Myiomela diana",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": false,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Blue Whistling Thrush",
+    "scientific_name_original": "Myophonus caeruleus",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Sumatran Whistling Thrush",
+    "scientific_name_original": "Myophonus castaneus",
+    "iucn": "NT",
+    "at_way_canguk": false,
+    "at_way_titias": false,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Shiny Whistling Thrush",
+    "scientific_name_original": "Myophonus melanurus",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": false,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Olive-backed Sunbird",
+    "scientific_name_original": "Nectarinia jugularis",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Large Niltava",
+    "scientific_name_original": "Niltava grandis",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": true,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Brown Boobook",
+    "scientific_name_original": "Ninox scutulata",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Blyth’s Hawk Eagle",
+    "scientific_name_original": "Nisaetus alboniger",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": true,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Changeable Hawk Eagle",
+    "scientific_name_original": "Nisaetus cirrhatus",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": true,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Wallace’s Hawk Eagle",
+    "scientific_name_original": "Nisaetus nanus",
+    "iucn": "VU",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Eurasian Curlew",
+    "scientific_name_original": "Numenius arquata",
+    "iucn": "NT",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Whimbrel",
+    "scientific_name_original": "Numenius phaeopus",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Rufous Night Heron",
+    "scientific_name_original": "Nycticorax caledonicus",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Red-bearded Bee-eater",
+    "scientific_name_original": "Nyctyornis amictus",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Black-naped Oriole",
+    "scientific_name_original": "Oriolus chinensis",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Black-and-crimson Oriole",
+    "scientific_name_original": "Oriolus cruentus",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": true,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Dark-throated Oriole",
+    "scientific_name_original": "Oriolus xanthonotus",
+    "iucn": "NT",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Dark-necked Tailorbird",
+    "scientific_name_original": "Orthotomus atrogularis",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Mountain Tailorbird",
+    "scientific_name_original": "Orthotomus cuculatus",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": false,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Ashy Tailorbird",
+    "scientific_name_original": "Orthotomus ruficeps",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Rufous-tailed Tailorbird",
+    "scientific_name_original": "Orthotomus sericeus",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Common Tailorbird",
+    "scientific_name_original": "Orthotomus sutorius",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Rajah Scops Owl",
+    "scientific_name_original": "Otus brookii",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": false,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Sunda Scops Owl",
+    "scientific_name_original": "Otus lempiji",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Reddish Scops Owl",
+    "scientific_name_original": "Otus rufescens",
+    "iucn": "NT",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Mountain Scops Owl",
+    "scientific_name_original": "Otus spilocephalus",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": true,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Osprey",
+    "scientific_name_original": "Pandion haliaetus",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Great Tit",
+    "scientific_name_original": "Parus major",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": true,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Yong D. L. & Liu Y. (2015)",
+    "scientific_name_original": "Passage of",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Eurasian Tree Sparrow",
+    "scientific_name_original": "Passer montanus",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Stork-billed Kingfisher",
+    "scientific_name_original": "Pelargopsis capensis",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Australian Pelican",
+    "scientific_name_original": "Pelecanus conspicillatus",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Sumatran Babbler",
+    "scientific_name_original": "Pellorneum buettikoferi",
+    "iucn": "NT",
+    "at_way_canguk": false,
+    "at_way_titias": true,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Black-capped Babbler",
+    "scientific_name_original": "Pellorneum capistratum",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Ashy Minivet",
+    "scientific_name_original": "Pericrocotus divaricatus",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Scarlet Minivet",
+    "scientific_name_original": "Pericrocotus flammeus",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Fiery Minivet",
+    "scientific_name_original": "Pericrocotus igneus",
+    "iucn": "NT",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Grey-chinned Minivet",
+    "scientific_name_original": "Pericrocotus solaris",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": true,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Oriental Honey Buzzard",
+    "scientific_name_original": "Pernis ptilorhynchus",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": true,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Chestnut-breasted Malkoha",
+    "scientific_name_original": "Phaenicophaeus curvirostris",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Black-bellied Malkoha",
+    "scientific_name_original": "Phaenicophaeus diardi",
+    "iucn": "NT",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Chestnut-bellied Malkoha",
+    "scientific_name_original": "Phaenicophaeus sumatranus",
+    "iucn": "NT",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Green-billed Malkoha",
+    "scientific_name_original": "Phaenicophaeus tristis",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Rufous-winged Philentoma",
+    "scientific_name_original": "Philentoma pyrhopterum",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Maroon-breasted Philentoma",
+    "scientific_name_original": "Philentoma velatum",
+    "iucn": "NT",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Arctic Warbler",
+    "scientific_name_original": "Phylloscopus borealis",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Eastern Crowned Warbler",
+    "scientific_name_original": "Phylloscopus coronatus",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Mountain Leaf Warbler",
+    "scientific_name_original": "Phylloscopus trivirgatus",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": false,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Grey-capped Woodpecker",
+    "scientific_name_original": "Picoides canicapillus",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": true,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Sunda Pygmy Woodpecker",
+    "scientific_name_original": "Picoides moluccensis",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Lesser Yellownape",
+    "scientific_name_original": "Picus chlorolophus",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": true,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Crimson-winged Woodpecker",
+    "scientific_name_original": "Picus puniceus",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Giant Pitta",
+    "scientific_name_original": "Pitta caerulea",
+    "iucn": "NT",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Garnet Pitta",
+    "scientific_name_original": "Pitta granatina",
+    "iucn": "NT",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Malayan Banded Pitta",
+    "scientific_name_original": "Pitta irena",
+    "iucn": "NT",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Blue-winged Pitta",
+    "scientific_name_original": "Pitta moluccensis",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": true,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Schneider’s Pitta",
+    "scientific_name_original": "Pitta schneideri",
+    "iucn": "VU",
+    "at_way_canguk": false,
+    "at_way_titias": false,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Hooded Pitta",
+    "scientific_name_original": "Pitta sordida",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Graceful Pitta",
+    "scientific_name_original": "Pitta venusta",
+    "iucn": "VU",
+    "at_way_canguk": false,
+    "at_way_titias": true,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Crested Jay",
+    "scientific_name_original": "Platylophus galericulatus",
+    "iucn": "NT",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Black Magpie",
+    "scientific_name_original": "Platysmurus leucopterus",
+    "iucn": "NT",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Baya Weaver",
+    "scientific_name_original": "Ploceus philippinus",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": true,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Pacific Golden Plover",
+    "scientific_name_original": "Pluvialis fulva",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Pygmy Wren Babbler",
+    "scientific_name_original": "Pnoepyga pusilla",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": true,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Bronze-tailed Peacock Pheasant",
+    "scientific_name_original": "Polyplectron chalcurum",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Chestnut-backed Scimitar Babbler",
+    "scientific_name_original": "Pomatorhinus montanus",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Hill Prinia",
+    "scientific_name_original": "Prinia atrogularis",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": false,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Bar-winged Prinia",
+    "scientific_name_original": "Prinia familiaris",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Yellow-bellied Prinia",
+    "scientific_name_original": "Prinia flaviventris",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Yellow-breasted Flowerpecker",
+    "scientific_name_original": "Prionochilus maculatus",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Crimson-breasted Flowerpecker",
+    "scientific_name_original": "Prionochilus percussus",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Long-tailed Broadbill",
+    "scientific_name_original": "Psarisomus dalhousiae",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": true,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Gold-whiskered Barbet",
+    "scientific_name_original": "Psilopogon chrysopogon",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Black-eared Barbet",
+    "scientific_name_original": "Psilopogon duvaucelii",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Coppersmith Barbet",
+    "scientific_name_original": "Psilopogon haemacephalus",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": true,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Yellow-crowned Barbet",
+    "scientific_name_original": "Psilopogon henricii",
+    "iucn": "NT",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Red-throated Barbet",
+    "scientific_name_original": "Psilopogon mystacophanos",
+    "iucn": "NT",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Black-browed Barbet",
+    "scientific_name_original": "Psilopogon oorti",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": true,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Fire-tufted Barbet",
+    "scientific_name_original": "Psilopogon pyrolophus",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Red-crowned Barbet",
+    "scientific_name_original": "Psilopogon rafflesii",
+    "iucn": "NT",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Red-breasted Parakeet",
+    "scientific_name_original": "Psittacula alexandri",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Long-tailed Parakeet",
+    "scientific_name_original": "Psittacula longicauda",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Blue-rumped Parrot",
+    "scientific_name_original": "Psittinus cyanurus",
+    "iucn": "NT",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "White-browed Shrike Babbler",
+    "scientific_name_original": "Pteruthius flaviscapis",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": false,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Black-headed Bulbul",
+    "scientific_name_original": "Pycnonotus atriceps",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Sooty-headed Bulbul",
+    "scientific_name_original": "Pycnonotus aurigaster",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Orange-spotted Bulbul",
+    "scientific_name_original": "Pycnonotus bimaculatus",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": false,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Red-eyed Bulbul",
+    "scientific_name_original": "Pycnonotus brunneus",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Grey-bellied Bulbul",
+    "scientific_name_original": "Pycnonotus cyaniventris",
+    "iucn": "NT",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Ruby-throated Bulbul",
+    "scientific_name_original": "Pycnonotus dispar",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Spectacled Bulbul",
+    "scientific_name_original": "Pycnonotus erythropthalmos",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Puff-backed Bulbul",
+    "scientific_name_original": "Pycnonotus eutilotus",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Yellow-vented Bulbul",
+    "scientific_name_original": "Pycnonotus goiavier",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Cream-striped Bulbul",
+    "scientific_name_original": "Pycnonotus leucogrammicus",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": true,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Olive-winged Bulbul",
+    "scientific_name_original": "Pycnonotus plumosus",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Cream-vented Bulbul",
+    "scientific_name_original": "Pycnonotus simplex",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Scaly-breasted Bulbul",
+    "scientific_name_original": "Pycnonotus squamatus",
+    "iucn": "NT",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Spot-necked Bulbul",
+    "scientific_name_original": "Pycnonotus tympanistrigus",
+    "iucn": "NT",
+    "at_way_canguk": false,
+    "at_way_titias": false,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Straw-headed Bulbul",
+    "scientific_name_original": "Pycnonotus zeylanicus",
+    "iucn": "VU",
+    "at_way_canguk": false,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Red-legged Crake",
+    "scientific_name_original": "Rallina fasciata",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Jambu Fruit Dove",
+    "scientific_name_original": "Ramphiculus jambu",
+    "iucn": "NT",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Zetra, B., Rafiastanto, A., Rombang, W. & Trainor, C. (2002)",
+    "scientific_name_original": "Rediscovery of",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Selatan.",
+    "scientific_name_original": "Retrieved from",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Wrinkled Hornbill",
+    "scientific_name_original": "Rhabdotorrhinus corrugatus",
+    "iucn": "NT",
+    "at_way_canguk": false,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Silver-rumped Spinetail",
+    "scientific_name_original": "Rhaphidura leucopygialis",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Brown-chested Jungle Flycatcher",
+    "scientific_name_original": "Rhinomyias brunneatus",
+    "iucn": "VU",
+    "at_way_canguk": false,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Fulvous-chested Jungle Flycatcher",
+    "scientific_name_original": "Rhinomyias olivacea",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Grey-chested Jungle Flycatcher",
+    "scientific_name_original": "Rhinomyias umbratilis",
+    "iucn": "NT",
+    "at_way_canguk": false,
+    "at_way_titias": true,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Collar, N. J. (2015) Helmeted Hornbills",
+    "scientific_name_original": "Rhinoplax vigil",
+    "iucn": "CR",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Raffles’s Malkoha",
+    "scientific_name_original": "Rhinortha chlorophaea",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "White-throated Fantail",
+    "scientific_name_original": "Rhipidura albicollis",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": true,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Spotted Fantail",
+    "scientific_name_original": "Rhipidura perlata",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": true,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Long-billed Partridge",
+    "scientific_name_original": "Rhizothera longirostris",
+    "iucn": "NT",
+    "at_way_canguk": false,
+    "at_way_titias": true,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Wreathed Hornbill",
+    "scientific_name_original": "Rhyticeros undulatus",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Sumatran Wren Babbler",
+    "scientific_name_original": "Rimator albostriatus",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": true,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Crested Partridge",
+    "scientific_name_original": "Rollulus rouloul",
+    "iucn": "NT",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Rufous Piculet",
+    "scientific_name_original": "Sasia abnormis",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Javan Woodcock",
+    "scientific_name_original": "Scolopax saturata",
+    "iucn": "NT",
+    "at_way_canguk": false,
+    "at_way_titias": false,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Chestnut-crowned Warbler",
+    "scientific_name_original": "Seicercus castaniceps",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": true,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Silver-breasted Broadbill",
+    "scientific_name_original": "Serilophus lunatus",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "number of key references, and to Troy",
+    "scientific_name_original": "Shortell for",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Blue Nuthatch",
+    "scientific_name_original": "Sitta azurea",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": true,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Velvet-fronted Nuthatch",
+    "scientific_name_original": "Sitta frontalis",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Eastern Spotted Dove",
+    "scientific_name_original": "Spilopelia chinensis",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Crested Serpent Eagle",
+    "scientific_name_original": "Spilornis cheela",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Golden Babbler",
+    "scientific_name_original": "Stachyridopsis chrysaea",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": true,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Rufous-fronted Babbler",
+    "scientific_name_original": "Stachyridopsis rufifrons",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Chestnut-winged Babbler",
+    "scientific_name_original": "Stachyris erythroptera",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Chestnut-rumped Babbler",
+    "scientific_name_original": "Stachyris maculata",
+    "iucn": "NT",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Grey-throated Babbler",
+    "scientific_name_original": "Stachyris nigriceps",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Black-throated Babbler",
+    "scientific_name_original": "Stachyris nigricollis",
+    "iucn": "NT",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Grey-headed Babbler",
+    "scientific_name_original": "Stachyris poliocephala",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Spot-necked Babbler",
+    "scientific_name_original": "Stachyris strialata",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": true,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Common Tern",
+    "scientific_name_original": "Sterna hirundo",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Little Tern",
+    "scientific_name_original": "Sternula albifrons",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Holmes, D. A. (1996)",
+    "scientific_name_original": "Sumatra bird",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "second to fourth records from",
+    "scientific_name_original": "Sumatra of",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Square-tailed Drongo Cuckoo",
+    "scientific_name_original": "Surniculus lugubris",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": true,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Asian Blue Quail",
+    "scientific_name_original": "Synoicus chinensis",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Large Woodshrike",
+    "scientific_name_original": "Tephrodornis gularis",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Asian Paradise-flycatcher",
+    "scientific_name_original": "Terpsiphone paradisi",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "van Marle, J. G. & Voous, K. H. (1988)",
+    "scientific_name_original": "The birds",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "& Collar (2014).",
+    "scientific_name_original": "Three taxa",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Black-headed Ibis",
+    "scientific_name_original": "Threskiornis melanocephalus",
+    "iucn": "NT",
+    "at_way_canguk": false,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Collared Kingfisher",
+    "scientific_name_original": "Todiramphus chloris",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Large Green Pigeon",
+    "scientific_name_original": "Treron capellei",
+    "iucn": "VU",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Thick-billed Green Pigeon",
+    "scientific_name_original": "Treron curvirostra",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Little Green Pigeon",
+    "scientific_name_original": "Treron olax",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Sumatran Green Pigeon",
+    "scientific_name_original": "Treron oxyurus",
+    "iucn": "NT",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Wedge-tailed Green Pigeon",
+    "scientific_name_original": "Treron sphenurus",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": true,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Pink-necked Green Pigeon",
+    "scientific_name_original": "Treron vernans",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Ferruginous Babbler",
+    "scientific_name_original": "Trichastoma bicolor",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "White-chested Babbler",
+    "scientific_name_original": "Trichastoma rostratum",
+    "iucn": "NT",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Rufous-tailed Shama",
+    "scientific_name_original": "Trichixos pyrropyga",
+    "iucn": "NT",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Hairy-backed Bulbul",
+    "scientific_name_original": "Tricholestes criniger",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Common Redshank",
+    "scientific_name_original": "Tringa totanus",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Eyebrowed Wren Babbler",
+    "scientific_name_original": "Turdinus epilepidota",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": true,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Large Wren Babbler",
+    "scientific_name_original": "Turdinus macrodactylus",
+    "iucn": "NT",
+    "at_way_canguk": false,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Marbled Wren Babbler",
+    "scientific_name_original": "Turdinus marmoratus",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": false,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Rusty-breasted Wren Babbler",
+    "scientific_name_original": "Turdinus rufipectus",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": false,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Barred Buttonquail",
+    "scientific_name_original": "Turnix suscitator",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": false,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Red-billed Malkoha",
+    "scientific_name_original": "Zanclostomus javanicus",
+    "iucn": "",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Scaly Thrush",
+    "scientific_name_original": "Zoothera dauma",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": false,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Chestnut-capped Thrush",
+    "scientific_name_original": "Zoothera interpres",
+    "iucn": "NT",
+    "at_way_canguk": true,
+    "at_way_titias": true,
+    "at_danau_ranau": false,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Black-capped White-eye",
+    "scientific_name_original": "Zosterops atricapilla",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": true,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  },
+  {
+    "common_name_en": "Oriental White-eye",
+    "scientific_name_original": "Zosterops palpebrosus",
+    "iucn": "",
+    "at_way_canguk": false,
+    "at_way_titias": true,
+    "at_danau_ranau": true,
+    "sources": [
+      "gooddie2015"
+    ]
+  }
+]

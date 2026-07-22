@@ -1,0 +1,636 @@
+scientific_name_original,scientific_name_matched,common_name_en,iucn,at_way_canguk,at_way_titias,at_danau_ranau,habitat_tier,wcrs_text,wc_from_text_only,sources,birdnet_label,in_birdnet_v24
+Abroscopus superciliaris,Abroscopus superciliaris,Yellow-bellied Warbler,,True,False,True,lowland,False,False,gooddie2015;ebird_ID-SM-LA,Abroscopus superciliaris_Yellow-bellied Warbler,True
+Accipiter gularis,Accipiter gularis,Japanese Sparrowhawk,,False,True,False,mid,False,False,gooddie2015,Accipiter gularis_Japanese Sparrowhawk,True
+Accipiter virgatus,Accipiter virgatus,Besra,,False,True,False,mid,False,False,gooddie2015,Accipiter virgatus_Besra,True
+Accipter trivirgatus,Accipiter trivirgatus,Crested Goshawk,,True,False,False,lowland,False,False,gooddie2015,Accipiter trivirgatus_Crested Goshawk,True
+Acridotheres javanicus,Acridotheres javanicus,Javan Myna,,False,False,False,unknown,False,False,ebird_ID-SM-LA;ebird_Bengkunat;ebird_hotspot_L7940372,Acridotheres javanicus_Javan Myna,True
+Acridotheres tristis,Acridotheres tristis,Common Myna,,False,False,False,unknown,False,False,ebird_ID-SM-LA,Acridotheres tristis_Common Myna,True
+Acrocephalus stentoreus,Acrocephalus stentoreus,Clamorous Reed Warbler,,False,False,False,unknown,False,False,ebird_ID-SM-LA,Acrocephalus stentoreus_Clamorous Reed Warbler,True
+Actenoides concretus,Actenoides concretus,Rufous-collared Kingfisher,NT,True,True,False,lowland,True,False,gooddie2015;brickle_wcrs;ebird_ID-SM-LA;ebird_Bengkunat;ebird_ForestTrail,Actenoides concretus_Rufous-collared Kingfisher,True
+Actitis hypoleucos,Actitis hypoleucos,Common Sandpiper,,True,False,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Belimbing,Actitis hypoleucos_Common Sandpiper,True
+Aegithina tiphia,Aegithina tiphia,Common Iora,,True,False,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_hotspot_L7940372,Aegithina tiphia_Common Iora,True
+Aegithina viridissima,Aegithina viridissima,Green Iora,NT,True,True,False,lowland,True,False,gooddie2015;brickle_wcrs;andriyani2022;ebird_ID-SM-LA;ebird_Bengkunat;ebird_ForestTrail,Aegithina viridissima_Green Iora,True
+Aerodramus fuciphagus,Aerodramus fuciphagus,Edible-nest Swiftlet,,True,False,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Bengkunat,Aerodramus fuciphagus_White-nest Swiftlet,True
+Aerodramus maximus,Aerodramus maximus,Black-nest Swiftlet,,True,False,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Bengkunat;ebird_ForestTrail,Aerodramus maximus_Black-nest Swiftlet,True
+Aerodramus salangana,,Mossy-nest Swiftlet,,True,False,False,lowland,False,False,gooddie2015,,False
+Aethopyga siparaja,Aethopyga siparaja,Crimson Sunbird,,True,False,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Belimbing;ebird_ForestTrail;ebird_DanauMenjukut,Aethopyga siparaja_Crimson Sunbird,True
+Aethopyga temminckii,Aethopyga temminckii,Temminck’s Sunbird,,False,True,True,mid,False,False,gooddie2015;ebird_ID-SM-LA,Aethopyga temminckii_Temminck's Sunbird,True
+Agropsar sturninus,Agropsar sturninus,Daurian Starling,,False,False,False,unknown,False,False,ebird_ID-SM-LA;ebird_Belimbing,Agropsar sturninus_Daurian Starling,True
+Alcedo atthis,Alcedo atthis,Common Kingfisher,,True,False,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_DanauMenjukut,Alcedo atthis_Common Kingfisher,True
+Alcedo coerulescens,,Small Blue Kingfisher,,False,False,False,unknown,False,False,ebird_ID-SM-LA;ebird_DanauMenjukut,,False
+Alcedo meninting,Alcedo meninting,Blue-eared Kingfisher,,True,True,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Belimbing;ebird_ForestTrail,Alcedo meninting_Blue-eared Kingfisher,True
+Alcedo peninsulae,,Malay Blue-banded Kingfisher,NT,True,True,False,lowland,True,False,gooddie2015;brickle_wcrs;ebird_ID-SM-LA;ebird_Bengkunat,,False
+Alcippe brunneicauda,Alcippe brunneicauda,Brown Fulvetta,NT,False,True,False,mid,False,False,gooddie2015;ebird_ID-SM-LA,Alcippe brunneicauda_Brown Fulvetta,True
+Alophoixus bres,,Grey-cheeked Bulbul,,True,True,True,lowland,False,False,gooddie2015,,False
+Alophoixus finschii,Alophoixus finschii,Finsch’s Bulbul,NT,True,False,False,lowland,True,False,gooddie2015;brickle_wcrs,Alophoixus finschii_Finsch's Bulbul,True
+Alophoixus ochraceus,Alophoixus ochraceus,Ochraceous Bulbul,,True,True,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA,Alophoixus ochraceus_Ochraceous Bulbul,True
+Alophoixus phaeocephalus,Alophoixus phaeocephalus,Yellow-bellied Bulbul,,True,True,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_ForestTrail,Alophoixus phaeocephalus_Yellow-bellied Bulbul,True
+Alophoixus tephrogenys,Alophoixus tephrogenys,Gray-cheeked Bulbul,,False,False,False,unknown,False,False,ebird_ID-SM-LA,Alophoixus tephrogenys_Gray-cheeked Bulbul,True
+Amandava amandava,Amandava amandava,Red Avadavat,,False,False,False,unknown,False,False,ebird_ID-SM-LA,Amandava amandava_Red Avadavat,True
+Amaurornis cinerea,Poliolimnas cinereus,White-browed Crake,,True,False,False,lowland,False,False,gooddie2015,Poliolimnas cinereus_White-browed Crake,True
+Amaurornis phoenicurus,Amaurornis phoenicurus,White-breasted Waterhen,,False,True,False,mid,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Belimbing;ebird_hotspot_L7940372,Amaurornis phoenicurus_White-breasted Waterhen,True
+Anarhynchus alexandrinus,,Kentish Plover,,False,False,False,unknown,False,False,ebird_ID-SM-LA;ebird_Belimbing,,False
+Anarhynchus javanicus,,Javan Plover,,False,False,False,unknown,False,False,ebird_ID-SM-LA,,False
+Anarhynchus leschenaultii,,Greater Sand-Plover,,False,False,False,unknown,False,False,ebird_ID-SM-LA;ebird_Belimbing,,False
+Anas gibberifrons,,Sunda Teal,,False,False,False,unknown,False,False,ebird_ID-SM-LA,,False
+Anhinga melanogaster,Anhinga melanogaster,Oriental Darter,,False,False,False,unknown,False,False,ebird_ID-SM-LA,Anhinga melanogaster_Oriental Darter,True
+Anorrhinus galeritus,Anorrhinus galeritus,Bushy-crested Hornbill,,True,True,True,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Bengkunat;ebird_ForestTrail;ebird_hotspot_L7940372,Anorrhinus galeritus_Bushy-crested Hornbill,True
+Anous stolidus,Anous stolidus,Brown Noddy,,True,False,False,lowland,False,False,gooddie2015,Anous stolidus_Brown Noddy,True
+Anthipes solitaris,Anthipes solitaris,Rufous-browed Flycatcher,,False,False,False,unknown,False,False,ebird_ID-SM-LA,Anthipes solitaris_Rufous-browed Flycatcher,True
+Anthracoceros albirostris,Anthracoceros albirostris,Oriental Pied Hornbill,,True,False,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Belimbing;ebird_ForestTrail,Anthracoceros albirostris_Oriental Pied-Hornbill,True
+Anthracoceros malayanus,Anthracoceros malayanus,Black Hornbill,NT,True,True,False,lowland,True,False,gooddie2015;brickle_wcrs;ebird_ID-SM-LA;ebird_Belimbing;ebird_Bengkunat;ebird_ForestTrail,Anthracoceros malayanus_Black Hornbill,True
+Anthreptes malacensis,Anthreptes malacensis,Brown-throated Sunbird,,True,False,True,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Belimbing,Anthreptes malacensis_Brown-throated Sunbird,True
+Anthreptes rhodolaema,,Red-throated Sunbird,NT,True,False,False,lowland,False,False,gooddie2015,,False
+Anthreptes rhodolaemus,,Red-throated Sunbird,,False,False,False,unknown,False,False,ebird_ID-SM-LA;ebird_ForestTrail,,False
+Anthreptes simplex,,Plain Sunbird,,True,False,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Belimbing;ebird_Bengkunat;ebird_ForestTrail,,False
+Anthus rufulus,Anthus rufulus,Paddyfield Pipit,,True,False,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Belimbing;ebird_ForestTrail,Anthus rufulus_Paddyfield Pipit,True
+Apalharpactes mackloti,,Sumatran Trogon,,False,True,True,mid,False,False,gooddie2015;ebird_ID-SM-LA,,False
+Aplonis panayensis,Aplonis panayensis,Asian Glossy Starling,,False,False,True,montane,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Belimbing;ebird_hotspot_L7940372,Aplonis panayensis_Asian Glossy Starling,True
+Apus nipalensis,Apus nipalensis,House Swift,,True,False,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Belimbing;ebird_Bengkunat;ebird_hotspot_L7940372,Apus nipalensis_House Swift,True
+Apus pacificus,Apus pacificus,Pacific Swift,,False,False,True,montane,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Belimbing,Apus pacificus_Pacific Swift,True
+Arachnothera affinis,,Grey-breasted Spiderhunter,,True,True,False,lowland,False,False,gooddie2015,,False
+Arachnothera chrysogenys,Arachnothera chrysogenys,Yellow-eared Spiderhunter,,True,True,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA,Arachnothera chrysogenys_Yellow-eared Spiderhunter,True
+Arachnothera crassirostris,Arachnothera crassirostris,Thick-billed Spiderhunter,,True,True,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA,Arachnothera crassirostris_Thick-billed Spiderhunter,True
+Arachnothera flavigaster,Arachnothera flavigaster,Spectacled Spiderhunter,,True,False,False,lowland,True,False,gooddie2015;andriyani2022;ebird_ID-SM-LA;ebird_Bengkunat;ebird_ForestTrail,Arachnothera flavigaster_Spectacled Spiderhunter,True
+Arachnothera longirostra,Arachnothera longirostra,Little Spiderhunter,,True,True,True,lowland,True,False,gooddie2015;andriyani2022;ebird_ID-SM-LA;ebird_Belimbing;ebird_Bengkunat;ebird_ForestTrail,Arachnothera longirostra_Little Spiderhunter,True
+Arachnothera modesta,,Gray-breasted Spiderhunter,,False,False,False,unknown,False,False,ebird_ID-SM-LA;ebird_ForestTrail,,False
+Arachnothera robusta,,Long-billed Spiderhunter,,True,True,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Bengkunat;ebird_hotspot_L7940372,,False
+Arborophila rubrirostris,,Red-billed Partridge,,False,True,True,mid,False,False,gooddie2015;ebird_ID-SM-LA,,False
+Arborophila sumatrana,,Sumatran Partridge,,False,True,True,mid,False,False,gooddie2015;ebird_ID-SM-LA,,False
+Ardea alba,Ardea alba,Great Egret,,False,False,False,unknown,False,False,ebird_ID-SM-LA;ebird_DanauMenjukut,Ardea alba_Great Egret,True
+Ardea cinerea,Ardea cinerea,Gray Heron,,False,False,False,unknown,False,False,ebird_ID-SM-LA,Ardea cinerea_Gray Heron,True
+Ardea coromanda,,Eastern Cattle-Egret,,False,False,False,unknown,False,False,ebird_ID-SM-LA,,False
+Ardea intermedia,Ardea intermedia,Intermediate Egret,,True,False,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA,Ardea intermedia_Intermediate Egret,True
+Ardea purpurea,Ardea purpurea,Purple Heron,,True,False,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Belimbing;ebird_DanauMenjukut,Ardea purpurea_Purple Heron,True
+Ardea sumatrana,Ardea sumatrana,Great-billed Heron,,True,False,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA,Ardea sumatrana_Great-billed Heron,True
+Ardenna pacifica,Ardenna pacifica,Wedge-tailed Shearwater,,False,False,False,unknown,False,False,ebird_ID-SM-LA,Ardenna pacifica_Wedge-tailed Shearwater,True
+Ardeola bacchus,Ardeola bacchus,Chinese Pond-Heron,,False,False,False,unknown,False,False,ebird_ID-SM-LA,Ardeola bacchus_Chinese Pond-Heron,True
+Ardeola speciosa,Ardeola speciosa,Javan Pond-Heron,,False,False,False,unknown,False,False,ebird_ID-SM-LA,Ardeola speciosa_Javan Pond-Heron,True
+Arenaria interpres,Arenaria interpres,Ruddy Turnstone,,True,False,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Belimbing,Arenaria interpres_Ruddy Turnstone,True
+Argusianus argus,Argusianus argus,Great Argus,NT,True,False,False,lowland,True,False,gooddie2015;brickle_wcrs;ebird_ID-SM-LA;ebird_Bengkunat;ebird_ForestTrail,Argusianus argus_Great Argus,True
+Artamus leucorhynchus,Artamus leucorynchus,White-breasted Woodswallow,,False,True,True,mid,False,False,gooddie2015,Artamus leucorynchus_White-breasted Woodswallow,True
+Artamus leucorynchus,Artamus leucorynchus,White-breasted Woodswallow,,False,False,False,unknown,False,False,ebird_ID-SM-LA;ebird_Bengkunat;ebird_hotspot_L7940372,Artamus leucorynchus_White-breasted Woodswallow,True
+Asarcornis scutulata,,White-winged Duck,EN,True,False,False,lowland,True,False,gooddie2015;brickle_wcrs;ebird_ID-SM-LA;ebird_Belimbing;ebird_Bengkunat;ebird_DanauMenjukut,,False
+Available at,,UNESCO (2004) Tropical rainforest of Sumatra.,,False,False,False,unknown,False,False,gooddie2015,,False
+Aviceda jerdoni,Aviceda jerdoni,Jerdon’s Baza,,True,False,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_ForestTrail;ebird_hotspot_L7940372,Aviceda jerdoni_Jerdon's Baza,True
+Aviceda leuphotes,Aviceda leuphotes,Black Baza,,False,False,False,unknown,False,False,ebird_ID-SM-LA,Aviceda leuphotes_Black Baza,True
+Batrachostomus auritus,Batrachostomus auritus,Large Frogmouth,,False,False,False,unknown,False,False,ebird_ID-SM-LA,Batrachostomus auritus_Large Frogmouth,True
+Batrachostomus cornutus,Batrachostomus cornutus,Sunda Frogmouth,,True,False,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Bengkunat,Batrachostomus cornutus_Sunda Frogmouth,True
+Batrachostomus poliolophus,,Short-tailed Frogmouth,NT,False,False,True,montane,False,False,gooddie2015;ebird_ID-SM-LA,,False
+Batrachostomus stellatus,Batrachostomus stellatus,Gould's Frogmouth,,False,False,False,unknown,False,False,ebird_ID-SM-LA,Batrachostomus stellatus_Gould's Frogmouth,True
+Berenicornis comatus,Berenicornis comatus,White-crowned Hornbill,NT,True,True,True,lowland,True,False,gooddie2015;brickle_wcrs;ebird_ID-SM-LA;ebird_Bengkunat;ebird_ForestTrail,Berenicornis comatus_White-crowned Hornbill,True
+Birds and,,"O’Brien, G. & Kinnaird, M. F. (1996)",,False,False,False,unknown,False,False,gooddie2015,,False
+Birds of,,"Buij, R., Fox, E. A. & Wich, S. A. (2006)",,False,False,False,unknown,False,False,gooddie2015,,False
+Blythipicus rubiginosus,Blythipicus rubiginosus,Maroon Woodpecker,,True,True,True,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Bengkunat;ebird_ForestTrail,Blythipicus rubiginosus_Maroon Woodpecker,True
+Botaurus cinnamomeus,,Cinnamon Bittern,,False,False,False,unknown,False,False,ebird_ID-SM-LA,,False
+Botaurus flavicollis,,Black Bittern,,False,False,False,unknown,False,False,ebird_ID-SM-LA;ebird_Bengkunat,,False
+Botaurus sinensis,,Yellow Bittern,,False,False,False,unknown,False,False,ebird_ID-SM-LA;ebird_Bengkunat,,False
+Brachypteryx leucophris,Brachypteryx leucophris,Lesser Shortwing,,False,False,False,unknown,False,False,ebird_ID-SM-LA;ebird_hotspot_L7940372,Brachypteryx leucophris_Lesser Shortwing,True
+Brachypteryx leucophrys,,Lesser Shortwing,,False,False,True,montane,False,False,gooddie2015,,False
+Brachypteryx saturata,,Sumatran Shortwing,,False,False,False,unknown,False,False,ebird_ID-SM-LA;ebird_hotspot_L7940372,,False
+Brickle and,,information and many of whom (in particular Nick,,False,False,False,unknown,False,False,gooddie2015,,False
+Bubo sumatranus,Bubo sumatranus,Barred Eagle Owl,,True,False,True,lowland,False,False,gooddie2015,Bubo sumatranus_Barred Eagle-Owl,True
+Bubulcus ibis,Bubulcus ibis,Cattle Egret,,False,True,True,mid,False,False,gooddie2015,Bubulcus ibis_Cattle Egret,True
+Buceros bicornis,Buceros bicornis,Great Hornbill,NT,True,True,False,lowland,True,False,gooddie2015;brickle_wcrs;ebird_ID-SM-LA;ebird_ForestTrail,Buceros bicornis_Great Hornbill,True
+Buceros rhinoceros,Buceros rhinoceros,Rhinoceros Hornbill,NT,True,True,True,lowland,True,False,gooddie2015;brickle_wcrs;ebird_ID-SM-LA;ebird_Bengkunat;ebird_ForestTrail,Buceros rhinoceros_Rhinoceros Hornbill,True
+Bulweria bulwerii,Bulweria bulwerii,Bulwer's Petrel,,False,False,False,unknown,False,False,ebird_ID-SM-LA,Bulweria bulwerii_Bulwer's Petrel,True
+Butorides atricapilla,,Little Heron,,False,False,False,unknown,False,False,ebird_ID-SM-LA;ebird_Belimbing;ebird_Bengkunat;ebird_DanauMenjukut,,False
+Butorides striata,Butorides striata,Green-backed Heron,,True,False,False,lowland,False,False,gooddie2015,Butorides striata_Striated Heron,True
+Cacomantis merulinus,Cacomantis merulinus,Plaintive Cuckoo,,True,True,True,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Belimbing;ebird_Bengkunat;ebird_ForestTrail;ebird_hotspot_L7940372,Cacomantis merulinus_Plaintive Cuckoo,True
+Cacomantis sepulcralis,,Sunda Brush Cuckoo,,False,False,False,unknown,False,False,ebird_ID-SM-LA;ebird_Bengkunat;ebird_hotspot_L7940372,,False
+Cacomantis sonneratii,Cacomantis sonneratii,Banded Bay Cuckoo,,True,True,True,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Bengkunat;ebird_ForestTrail,Cacomantis sonneratii_Banded Bay Cuckoo,True
+Cacomantis variolosus,Cacomantis variolosus,Brush Cuckoo,,False,True,True,mid,False,False,gooddie2015,Cacomantis variolosus_Brush Cuckoo,True
+Calidris alba,Calidris alba,Sanderling,,True,False,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Belimbing,Calidris alba_Sanderling,True
+Calidris falcinellus,Calidris falcinellus,Broad-billed Sandpiper,,False,False,False,unknown,False,False,ebird_ID-SM-LA;ebird_Belimbing,Calidris falcinellus_Broad-billed Sandpiper,True
+Calidris ferruginea,Calidris ferruginea,Curlew Sandpiper,,True,False,False,lowland,False,False,gooddie2015,Calidris ferruginea_Curlew Sandpiper,True
+Calidris pugnax,Calidris pugnax,Ruff,,False,False,False,unknown,False,False,ebird_ID-SM-LA;ebird_Belimbing,Calidris pugnax_Ruff,True
+Calidris ruficollis,Calidris ruficollis,Red-necked Stint,,False,False,False,unknown,False,False,ebird_ID-SM-LA,Calidris ruficollis_Red-necked Stint,True
+Calonectris leucomelas,,Streaked Shearwater,,False,False,False,unknown,False,False,ebird_ID-SM-LA,,False
+Caloperdix oculeus,,Ferruginous Partridge,NT,False,True,True,mid,False,False,gooddie2015;ebird_ID-SM-LA,,False
+Caloramphus hayii,,Sooty Barbet,,False,False,False,unknown,False,False,ebird_ID-SM-LA;ebird_Belimbing;ebird_Bengkunat;ebird_ForestTrail;ebird_hotspot_L7940372,,False
+Calorhamphus hayii,Caloramphus fuliginosus,Malay Brown Barbet,NT,True,True,False,lowland,False,False,gooddie2015,Caloramphus fuliginosus_Brown Barbet,True
+Calyptomena viridis,Calyptomena viridis,Green Broadbill,NT,True,True,False,lowland,True,False,gooddie2015;brickle_wcrs;andriyani2022;ebird_ID-SM-LA;ebird_Bengkunat;ebird_ForestTrail,Calyptomena viridis_Green Broadbill,True
+Caprimulgus affinis,Caprimulgus affinis,Savanna Nightjar,,False,True,False,mid,False,False,gooddie2015;ebird_ID-SM-LA;ebird_DanauMenjukut,Caprimulgus affinis_Savanna Nightjar,True
+Caprimulgus concretus,,Bonaparte's Nightjar,,False,False,False,unknown,False,False,ebird_ID-SM-LA,,False
+Caprimulgus macrurus,Caprimulgus macrurus,Large-tailed Nightjar,,True,False,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA,Caprimulgus macrurus_Large-tailed Nightjar,True
+Caprimulgus pulchellus,,Salvadori’s Nightjar,NT,False,False,True,montane,False,False,gooddie2015,,False
+Carpococcyx viridis,,Sumatran Ground Cuckoo,CR,False,True,False,mid,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Bengkunat,,False
+Centropus bengalensis,Centropus bengalensis,Lesser Coucal,,True,False,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Belimbing;ebird_Bengkunat;ebird_ForestTrail;ebird_hotspot_L7940372,Centropus bengalensis_Lesser Coucal,True
+Centropus rectunguis,Centropus rectunguis,Short-toed Coucal,,False,False,False,unknown,False,False,ebird_ID-SM-LA,Centropus rectunguis_Short-toed Coucal,True
+Centropus sinensis,Centropus sinensis,Greater Coucal,,True,True,True,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Belimbing;ebird_Bengkunat;ebird_ForestTrail;ebird_hotspot_L7940372,Centropus sinensis_Greater Coucal,True
+Ceyx erithaca,Ceyx erithaca,Oriental Dwarf Kingfisher,,True,True,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA,Ceyx erithaca_Black-backed Dwarf-Kingfisher,True
+Ceyx rufidorsa,,Rufous-backed Dwarf-Kingfisher,,False,False,False,unknown,False,False,ebird_ID-SM-LA;ebird_Belimbing;ebird_Bengkunat;ebird_ForestTrail;ebird_hotspot_L7940372,,False
+Chalcites basalis,Chrysococcyx basalis,Horsfield’s Bronze Cuckoo,,True,False,False,lowland,False,False,gooddie2015,Chrysococcyx basalis_Horsfield's Bronze-Cuckoo,True
+Chalcites minutillus,Chrysococcyx minutillus,Little Bronze Cuckoo,,False,False,True,montane,False,False,gooddie2015;ebird_ID-SM-LA,Chrysococcyx minutillus_Little Bronze-Cuckoo,True
+Chalcoparia singalensis,Chalcoparia singalensis,Ruby-cheeked Sunbird,,True,True,True,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Bengkunat;ebird_ForestTrail,Chalcoparia singalensis_Ruby-cheeked Sunbird,True
+Chalcophaps indica,Chalcophaps indica,Grey-capped Emerald Dove,,True,True,True,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Belimbing;ebird_Bengkunat;ebird_ForestTrail,Chalcophaps indica_Asian Emerald Dove,True
+Charadrius leschenaultii,Charadrius leschenaultii,Greater Sand Plover,,True,False,False,lowland,False,False,gooddie2015,Charadrius leschenaultii_Greater Sand-Plover,True
+Charadrius mongolus,Charadrius mongolus,Lesser Sand Plover,,True,False,False,lowland,False,False,gooddie2015,Charadrius mongolus_Lesser Sand-Plover,True
+Charadrius peronii,Charadrius peronii,Malay Plover,NT,True,False,False,lowland,False,False,gooddie2015,Charadrius peronii_Malaysian Plover,True
+Chlidonias hybrida,Chlidonias hybrida,Whiskered Tern,,True,False,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA,Chlidonias hybrida_Whiskered Tern,True
+Chlidonias leucopterus,Chlidonias leucopterus,White-winged Tern,,False,False,False,unknown,False,False,ebird_ID-SM-LA,Chlidonias leucopterus_White-winged Tern,True
+Chloropsis cyanopogon,Chloropsis cyanopogon,Lesser Green Leafbird,NT,True,False,False,lowland,True,False,gooddie2015;brickle_wcrs;andriyani2022;ebird_ID-SM-LA,Chloropsis cyanopogon_Lesser Green Leafbird,True
+Chloropsis media,,Sumatran Leafbird,,False,False,False,unknown,False,False,ebird_ID-SM-LA,,False
+Chloropsis moluccensis,,Blue-winged Leafbird,,False,False,False,unknown,False,False,ebird_ID-SM-LA,,False
+Chloropsis sonnerati,Chloropsis sonnerati,Greater Green Leafbird,,True,False,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA,Chloropsis sonnerati_Greater Green Leafbird,True
+Chloropsis venusta,,Blue-masked Leafbird,,False,False,False,unknown,False,False,ebird_ID-SM-LA,,False
+Chrysococcyx xanthorhynchus,Chrysococcyx xanthorhynchus,Violet Cuckoo,,True,False,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA,Chrysococcyx xanthorhynchus_Violet Cuckoo,True
+Chrysocolaptes guttacristatus,Chrysocolaptes guttacristatus,Greater Flameback,,True,False,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA,Chrysocolaptes guttacristatus_Greater Flameback,True
+Chrysocolaptes validus,Reinwardtipicus validus,Orange-backed Woodpecker,,True,True,True,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Belimbing;ebird_Bengkunat;ebird_ForestTrail,Reinwardtipicus validus_Orange-backed Woodpecker,True
+Chrysophlegma flavinucha,Chrysophlegma flavinucha,Greater Yellownape,,False,False,True,montane,False,False,gooddie2015;ebird_ID-SM-LA,Chrysophlegma flavinucha_Greater Yellownape,True
+Chrysophlegma humii,Chrysophlegma mentale,Chequer-throated Yellownape,NT,True,True,False,lowland,False,False,gooddie2015,Chrysophlegma mentale_Checker-throated Woodpecker,True
+Chrysophlegma mentale,Chrysophlegma mentale,Checker-throated Woodpecker,,False,False,False,unknown,False,False,ebird_ID-SM-LA;ebird_Belimbing;ebird_Bengkunat;ebird_ForestTrail,Chrysophlegma mentale_Checker-throated Woodpecker,True
+Chrysophlegma miniaceum,Chrysophlegma miniaceum,Banded Woodpecker,,True,False,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Belimbing;ebird_Bengkunat;ebird_ForestTrail,Chrysophlegma miniaceum_Banded Woodpecker,True
+Ciconia episcopus,,Asian Woollyneck,VU,False,False,False,unknown,False,False,gooddie2015;ebird_ID-SM-LA,,False
+Ciconia stormi,,Storm’s Stork,EN,True,False,False,lowland,True,False,gooddie2015;brickle_wcrs;ebird_ID-SM-LA;ebird_Belimbing;ebird_Bengkunat,,False
+Cinnyris ornatus,,Ornate Sunbird,,False,False,False,unknown,False,False,ebird_ID-SM-LA;ebird_Belimbing;ebird_Bengkunat;ebird_ForestTrail;ebird_hotspot_L7940372;ebird_DanauMenjukut,,False
+Circus spilonotus,Circus spilonotus,Eastern Marsh Harrier,,False,False,False,unknown,False,False,ebird_ID-SM-LA,Circus spilonotus_Eastern Marsh-Harrier,True
+Cissa chinensis,Cissa chinensis,Common Green Magpie,,False,False,True,montane,False,False,gooddie2015;ebird_ID-SM-LA,Cissa chinensis_Common Green-Magpie,True
+Cisticola exilis,Cisticola exilis,Golden-headed Cisticola,,False,False,False,unknown,False,False,ebird_ID-SM-LA;ebird_Belimbing,Cisticola exilis_Golden-headed Cisticola,True
+Cisticola juncidis,Cisticola juncidis,Zitting Cisticola,,False,False,True,montane,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Belimbing,Cisticola juncidis_Zitting Cisticola,True
+Clamator coromandus,Clamator coromandus,Chestnut-winged Cuckoo,,True,False,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Bengkunat,Clamator coromandus_Chestnut-winged Cuckoo,True
+Cochoa beccarii,,Sumatran Cochoa,VU,False,True,True,mid,False,False,gooddie2015;ebird_ID-SM-LA,,False
+Collocalia affinis,Collocalia affinis,Plume-toed Swiftlet,,False,False,False,unknown,False,False,ebird_ID-SM-LA;ebird_Bengkunat,Collocalia affinis_Plume-toed Swiftlet,True
+Collocalia esculenta,Collocalia affinis,Glossy Swiftlet,,True,True,True,lowland,False,False,gooddie2015,Collocalia affinis_Plume-toed Swiftlet,True
+Columba livia,Columba livia,Rock Pigeon,,False,False,False,unknown,False,False,ebird_ID-SM-LA,Columba livia_Rock Pigeon,True
+Copsychus malabaricus,Copsychus malabaricus,White-rumped Shama,,True,False,False,lowland,True,False,gooddie2015;andriyani2022;ebird_ID-SM-LA,Copsychus malabaricus_White-rumped Shama,True
+Copsychus pyrropygus,Copsychus pyrropygus,Rufous-tailed Shama,,False,False,False,unknown,False,False,ebird_ID-SM-LA,Copsychus pyrropygus_Rufous-tailed Shama,True
+Copsychus saularis,Copsychus saularis,Oriental Magpie Robin,,True,True,True,lowland,False,False,gooddie2015;ebird_ID-SM-LA,Copsychus saularis_Oriental Magpie-Robin,True
+Coracina fimbriata,Lalage fimbriata,Lesser Cuckooshrike,,True,False,False,lowland,False,False,gooddie2015,Lalage fimbriata_Lesser Cuckooshrike,True
+Coracina larvata,,Sunda Cuckooshrike,,False,True,True,mid,False,False,gooddie2015;ebird_ID-SM-LA,,False
+Coracina striata,Coracina striata,Bar-bellied Cuckooshrike,,True,False,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA,Coracina striata_Bar-bellied Cuckooshrike,True
+Corvus enca,Corvus enca,Slender-billed Crow,,True,False,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Bengkunat;ebird_ForestTrail,Corvus enca_Slender-billed Crow,True
+Corvus macrorhynchos,Corvus macrorhynchos,Large-billed Crow,,False,True,False,mid,False,False,gooddie2015;ebird_ID-SM-LA,Corvus macrorhynchos_Large-billed Crow,True
+Corydon sumatranus,Corydon sumatranus,Dusky Broadbill,,True,True,False,lowland,True,False,gooddie2015;andriyani2022;ebird_ID-SM-LA;ebird_Bengkunat;ebird_ForestTrail,Corydon sumatranus_Dusky Broadbill,True
+Cuculus lepidus,Cuculus lepidus,Sunda Cuckoo,,False,False,True,montane,False,False,gooddie2015;ebird_ID-SM-LA,Cuculus lepidus_Sunda Cuckoo,True
+Cuculus micropterus,Cuculus micropterus,Indian Cuckoo,,True,False,True,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Belimbing;ebird_Bengkunat;ebird_ForestTrail,Cuculus micropterus_Indian Cuckoo,True
+Culicicapa ceylonensis,Culicicapa ceylonensis,Grey-headed Canary Flycatcher,,True,True,True,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_ForestTrail,Culicicapa ceylonensis_Gray-headed Canary-Flycatcher,True
+Cyanoderma chrysaeum,Cyanoderma chrysaeum,Golden Babbler,,False,False,False,unknown,False,False,ebird_ID-SM-LA,Cyanoderma chrysaeum_Golden Babbler,True
+Cyanoderma erythropterum,Cyanoderma erythropterum,Chestnut-winged Babbler,,False,False,False,unknown,False,False,ebird_ID-SM-LA;ebird_Belimbing;ebird_Bengkunat;ebird_ForestTrail,Cyanoderma erythropterum_Chestnut-winged Babbler,True
+Cyanoderma rufifrons,Cyanoderma rufifrons,Rufous-fronted Babbler,,False,False,False,unknown,False,False,ebird_ID-SM-LA,Cyanoderma rufifrons_Rufous-fronted Babbler,True
+Cyanoptila cumatilis,Cyanoptila cumatilis,Zappey's Flycatcher,,False,False,False,unknown,False,False,ebird_ID-SM-LA,Cyanoptila cumatilis_Zappey's Flycatcher,True
+Cymbirhynchus macrorhynchos,Cymbirhynchus macrorhynchos,Black-and-red Broadbill,,True,False,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Belimbing;ebird_Bengkunat;ebird_ForestTrail,Cymbirhynchus macrorhynchos_Black-and-red Broadbill,True
+Cyornis brunneatus,,Brown-chested Jungle Flycatcher,,False,False,False,unknown,False,False,ebird_ID-SM-LA,,False
+Cyornis concretus,Cyornis concretus,White-tailed Flycatcher,,False,True,False,mid,False,False,gooddie2015,Cyornis concretus_White-tailed Flycatcher,True
+Cyornis olivaceus,Cyornis olivaceus,Fulvous-chested Jungle Flycatcher,,False,False,False,unknown,False,False,ebird_ID-SM-LA,Cyornis olivaceus_Fulvous-chested Jungle-Flycatcher,True
+Cyornis rufigastra,Cyornis rufigastra,Mangrove Blue Flycatcher,,True,False,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA,Cyornis rufigastra_Mangrove Blue Flycatcher,True
+Cyornis turcosus,Cyornis turcosus,Malaysian Blue Flycatcher,NT,False,False,True,montane,False,False,gooddie2015;ebird_ID-SM-LA,Cyornis turcosus_Malaysian Blue Flycatcher,True
+Cyornis umbratilis,Cyornis umbratilis,Gray-chested Jungle Flycatcher,,False,False,False,unknown,False,False,ebird_ID-SM-LA,Cyornis umbratilis_Gray-chested Jungle-Flycatcher,True
+Cyornis unicolor,Cyornis unicolor,Pale Blue Flycatcher,,True,False,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA,Cyornis unicolor_Pale Blue Flycatcher,True
+Cypsiurus balasiensis,Cypsiurus balasiensis,Asian Palm Swift,,True,False,True,lowland,False,False,gooddie2015;ebird_ID-SM-LA,Cypsiurus balasiensis_Asian Palm-Swift,True
+Deforestation trends,,(2003),,False,False,False,unknown,False,False,gooddie2015,,False
+Delichon dasypus,Delichon dasypus,Asian House Martin,,False,False,True,montane,False,False,gooddie2015;ebird_ID-SM-LA,Delichon dasypus_Asian House-Martin,True
+Dendrocitta occipitalis,,Sumatran Treepie,,False,False,True,montane,False,False,gooddie2015;ebird_ID-SM-LA,,False
+Dendrocygna arcuata,Dendrocygna arcuata,Wandering Whistling Duck,,False,True,False,mid,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Belimbing,Dendrocygna arcuata_Wandering Whistling-Duck,True
+Dendrocygna javanica,Dendrocygna javanica,Lesser Whistling-Duck,,False,False,False,unknown,False,False,ebird_ID-SM-LA;ebird_DanauMenjukut,Dendrocygna javanica_Lesser Whistling-Duck,True
+Dendronanthus indicus,Dendronanthus indicus,Forest Wagtail,,False,False,False,unknown,False,False,ebird_ID-SM-LA;ebird_hotspot_L7940372,Dendronanthus indicus_Forest Wagtail,True
+Dicaeum agile,Dicaeum agile,Thick-billed Flowerpecker,,True,True,False,lowland,False,False,gooddie2015,Dicaeum agile_Thick-billed Flowerpecker,True
+Dicaeum beccarii,,Sumatran Flowerpecker,,False,False,False,unknown,False,False,ebird_ID-SM-LA,,False
+Dicaeum chrysorrheum,Dicaeum chrysorrheum,Yellow-vented Flowerpecker,,True,True,False,lowland,True,False,gooddie2015;andriyani2022,Dicaeum chrysorrheum_Yellow-vented Flowerpecker,True
+Dicaeum concolor,Dicaeum concolor,Plain Flowerpecker,,False,True,False,mid,False,False,gooddie2015,Dicaeum concolor_Nilgiri Flowerpecker,True
+Dicaeum cruentatum,Dicaeum cruentatum,Scarlet-backed Flowerpecker,,True,False,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Belimbing;ebird_Bengkunat;ebird_ForestTrail;ebird_DanauMenjukut,Dicaeum cruentatum_Scarlet-backed Flowerpecker,True
+Dicaeum ignipectus,Dicaeum ignipectus,Fire-breasted Flowerpecker,,False,False,True,montane,False,False,gooddie2015,Dicaeum ignipectus_Fire-breasted Flowerpecker,True
+Dicaeum minullum,Dicaeum minullum,Plain Flowerpecker,,False,False,False,unknown,False,False,ebird_ID-SM-LA;ebird_hotspot_L7940372,Dicaeum minullum_Plain Flowerpecker,True
+Dicaeum trigonostigma,Dicaeum trigonostigma,Orange-bellied Flowerpecker,,True,True,True,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_ForestTrail;ebird_hotspot_L7940372;ebird_DanauMenjukut,Dicaeum trigonostigma_Orange-bellied Flowerpecker,True
+Dicaeum trochileum,,Scarlet-headed Flowerpecker,,True,False,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Bengkunat,,False
+Dicrurus aeneus,Dicrurus aeneus,Bronzed Drongo,,True,True,True,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Bengkunat;ebird_ForestTrail,Dicrurus aeneus_Bronzed Drongo,True
+Dicrurus annectens,Dicrurus annectens,Crow-billed Drongo,,False,False,False,unknown,False,False,ebird_ID-SM-LA,Dicrurus annectens_Crow-billed Drongo,True
+Dicrurus leucophaeus,Dicrurus leucophaeus,Ashy Drongo,,False,True,True,mid,False,False,gooddie2015;ebird_ID-SM-LA,Dicrurus leucophaeus_Ashy Drongo,True
+Dicrurus paradiseus,Dicrurus paradiseus,Greater Racket-tailed Drongo,,True,True,False,lowland,True,False,gooddie2015;andriyani2022;ebird_ID-SM-LA;ebird_Belimbing;ebird_Bengkunat;ebird_ForestTrail,Dicrurus paradiseus_Greater Racket-tailed Drongo,True
+Dicrurus remifer,Dicrurus remifer,Lesser Racket-tailed Drongo,,False,True,True,mid,False,False,gooddie2015;ebird_ID-SM-LA;ebird_ForestTrail,Dicrurus remifer_Lesser Racket-tailed Drongo,True
+Dicrurus sumatranus,,Sumatran Drongo,NT,True,True,True,lowland,True,False,gooddie2015;brickle_wcrs;ebird_ID-SM-LA;ebird_Bengkunat;ebird_ForestTrail,,False
+Dinopium javanense,Dinopium javanense,Common Flameback,,False,True,False,mid,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Bengkunat,Dinopium javanense_Common Flameback,True
+Dinopium rafflesii,Dinopium rafflesii,Olive-backed Woodpecker,NT,False,True,False,mid,False,False,gooddie2015,Dinopium rafflesii_Olive-backed Woodpecker,True
+Dryocopus javensis,Dryocopus javensis,White-bellied Woodpecker,,True,False,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Belimbing;ebird_Bengkunat;ebird_ForestTrail,Dryocopus javensis_White-bellied Woodpecker,True
+Ducula aenea,Ducula aenea,Green Imperial Pigeon,,True,False,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Bengkunat;ebird_ForestTrail;ebird_DanauMenjukut,Ducula aenea_Green Imperial-Pigeon,True
+Ducula badia,Ducula badia,Mountain Imperial Pigeon,,True,True,True,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Bengkunat;ebird_ForestTrail,Ducula badia_Mountain Imperial-Pigeon,True
+Ducula bicolor,Ducula bicolor,Pied Imperial Pigeon,,True,False,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Belimbing;ebird_ForestTrail;ebird_DanauMenjukut,Ducula bicolor_Pied Imperial-Pigeon,True
+Dupetor flavicollis,Ixobrychus flavicollis,Black Bittern,,True,False,False,lowland,False,False,gooddie2015,Ixobrychus flavicollis_Black Bittern,True
+Egretta garzetta,Egretta garzetta,Little Egret,,True,False,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA,Egretta garzetta_Little Egret,True
+Egretta sacra,Egretta sacra,Pacific Reef Egret,,True,False,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Belimbing;ebird_DanauMenjukut,Egretta sacra_Pacific Reef-Heron,True
+Elanus caeruleus,Elanus caeruleus,Black-winged Kite,,True,False,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_ForestTrail;ebird_hotspot_L7940372;ebird_DanauMenjukut,Elanus caeruleus_Black-winged Kite,True
+Enicurus leschenaulti,Enicurus leschenaulti,White-crowned Forktail,,False,False,False,unknown,False,False,ebird_ID-SM-LA;ebird_Bengkunat;ebird_ForestTrail;ebird_hotspot_L7940372,Enicurus leschenaulti_White-crowned Forktail,True
+Enicurus ruficapillus,,Chestnut-naped Forktail,,True,False,False,lowland,True,False,andriyani2022;ebird_ID-SM-LA;ebird_Bengkunat;ebird_hotspot_L7940372,,False
+Enicurus velatus,,Sunda Forktail,,False,False,False,unknown,False,False,ebird_ID-SM-LA,,False
+Erythropitta granatina,Erythropitta granatina,Garnet Pitta,,False,False,False,unknown,False,False,ebird_ID-SM-LA,Erythropitta granatina_Garnet Pitta,True
+Erythropitta venusta,,Graceful Pitta,,False,False,False,unknown,False,False,ebird_ID-SM-LA,,False
+Erythrura prasina,,Pin-tailed Parrotfinch,,False,False,True,montane,False,False,gooddie2015;ebird_ID-SM-LA,,False
+Esacus magnirostris,Esacus magnirostris,Beach Thick-knee,NT,True,False,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_DanauMenjukut,Esacus magnirostris_Beach Thick-knee,True
+Eudynamys scolopaceus,Eudynamys scolopaceus,Western Koel,,True,False,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Belimbing;ebird_ForestTrail,Eudynamys scolopaceus_Asian Koel,True
+Eumyias indigo,Eumyias indigo,Indigo Flycatcher,,False,False,True,montane,False,False,gooddie2015;ebird_ID-SM-LA;ebird_ForestTrail,Eumyias indigo_Indigo Flycatcher,True
+Eumyias thalassina,Eumyias thalassinus,Verditer Flycatcher,,True,True,True,lowland,False,False,gooddie2015,Eumyias thalassinus_Verditer Flycatcher,True
+Eumyias thalassinus,Eumyias thalassinus,Verditer Flycatcher,,False,False,False,unknown,False,False,ebird_ID-SM-LA;ebird_Bengkunat,Eumyias thalassinus_Verditer Flycatcher,True
+Eupetes macrocerus,Eupetes macrocerus,Railbabbler,NT,True,True,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Bengkunat;ebird_ForestTrail,Eupetes macrocerus_Malaysian Rail-babbler,True
+Eurylaimus javanicus,Eurylaimus javanicus,Banded Broadbill,,True,True,True,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Belimbing;ebird_Bengkunat;ebird_ForestTrail,Eurylaimus javanicus_Banded Broadbill,True
+Eurylaimus ochromalus,Eurylaimus ochromalus,Black-and-yellow Broadbill,NT,True,True,False,lowland,True,False,gooddie2015;brickle_wcrs;ebird_ID-SM-LA;ebird_Belimbing;ebird_Bengkunat;ebird_ForestTrail,Eurylaimus ochromalus_Black-and-yellow Broadbill,True
+Eurystomus orientalis,Eurystomus orientalis,Dollarbird,,True,False,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Bengkunat;ebird_ForestTrail,Eurystomus orientalis_Dollarbird,True
+Falco peregrinus,Falco peregrinus,Peregrine Falcon,,False,False,False,unknown,False,False,ebird_ID-SM-LA,Falco peregrinus_Peregrine Falcon,True
+Falco severus,,Oriental Hobby,,True,False,False,lowland,False,False,gooddie2015,,False
+Ficedula dumetoria,Ficedula dumetoria,Rufous-chested Flycatcher,NT,False,True,True,mid,False,False,gooddie2015;ebird_ID-SM-LA;ebird_hotspot_L7940372,Ficedula dumetoria_Rufous-chested Flycatcher,True
+Ficedula hyperythra,Ficedula hyperythra,Snowy-browed Flycatcher,,False,True,True,mid,False,False,gooddie2015,Ficedula hyperythra_Snowy-browed Flycatcher,True
+Ficedula mugimaki,Ficedula mugimaki,Mugimaki Flycatcher,,False,True,False,mid,False,False,gooddie2015;ebird_ID-SM-LA,Ficedula mugimaki_Mugimaki Flycatcher,True
+Ficedula solitaris,,Rufous-browed Flycatcher,,False,True,True,mid,False,False,gooddie2015,,False
+Ficedula westermanni,Ficedula westermanni,Little Pied Flycatcher,,False,False,False,unknown,False,False,ebird_ID-SM-LA,Ficedula westermanni_Little Pied Flycatcher,True
+Ficedula zanthopygia,Ficedula zanthopygia,Yellow-rumped Flycatcher,,True,False,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Bengkunat,Ficedula zanthopygia_Yellow-rumped Flycatcher,True
+Fregata andrewsi,Fregata andrewsi,Christmas Frigatebird,CR,False,False,False,unknown,False,False,gooddie2015;ebird_ID-SM-LA,Fregata andrewsi_Christmas Island Frigatebird,True
+Fregata ariel,Fregata ariel,Lesser Frigatebird,,True,False,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA,Fregata ariel_Lesser Frigatebird,True
+Fregata minor,Fregata minor,Great Frigatebird,,False,False,False,unknown,False,False,ebird_ID-SM-LA,Fregata minor_Great Frigatebird,True
+Gallicrex cinerea,Gallicrex cinerea,Watercock,,False,False,False,unknown,False,False,ebird_ID-SM-LA,Gallicrex cinerea_Watercock,True
+Gallinula chloropus,Gallinula chloropus,Eurasian Moorhen,,False,False,False,unknown,False,False,ebird_ID-SM-LA,Gallinula chloropus_Eurasian Moorhen,True
+Gallus gallus,Gallus gallus,Red Junglefowl,,True,False,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Belimbing;ebird_ForestTrail;ebird_DanauMenjukut,Gallus gallus_Red Junglefowl,True
+Garrulax bicolor,,Sumatran Laughingthrush,VU,False,False,True,montane,False,False,gooddie2015;ebird_ID-SM-LA,,False
+Garrulax lugubris,,Black Laughingthrush,,False,False,True,montane,False,False,gooddie2015,,False
+Garrulax mitratus,Pterorhinus mitratus,Chestnut-capped Laughingthrush,,False,True,True,mid,False,False,gooddie2015,Pterorhinus mitratus_Chestnut-capped Laughingthrush,True
+Garrulax palliatus,Garrulax palliatus,Sunda Laughingthrush,,False,False,True,montane,False,False,gooddie2015;ebird_ID-SM-LA,Garrulax palliatus_Sunda Laughingthrush,True
+Gecinulus rafflesii,,Olive-backed Woodpecker,,False,False,False,unknown,False,False,ebird_ID-SM-LA,,False
+Gelochelidon nilotica,Gelochelidon nilotica,Gull-billed Tern,,False,False,False,unknown,False,False,ebird_ID-SM-LA,Gelochelidon nilotica_Gull-billed Tern,True
+Geokichla sibirica,Geokichla sibirica,Siberian Thrush,,False,False,False,unknown,False,False,ebird_ID-SM-LA;ebird_hotspot_L7940372,Geokichla sibirica_Siberian Thrush,True
+Geopelia striata,Geopelia striata,Zebra Dove,,True,False,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Belimbing;ebird_ForestTrail;ebird_hotspot_L7940372,Geopelia striata_Zebra Dove,True
+Gerygone sulphurea,Gerygone sulphurea,Golden-bellied Gerygone,,False,True,False,mid,False,False,gooddie2015;ebird_ID-SM-LA,Gerygone sulphurea_Golden-bellied Gerygone,True
+Glareola maldivarum,Glareola maldivarum,Oriental Pratincole,,False,False,False,unknown,False,False,ebird_ID-SM-LA,Glareola maldivarum_Oriental Pratincole,True
+Glaucidium brodiei,,Collared Owlet,,False,True,True,mid,False,False,gooddie2015,,False
+Gorsachius melanolophus,Gorsachius melanolophus,Malay Night Heron,,True,False,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_ForestTrail,Gorsachius melanolophus_Malayan Night-Heron,True
+Gracula religiosa,Gracula religiosa,Hill Myna,,True,False,False,lowland,True,False,gooddie2015;andriyani2022;ebird_ID-SM-LA,Gracula religiosa_Common Hill Myna,True
+Gracupica contra,Gracupica contra,Asian Pied Starling,,True,False,False,lowland,False,False,gooddie2015,Gracupica contra_Asian Pied Starling,True
+Gracupica jalla,,Javan Pied Starling,,False,False,False,unknown,False,False,ebird_ID-SM-LA,,False
+Gypsophila rufipectus,Gypsophila rufipectus,Rusty-breasted Wren-Babbler,,False,False,False,unknown,False,False,ebird_ID-SM-LA;ebird_hotspot_L7940372,Gypsophila rufipectus_Rusty-breasted Wren-Babbler,True
+Halcyon coromanda,Halcyon coromanda,Ruddy Kingfisher,,True,False,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA,Halcyon coromanda_Ruddy Kingfisher,True
+Halcyon cyanoventris,,Javan Kingfisher,,False,False,False,unknown,False,False,ebird_ID-SM-LA,,False
+Halcyon pileata,Halcyon pileata,Black-capped Kingfisher,,True,False,False,lowland,False,False,gooddie2015,Halcyon pileata_Black-capped Kingfisher,True
+Halcyon smyrnensis,Halcyon smyrnensis,White-breasted Kingfisher,,True,True,True,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Belimbing;ebird_Bengkunat;ebird_ForestTrail;ebird_hotspot_L7940372,Halcyon smyrnensis_White-throated Kingfisher,True
+Haliaeetus leucogaster,Haliaeetus leucogaster,White-bellied Sea Eagle,,True,True,False,lowland,False,False,gooddie2015,Haliaeetus leucogaster_White-bellied Sea-Eagle,True
+Haliastur indus,Haliastur indus,Brahminy Kite,,False,False,True,montane,False,False,gooddie2015;ebird_ID-SM-LA;ebird_ForestTrail;ebird_hotspot_L7940372,Haliastur indus_Brahminy Kite,True
+Handbook of,,"Elliott & J. Sargatal, eds.",,False,False,False,unknown,False,False,gooddie2015,,False
+Harpactes diardii,Harpactes diardii,Diard’s Trogon,NT,True,False,False,lowland,True,False,gooddie2015;brickle_wcrs;ebird_ID-SM-LA;ebird_Belimbing;ebird_Bengkunat;ebird_ForestTrail,Harpactes diardii_Diard's Trogon,True
+Harpactes duvaucelii,Harpactes duvaucelii,Scarlet-rumped Trogon,NT,True,False,False,lowland,True,False,gooddie2015;brickle_wcrs;ebird_ID-SM-LA;ebird_Bengkunat;ebird_ForestTrail,Harpactes duvaucelii_Scarlet-rumped Trogon,True
+Harpactes erythrocephalus,Harpactes erythrocephalus,Red-headed Trogon,,False,False,True,montane,False,False,gooddie2015;ebird_ID-SM-LA,Harpactes erythrocephalus_Red-headed Trogon,True
+Harpactes kasumba,Harpactes kasumba,Red-naped Trogon,NT,True,True,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA,Harpactes kasumba_Red-naped Trogon,True
+Harpactes oreskios,Harpactes oreskios,Orange-breasted Trogon,,False,True,False,mid,False,False,gooddie2015;ebird_ID-SM-LA,Harpactes oreskios_Orange-breasted Trogon,True
+Harpactes orrhophaeus,Harpactes orrhophaeus,Cinnamon-rumped Trogon,NT,True,True,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_ForestTrail,Harpactes orrhophaeus_Cinnamon-rumped Trogon,True
+Helopsaltes certhiola,Helopsaltes certhiola,Pallas's Grasshopper Warbler,,False,False,False,unknown,False,False,ebird_ID-SM-LA,Helopsaltes certhiola_Pallas's Grasshopper Warbler,True
+Hemicircus concretus,Hemicircus concretus,Gray-and-buff Woodpecker,,False,False,False,unknown,False,False,ebird_ID-SM-LA;ebird_Belimbing;ebird_ForestTrail,Hemicircus concretus_Gray-and-buff Woodpecker,True
+Hemicircus sordidus,Hemicircus concretus,Grey-and-buff Woodpecker,,True,True,False,lowland,False,False,gooddie2015,Hemicircus concretus_Gray-and-buff Woodpecker,True
+Hemiprocne comata,Hemiprocne comata,Whiskered Treeswift,,True,True,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Bengkunat;ebird_ForestTrail;ebird_hotspot_L7940372,Hemiprocne comata_Whiskered Treeswift,True
+Hemiprocne longipennis,Hemiprocne longipennis,Grey-rumped Treeswift,,True,True,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Belimbing;ebird_Bengkunat;ebird_ForestTrail,Hemiprocne longipennis_Gray-rumped Treeswift,True
+Hemipus hirundinaceus,Hemipus hirundinaceus,Black-winged Flycatcher-shrike,,True,False,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Belimbing;ebird_Bengkunat;ebird_ForestTrail,Hemipus hirundinaceus_Black-winged Flycatcher-shrike,True
+Hemipus picatus,Hemipus picatus,Bar-winged Flycatcher-shrike,,False,True,True,mid,False,False,gooddie2015;ebird_ID-SM-LA,Hemipus picatus_Bar-winged Flycatcher-shrike,True
+Hemixos cinereus,Hemixos cinereus,Cinereous Bulbul,,False,False,False,unknown,False,False,ebird_ID-SM-LA;ebird_ForestTrail,Hemixos cinereus_Cinereous Bulbul,True
+Hemixos flavala,Hemixos flavala,Ashy Bulbul,,True,True,True,lowland,False,False,gooddie2015,Hemixos flavala_Ashy Bulbul,True
+Heterophasia picaoides,Heterophasia picaoides,Long-tailed Sibia,,False,False,True,montane,False,False,gooddie2015;ebird_ID-SM-LA,Heterophasia picaoides_Long-tailed Sibia,True
+Hierococcyx bocki,Hierococcyx bocki,Dark Hawk-Cuckoo,,False,False,False,unknown,False,False,ebird_ID-SM-LA,Hierococcyx bocki_Dark Hawk-Cuckoo,True
+Hierococcyx fugax,Hierococcyx fugax,Malay Hawk Cuckoo,,True,False,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA,Hierococcyx fugax_Malaysian Hawk-Cuckoo,True
+Hierococcyx sparverioides,Hierococcyx sparverioides,Large Hawk-Cuckoo,,False,False,False,unknown,False,False,ebird_ID-SM-LA;ebird_Bengkunat,Hierococcyx sparverioides_Large Hawk-Cuckoo,True
+Hierococcyx sparveroides,Hierococcyx sparverioides,Large Hawk Cuckoo,,True,True,True,lowland,False,False,gooddie2015,Hierococcyx sparverioides_Large Hawk-Cuckoo,True
+Hierococcyx vagans,Hierococcyx vagans,Moustached Hawk Cuckoo,NT,False,True,False,mid,False,False,gooddie2015;ebird_ID-SM-LA,Hierococcyx vagans_Moustached Hawk-Cuckoo,True
+Himantopus himantopus,Himantopus himantopus,Black-winged Stilt,,False,False,False,unknown,False,False,ebird_ID-SM-LA,Himantopus himantopus_Black-winged Stilt,True
+Himantopus leucocephalus,Himantopus leucocephalus,Pied Stilt,,False,False,False,unknown,False,False,ebird_ID-SM-LA,Himantopus leucocephalus_Pied Stilt,True
+Hirundapus caudacutus,Hirundapus caudacutus,White-throated Needletail,,False,False,False,unknown,False,False,ebird_ID-SM-LA,Hirundapus caudacutus_White-throated Needletail,True
+Hirundapus cochinchinensis,,Silver-backed Needletail,,True,False,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA,,False
+Hirundapus giganteus,Hirundapus giganteus,Brown-backed Needletail,,False,False,False,unknown,False,False,ebird_ID-SM-LA;ebird_hotspot_L7940372,Hirundapus giganteus_Brown-backed Needletail,True
+Hirundo javanica,,Pacific Swallow,,False,False,False,unknown,False,False,ebird_ID-SM-LA;ebird_Belimbing;ebird_ForestTrail;ebird_DanauMenjukut,,False
+Hirundo rustica,Hirundo rustica,Barn Swallow,,False,False,True,montane,False,False,gooddie2015;ebird_ID-SM-LA;ebird_ForestTrail;ebird_hotspot_L7940372,Hirundo rustica_Barn Swallow,True
+Hirundo tahitica,Hirundo tahitica,Pacific Swallow,,True,True,True,lowland,False,False,gooddie2015,Hirundo tahitica_Pacific Swallow,True
+Hutchinson and,,"field. I am indebted to James Eaton, Rob",,False,False,False,unknown,False,False,gooddie2015,,False
+Hydrobates monorhis,Hydrobates monorhis,Swinhoe's Storm-Petrel,,False,False,False,unknown,False,False,ebird_ID-SM-LA,Hydrobates monorhis_Swinhoe's Storm-Petrel,True
+Hydrochous gigas,,Waterfall Swift,,False,False,False,unknown,False,False,ebird_ID-SM-LA,,False
+Hydrornis caeruleus,Hydrornis caeruleus,Giant Pitta,,False,False,False,unknown,False,False,ebird_ID-SM-LA;ebird_Bengkunat;ebird_ForestTrail,Hydrornis caeruleus_Giant Pitta,True
+Hydrornis irena,Hydrornis irena,Malayan Banded-Pitta,,False,False,False,unknown,False,False,ebird_ID-SM-LA;ebird_Belimbing;ebird_Bengkunat;ebird_ForestTrail,Hydrornis irena_Malayan Banded-Pitta,True
+Hydrornis schneideri,,Schneider's Pitta,,False,False,False,unknown,False,False,ebird_ID-SM-LA,,False
+Hypogramma hypogrammicum,Kurochkinegramma hypogrammicum,Purple-naped Sunbird,,True,True,False,lowland,False,False,gooddie2015,Kurochkinegramma hypogrammicum_Purple-naped Spiderhunter,True
+Hypothymis azurea,Hypothymis azurea,Black-naped Monarch,,True,True,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Bengkunat;ebird_ForestTrail,Hypothymis azurea_Black-naped Monarch,True
+Icthyophaga humilis,Haliaeetus humilis,Lesser Fish Eagle,NT,True,False,False,lowland,True,False,gooddie2015;brickle_wcrs;ebird_ID-SM-LA,Haliaeetus humilis_Lesser Fish-Eagle,True
+Icthyophaga ichthyaetus,Haliaeetus ichthyaetus,Grey-headed Fish Eagle,NT,True,False,False,lowland,True,False,gooddie2015;brickle_wcrs;ebird_ID-SM-LA;ebird_Belimbing;ebird_Bengkunat;ebird_ForestTrail,Haliaeetus ichthyaetus_Gray-headed Fish-Eagle,True
+Icthyophaga leucogaster,,White-bellied Sea-Eagle,,False,False,False,unknown,False,False,ebird_ID-SM-LA;ebird_Belimbing;ebird_ForestTrail,,False
+Ictinaetus malaiensis,Ictinaetus malaiensis,Black Eagle,,True,True,True,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_ForestTrail,Ictinaetus malaiensis_Black Eagle,True
+Indicator archipelagicus,,Malaysian Honeyguide,NT,True,False,False,lowland,True,False,gooddie2015;brickle_wcrs;ebird_ID-SM-LA;ebird_Bengkunat,,False
+International illustrated,,"del Hoyo, J. & Collar, N. J. (2014) The HBW and BirdLife",,False,False,False,unknown,False,False,gooddie2015,,False
+International van,,BirdLife International (2001) Threatened birds of Asia: the BirdLife,,False,False,False,unknown,False,False,gooddie2015,,False
+Iole crypta,Iole crypta,Buff-vented Bulbul,,False,False,False,unknown,False,False,ebird_ID-SM-LA;ebird_ForestTrail,Iole crypta_Buff-vented Bulbul,True
+Iole finschii,,Finsch's Bulbul,,False,False,False,unknown,False,False,ebird_ID-SM-LA,,False
+Iole olivacea,Iole crypta,Buff-vented Bulbul,NT,True,True,False,lowland,False,False,gooddie2015,Iole crypta_Buff-vented Bulbul,True
+Irena puella,Irena puella,Asian Fairy Bluebird,,True,False,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA,Irena puella_Asian Fairy-bluebird,True
+Ixobrychus cinnamomeus,Ixobrychus cinnamomeus,Cinnamon Bittern,,True,False,False,lowland,False,False,gooddie2015,Ixobrychus cinnamomeus_Cinnamon Bittern,True
+Ixobrychus eurhythmus,Ixobrychus eurhythmus,Schrenck’s Bittern,,True,False,False,lowland,False,False,gooddie2015,Ixobrychus eurhythmus_Schrenck's Bittern,True
+Ixos leucogrammicus,,Cream-striped Bulbul,,False,False,False,unknown,False,False,ebird_ID-SM-LA,,False
+Ixos malaccensis,Ixos malaccensis,Streaked Bulbul,NT,True,True,False,lowland,True,False,gooddie2015;brickle_wcrs;ebird_ID-SM-LA;ebird_Belimbing;ebird_ForestTrail,Ixos malaccensis_Streaked Bulbul,True
+Ixos sumatranus,,Sumatran Bulbul,,False,False,False,unknown,False,False,ebird_ID-SM-LA;ebird_ForestTrail,,False
+Ixos virescens,,Sunda Bulbul,,False,True,True,mid,False,False,gooddie2015,,False
+Java and,,to be endemic to,,False,False,False,unknown,False,False,gooddie2015,,False
+Kenopia striata,Kenopia striata,Striped Wren-Babbler,,False,False,False,unknown,False,False,ebird_ID-SM-LA,Kenopia striata_Striped Wren-Babbler,True
+Ketupa ketupu,Ketupa ketupu,Buffy Fish Owl,,True,True,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA,Ketupa ketupu_Buffy Fish-Owl,True
+Ketupa sumatrana,,Barred Eagle-Owl,,False,False,False,unknown,False,False,ebird_ID-SM-LA;ebird_ForestTrail,,False
+Kurochkinegramma hypogrammicum,Kurochkinegramma hypogrammicum,Purple-naped Spiderhunter,,False,False,False,unknown,False,False,ebird_ID-SM-LA;ebird_Bengkunat,Kurochkinegramma hypogrammicum_Purple-naped Spiderhunter,True
+Lacedo pulchella,Lacedo pulchella,Banded Kingfisher,,True,False,True,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Belimbing;ebird_Bengkunat;ebird_ForestTrail,Lacedo pulchella_Banded Kingfisher,True
+Lalage fimbriata,Lalage fimbriata,Lesser Cuckooshrike,,False,False,False,unknown,False,False,ebird_ID-SM-LA;ebird_Bengkunat,Lalage fimbriata_Lesser Cuckooshrike,True
+Lalage nigra,Lalage nigra,Pied Triller,,True,False,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA,Lalage nigra_Pied Triller,True
+Lanius cristatus,Lanius cristatus,Brown Shrike,,False,False,False,unknown,False,False,ebird_ID-SM-LA;ebird_Bengkunat,Lanius cristatus_Brown Shrike,True
+Lanius schach,Lanius schach,Long-tailed Shrike,,False,True,True,mid,False,False,gooddie2015;ebird_ID-SM-LA,Lanius schach_Long-tailed Shrike,True
+Lanius tigrinus,Lanius tigrinus,Tiger Shrike,,True,True,True,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Belimbing;ebird_Bengkunat;ebird_ForestTrail;ebird_hotspot_L7940372,Lanius tigrinus_Tiger Shrike,True
+Larvivora cyane,Larvivora cyane,Siberian Blue Robin,,False,False,False,unknown,False,False,ebird_ID-SM-LA,Larvivora cyane_Siberian Blue Robin,True
+Leiothrix argentauris,Leiothrix argentauris,Silver-eared Mesia,,True,False,False,lowland,False,False,gooddie2015,Leiothrix argentauris_Silver-eared Mesia,True
+Leptocoma brasiliana,Leptocoma brasiliana,Van Hasselt's Sunbird,,False,False,False,unknown,False,False,ebird_ID-SM-LA,Leptocoma brasiliana_Van Hasselt's Sunbird,True
+Leptocoma calcostetha,Leptocoma calcostetha,Copper-throated Sunbird,,False,False,False,unknown,False,False,ebird_ID-SM-LA,Leptocoma calcostetha_Copper-throated Sunbird,True
+Leptocoma sperata,Leptocoma sperata,Purple-throated Sunbird,,True,False,False,lowland,False,False,gooddie2015,Leptocoma sperata_Purple-throated Sunbird,True
+Leptoptilos javanicus,,Lesser Adjutant,VU,False,False,False,unknown,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Belimbing,,False
+Leucoptilon concretum,,White-tailed Flycatcher,,False,False,False,unknown,False,False,ebird_ID-SM-LA,,False
+Lewinia striata,Lewinia striata,Slaty-breasted Rail,,True,False,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA,Lewinia striata_Slaty-breasted Rail,True
+Limosa lapponica,Limosa lapponica,Bar-tailed Godwit,,False,False,False,unknown,False,False,ebird_ID-SM-LA,Limosa lapponica_Bar-tailed Godwit,True
+Limosa limosa,Limosa limosa,Black-tailed Godwit,,False,False,False,unknown,False,False,ebird_ID-SM-LA;ebird_Belimbing,Limosa limosa_Black-tailed Godwit,True
+Locustella lanceolata,Locustella lanceolata,Lanceolated Warbler,,True,False,False,lowland,False,False,gooddie2015,Locustella lanceolata_Lanceolated Warbler,True
+Lonchura atricapilla,Lonchura atricapilla,Chestnut Munia,,True,False,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA,Lonchura atricapilla_Chestnut Munia,True
+Lonchura ferruginosa,,"Iqbal, M. (2011) First records of White-capped Munia",,False,True,False,mid,False,False,gooddie2015;ebird_ID-SM-LA,,False
+Lonchura leucogastra,,White-bellied Munia,,False,True,True,mid,False,False,gooddie2015;ebird_ID-SM-LA,,False
+Lonchura leucogastroides,Lonchura leucogastroides,Javan Munia,,True,True,True,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Belimbing,Lonchura leucogastroides_Javan Munia,True
+Lonchura maja,Lonchura maja,White-headed Munia,,False,True,True,mid,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Belimbing;ebird_Bengkunat;ebird_ForestTrail,Lonchura maja_White-headed Munia,True
+Lonchura punctulata,Lonchura punctulata,Scaly-breasted Munia,,False,True,True,mid,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Belimbing;ebird_Bengkunat,Lonchura punctulata_Scaly-breasted Munia,True
+Lonchura striata,Lonchura striata,White-rumped Munia,,False,True,False,mid,False,False,gooddie2015;ebird_ID-SM-LA,Lonchura striata_White-rumped Munia,True
+Lophospiza trivirgata,,Crested Goshawk,,False,False,False,unknown,False,False,ebird_ID-SM-LA,,False
+Lophotriorchis kienerii,Lophotriorchis kienerii,Rufous-bellied Eagle,,False,True,True,mid,False,False,gooddie2015;ebird_ID-SM-LA,Lophotriorchis kienerii_Rufous-bellied Eagle,True
+Lophura inornata,,Salvadori’s Pheasant,NT,True,True,False,lowland,True,False,gooddie2015;brickle_wcrs;ebird_ID-SM-LA,,False
+Lophura rufa,,Malay Crested Fireback,NT,False,False,False,unknown,False,False,gooddie2015;ebird_ID-SM-LA;ebird_ForestTrail,,False
+Loriculus galgulus,Loriculus galgulus,Blue-crowned Hanging Parrot,,True,True,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Belimbing;ebird_Bengkunat;ebird_ForestTrail,Loriculus galgulus_Blue-crowned Hanging-Parrot,True
+Lyncornis temminckii,Lyncornis temminckii,Malaysian Eared Nightjar,,False,True,False,mid,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Belimbing,Lyncornis temminckii_Malaysian Eared-Nightjar,True
+Macheiramphus alcinus,Macheiramphus alcinus,Bat Hawk,,True,False,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Bengkunat,Macheiramphus alcinus_Bat Hawk,True
+Macronous gularis,Mixornis gularis,Pin-striped Tit Babbler,,True,True,True,lowland,False,False,gooddie2015,Mixornis gularis_Pin-striped Tit-Babbler,True
+Macronous ptilosus,Macronus ptilosus,Fluffy-backed Tit Babbler,NT,True,False,False,lowland,True,False,gooddie2015;brickle_wcrs,Macronus ptilosus_Fluffy-backed Tit-Babbler,True
+Macronus ptilosus,Macronus ptilosus,Fluffy-backed Tit-Babbler,,False,False,False,unknown,False,False,ebird_ID-SM-LA;ebird_Belimbing;ebird_Bengkunat;ebird_ForestTrail,Macronus ptilosus_Fluffy-backed Tit-Babbler,True
+Macropygia emiliana,,Ruddy Cuckoo-Dove,,False,False,False,unknown,False,False,ebird_ID-SM-LA,,False
+Macropygia ruficeps,Macropygia ruficeps,Little Cuckoo Dove,,True,True,True,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Bengkunat;ebird_hotspot_L7940372,Macropygia ruficeps_Little Cuckoo-Dove,True
+Macropygia unchall,Macropygia unchall,Barred Cuckoo Dove,,False,True,True,mid,False,False,gooddie2015;ebird_ID-SM-LA,Macropygia unchall_Barred Cuckoo-Dove,True
+Malacocincla abbotti,Malacocincla abbotti,Abbott’s Babbler,,True,True,True,lowland,False,False,gooddie2015;ebird_ID-SM-LA,Malacocincla abbotti_Abbott's Babbler,True
+Malacocincla malaccensis,Pellorneum malaccense,Short-tailed Babbler,NT,True,True,False,lowland,True,False,gooddie2015;brickle_wcrs,Pellorneum malaccense_Short-tailed Babbler,True
+Malacocincla sepiaria,Malacocincla sepiaria,Horsfield’s Babbler,,True,True,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Bengkunat;ebird_hotspot_L7940372,Malacocincla sepiaria_Horsfield's Babbler,True
+Malacopteron affine,Malacopteron affine,Sooty-capped Babbler,NT,True,True,False,lowland,True,False,gooddie2015;brickle_wcrs;ebird_ID-SM-LA;ebird_Bengkunat;ebird_ForestTrail,Malacopteron affine_Sooty-capped Babbler,True
+Malacopteron cinereum,Malacopteron cinereum,Scaly-crowned Babbler,,True,True,False,lowland,True,False,gooddie2015;andriyani2022;ebird_ID-SM-LA;ebird_Bengkunat;ebird_ForestTrail,Malacopteron cinereum_Scaly-crowned Babbler,True
+Malacopteron magnirostre,Malacopteron magnirostre,Moustached Babbler,,True,True,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Belimbing;ebird_Bengkunat;ebird_ForestTrail;ebird_hotspot_L7940372,Malacopteron magnirostre_Moustached Babbler,True
+Malacopteron magnum,Malacopteron magnum,Rufous-crowned Babbler,NT,True,True,False,lowland,True,False,gooddie2015;brickle_wcrs;ebird_ID-SM-LA;ebird_ForestTrail,Malacopteron magnum_Rufous-crowned Babbler,True
+Mears for,,grateful to Andy,,False,False,False,unknown,False,False,gooddie2015,,False
+Meiglyptes grammithorax,Meiglyptes tristis,Buff-rumped Woodpecker,,True,False,True,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Belimbing;ebird_ForestTrail,Meiglyptes tristis_Buff-rumped Woodpecker,True
+Meiglyptes tukki,Meiglyptes tukki,Buff-necked Woodpecker,NT,True,False,False,lowland,True,False,gooddie2015;brickle_wcrs;ebird_ID-SM-LA;ebird_Belimbing;ebird_Bengkunat,Meiglyptes tukki_Buff-necked Woodpecker,True
+Melanocichla lugubris,,Black Laughingthrush,,False,False,False,unknown,False,False,ebird_ID-SM-LA,,False
+Merops leschenaulti,Merops leschenaulti,Chestnut-headed Bee-eater,,True,False,False,lowland,False,False,gooddie2015,Merops leschenaulti_Chestnut-headed Bee-eater,True
+Merops philippinus,Merops philippinus,Blue-tailed Bee-eater,,False,False,False,unknown,False,False,ebird_ID-SM-LA,Merops philippinus_Blue-tailed Bee-eater,True
+Merops viridis,Merops viridis,Blue-throated Bee-eater,,True,True,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Belimbing;ebird_Bengkunat;ebird_ForestTrail,Merops viridis_Blue-throated Bee-eater,True
+Metopidius indicus,Metopidius indicus,Bronze-winged Jacana,,False,False,False,unknown,False,False,ebird_ID-SM-LA,Metopidius indicus_Bronze-winged Jacana,True
+Microcarbo niger,Microcarbo niger,Little Cormorant,,False,False,False,unknown,False,False,ebird_ID-SM-LA,Microcarbo niger_Little Cormorant,True
+Microhierax fringillarius,Microhierax fringillarius,Black-thighed Falconet,,True,False,True,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Belimbing;ebird_Bengkunat;ebird_ForestTrail,Microhierax fringillarius_Black-thighed Falconet,True
+Micropternus brachyurus,Micropternus brachyurus,Rufous Woodpecker,,True,True,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Bengkunat;ebird_ForestTrail,Micropternus brachyurus_Rufous Woodpecker,True
+Microtarsus eutilotus,,Puff-backed Bulbul,,False,False,False,unknown,False,False,ebird_ID-SM-LA;ebird_Bengkunat,,False
+Microtarsus melanocephalos,,Black-headed Bulbul,,False,False,False,unknown,False,False,ebird_ID-SM-LA;ebird_Bengkunat;ebird_ForestTrail;ebird_hotspot_L7940372,,False
+Microtarsus melanoleucos,,Black-and-white Bulbul,,False,False,False,unknown,False,False,ebird_ID-SM-LA,,False
+Milvus migrans,Milvus migrans,Black Kite,,False,False,False,unknown,False,False,ebird_ID-SM-LA;ebird_ForestTrail,Milvus migrans_Black Kite,True
+Mixornis gularis,Mixornis gularis,Pin-striped Tit-Babbler,,False,False,False,unknown,False,False,ebird_ID-SM-LA;ebird_Belimbing;ebird_Bengkunat;ebird_ForestTrail,Mixornis gularis_Pin-striped Tit-Babbler,True
+Motacilla alba,Motacilla alba,White Wagtail,,False,False,False,unknown,False,False,ebird_ID-SM-LA,Motacilla alba_White Wagtail,True
+Motacilla cinerea,Motacilla cinerea,Grey Wagtail,,False,True,True,mid,False,False,gooddie2015;ebird_ID-SM-LA,Motacilla cinerea_Gray Wagtail,True
+Motacilla flava,Motacilla flava,Yellow Wagtail,,True,False,False,lowland,False,False,gooddie2015,Motacilla flava_Western Yellow Wagtail,True
+Motacilla tschutschensis,Motacilla tschutschensis,Eastern Yellow Wagtail,,False,False,False,unknown,False,False,ebird_ID-SM-LA,Motacilla tschutschensis_Eastern Yellow Wagtail,True
+Muscicapa dauurica,Muscicapa dauurica,Asian Brown Flycatcher,,True,False,True,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Belimbing;ebird_Bengkunat;ebird_ForestTrail;ebird_hotspot_L7940372;ebird_DanauMenjukut,Muscicapa dauurica_Asian Brown Flycatcher,True
+Muscicapa ferruginea,Muscicapa ferruginea,Ferruginous Flycatcher,,False,True,False,mid,False,False,gooddie2015;ebird_ID-SM-LA;ebird_hotspot_L7940372,Muscicapa ferruginea_Ferruginous Flycatcher,True
+Muscicapa sibirica,Muscicapa sibirica,Dark-sided Flycatcher,,False,True,False,mid,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Bengkunat,Muscicapa sibirica_Dark-sided Flycatcher,True
+Muscicapella hodgsoni,,Pygmy Blue Flycatcher,,False,False,True,montane,False,False,gooddie2015,,False
+Mycteria cinerea,,Milky Stork,EN,False,False,False,unknown,False,False,gooddie2015;ebird_ID-SM-LA,,False
+Myiomela diana,,Sunda Robin,,False,False,True,montane,False,False,gooddie2015,,False
+Myophonus caeruleus,Myophonus caeruleus,Blue Whistling Thrush,,True,True,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_hotspot_L7940372,Myophonus caeruleus_Blue Whistling-Thrush,True
+Myophonus castaneus,,Sumatran Whistling Thrush,NT,False,False,True,montane,False,False,gooddie2015;ebird_ID-SM-LA,,False
+Myophonus melanurus,Myophonus melanurus,Shiny Whistling Thrush,,False,False,True,montane,False,False,gooddie2015;ebird_ID-SM-LA;ebird_hotspot_L7940372,Myophonus melanurus_Shiny Whistling-Thrush,True
+Napothera albostriata,,Sumatran Wren-Babbler,,False,False,False,unknown,False,False,ebird_ID-SM-LA,,False
+Napothera epilepidota,Napothera epilepidota,Eyebrowed Wren-Babbler,,False,False,False,unknown,False,False,ebird_ID-SM-LA,Napothera epilepidota_Eyebrowed Wren-Babbler,True
+Nectarinia jugularis,Cinnyris jugularis,Olive-backed Sunbird,,True,True,True,lowland,False,False,gooddie2015,Cinnyris jugularis_Olive-backed Sunbird,True
+Niltava grandis,Niltava grandis,Large Niltava,,False,True,False,mid,False,False,gooddie2015;ebird_ID-SM-LA;ebird_ForestTrail;ebird_hotspot_L7940372,Niltava grandis_Large Niltava,True
+Niltava sumatrana,,Rufous-vented Niltava,,False,False,False,unknown,False,False,ebird_ID-SM-LA,,False
+Ninox scutulata,Ninox scutulata,Brown Boobook,,True,False,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Bengkunat;ebird_ForestTrail,Ninox scutulata_Brown Boobook,True
+Nisaetus alboniger,,Blyth’s Hawk Eagle,,False,True,False,mid,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Belimbing;ebird_Bengkunat;ebird_ForestTrail,,False
+Nisaetus cirrhatus,Nisaetus cirrhatus,Changeable Hawk Eagle,,False,True,True,mid,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Bengkunat;ebird_ForestTrail;ebird_hotspot_L7940372,Nisaetus cirrhatus_Changeable Hawk-Eagle,True
+Nisaetus nanus,Nisaetus nanus,Wallace’s Hawk Eagle,VU,True,False,False,lowland,True,False,gooddie2015;brickle_wcrs;ebird_ID-SM-LA;ebird_Bengkunat,Nisaetus nanus_Wallace's Hawk-Eagle,True
+Numenius arquata,Numenius arquata,Eurasian Curlew,NT,True,False,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Belimbing,Numenius arquata_Eurasian Curlew,True
+Numenius madagascariensis,Numenius madagascariensis,Far Eastern Curlew,,False,False,False,unknown,False,False,ebird_ID-SM-LA,Numenius madagascariensis_Far Eastern Curlew,True
+Numenius phaeopus,Numenius phaeopus,Whimbrel,,True,False,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Belimbing;ebird_DanauMenjukut,Numenius phaeopus_Whimbrel,True
+Nycticorax caledonicus,,Rufous Night Heron,,True,False,False,lowland,False,False,gooddie2015,,False
+Nycticorax nycticorax,Nycticorax nycticorax,Black-crowned Night Heron,,False,False,False,unknown,False,False,ebird_ID-SM-LA,Nycticorax nycticorax_Black-crowned Night-Heron,True
+Nyctyornis amictus,Nyctyornis amictus,Red-bearded Bee-eater,,True,True,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Bengkunat;ebird_ForestTrail,Nyctyornis amictus_Red-bearded Bee-eater,True
+Oceanites oceanicus,,Wilson's Storm-Petrel,,False,False,False,unknown,False,False,ebird_ID-SM-LA,,False
+Onychoprion aleuticus,Onychoprion aleuticus,Aleutian Tern,,False,False,False,unknown,False,False,ebird_ID-SM-LA,Onychoprion aleuticus_Aleutian Tern,True
+Onychoprion anaethetus,Onychoprion anaethetus,Bridled Tern,,False,False,False,unknown,False,False,ebird_ID-SM-LA,Onychoprion anaethetus_Bridled Tern,True
+Oriolus chinensis,Oriolus chinensis,Black-naped Oriole,,True,False,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_ForestTrail,Oriolus chinensis_Black-naped Oriole,True
+Oriolus consanguineus,,Black-and-crimson Oriole,,False,False,False,unknown,False,False,ebird_ID-SM-LA,,False
+Oriolus cruentus,Oriolus cruentus,Black-and-crimson Oriole,,False,True,True,mid,False,False,gooddie2015,Oriolus cruentus_Black-and-crimson Oriole,True
+Oriolus xanthonotus,Oriolus xanthonotus,Dark-throated Oriole,NT,True,False,False,lowland,True,False,gooddie2015;brickle_wcrs;andriyani2022;ebird_ID-SM-LA;ebird_Bengkunat;ebird_ForestTrail,Oriolus xanthonotus_Dark-throated Oriole,True
+Orthotomus atrogularis,Orthotomus atrogularis,Dark-necked Tailorbird,,True,False,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Bengkunat;ebird_ForestTrail,Orthotomus atrogularis_Dark-necked Tailorbird,True
+Orthotomus cuculatus,,Mountain Tailorbird,,False,False,True,montane,False,False,gooddie2015,,False
+Orthotomus ruficeps,Orthotomus ruficeps,Ashy Tailorbird,,True,True,True,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Belimbing;ebird_Bengkunat;ebird_ForestTrail;ebird_hotspot_L7940372,Orthotomus ruficeps_Ashy Tailorbird,True
+Orthotomus sericeus,Orthotomus sericeus,Rufous-tailed Tailorbird,,True,False,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Belimbing;ebird_Bengkunat;ebird_ForestTrail;ebird_DanauMenjukut,Orthotomus sericeus_Rufous-tailed Tailorbird,True
+Orthotomus sutorius,Orthotomus sutorius,Common Tailorbird,,True,False,False,lowland,False,False,gooddie2015,Orthotomus sutorius_Common Tailorbird,True
+Otus brookii,,Rajah Scops Owl,,False,False,True,montane,False,False,gooddie2015,,False
+Otus lempiji,Otus lempiji,Sunda Scops Owl,,True,False,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA,Otus lempiji_Sunda Scops-Owl,True
+Otus rufescens,Otus rufescens,Reddish Scops Owl,NT,True,True,False,lowland,True,False,gooddie2015;brickle_wcrs;ebird_ID-SM-LA,Otus rufescens_Reddish Scops-Owl,True
+Otus spilocephalus,Otus spilocephalus,Mountain Scops Owl,,False,True,True,mid,False,False,gooddie2015;ebird_ID-SM-LA,Otus spilocephalus_Mountain Scops-Owl,True
+Pachycephala cinerea,Pachycephala cinerea,Mangrove Whistler,,False,False,False,unknown,False,False,ebird_ID-SM-LA,Pachycephala cinerea_Mangrove Whistler,True
+Pachyglossa agilis,,Thick-billed Flowerpecker,,False,False,False,unknown,False,False,ebird_ID-SM-LA;ebird_Belimbing,,False
+Pachyglossa chrysorrhea,,Yellow-vented Flowerpecker,,False,False,False,unknown,False,False,ebird_ID-SM-LA;ebird_ForestTrail;ebird_DanauMenjukut,,False
+Pandion haliaetus,Pandion haliaetus,Osprey,,True,False,True,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_ForestTrail;ebird_DanauMenjukut,Pandion haliaetus_Osprey,True
+Parus cinereus,Parus cinereus,Asian Tit,,False,False,False,unknown,False,False,ebird_ID-SM-LA,Parus cinereus_Cinereous Tit,True
+Parus major,Parus major,Great Tit,,False,True,True,mid,False,False,gooddie2015,Parus major_Great Tit,True
+Passage of,,Yong D. L. & Liu Y. (2015),,False,False,False,unknown,False,False,gooddie2015,,False
+Passer montanus,Passer montanus,Eurasian Tree Sparrow,,True,True,True,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Belimbing;ebird_Bengkunat;ebird_ForestTrail;ebird_hotspot_L7940372,Passer montanus_Eurasian Tree Sparrow,True
+Pelargopsis capensis,Pelargopsis capensis,Stork-billed Kingfisher,,True,False,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Bengkunat;ebird_ForestTrail;ebird_DanauMenjukut,Pelargopsis capensis_Stork-billed Kingfisher,True
+Pelecanus conspicillatus,Pelecanus conspicillatus,Australian Pelican,,True,False,False,lowland,False,False,gooddie2015,Pelecanus conspicillatus_Australian Pelican,True
+Pellorneum bicolor,Pellorneum bicolor,Ferruginous Babbler,,False,False,False,unknown,False,False,ebird_ID-SM-LA;ebird_ForestTrail,Pellorneum bicolor_Ferruginous Babbler,True
+Pellorneum buettikoferi,,Sumatran Babbler,NT,False,True,False,mid,False,False,gooddie2015;ebird_ID-SM-LA;ebird_ForestTrail;ebird_hotspot_L7940372,,False
+Pellorneum capistratum,Pellorneum capistratum,Black-capped Babbler,,True,False,False,lowland,False,False,gooddie2015,Pellorneum capistratum_Black-capped Babbler,True
+Pellorneum malaccense,Pellorneum malaccense,Short-tailed Babbler,,False,False,False,unknown,False,False,ebird_ID-SM-LA;ebird_Bengkunat;ebird_ForestTrail,Pellorneum malaccense_Short-tailed Babbler,True
+Pellorneum nigrocapitatum,,Malayan Black-capped Babbler,,False,False,False,unknown,False,False,ebird_ID-SM-LA;ebird_Bengkunat;ebird_ForestTrail,,False
+Pellorneum rostratum,Pellorneum rostratum,White-chested Babbler,,False,False,False,unknown,False,False,ebird_ID-SM-LA;ebird_Belimbing;ebird_ForestTrail,Pellorneum rostratum_White-chested Babbler,True
+Pericrocotus divaricatus,Pericrocotus divaricatus,Ashy Minivet,,True,False,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA,Pericrocotus divaricatus_Ashy Minivet,True
+Pericrocotus flammeus,Pericrocotus flammeus,Scarlet Minivet,,True,False,True,lowland,False,False,gooddie2015,Pericrocotus flammeus_Orange Minivet,True
+Pericrocotus igneus,,Fiery Minivet,NT,True,False,False,lowland,True,False,gooddie2015;brickle_wcrs;ebird_ID-SM-LA;ebird_Bengkunat;ebird_ForestTrail,,False
+Pericrocotus miniatus,,Sunda Minivet,,False,False,False,unknown,False,False,ebird_ID-SM-LA;ebird_hotspot_L7940372,,False
+Pericrocotus solaris,Pericrocotus solaris,Grey-chinned Minivet,,False,True,True,mid,False,False,gooddie2015;ebird_ID-SM-LA,Pericrocotus solaris_Gray-chinned Minivet,True
+Pericrocotus speciosus,Pericrocotus speciosus,Scarlet Minivet,,False,False,False,unknown,False,False,ebird_ID-SM-LA;ebird_Bengkunat,Pericrocotus speciosus_Scarlet Minivet,True
+Pernis ptilorhynchus,Pernis ptilorhynchus,Oriental Honey Buzzard,,False,True,True,mid,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Bengkunat;ebird_ForestTrail,Pernis ptilorhynchus_Oriental Honey-buzzard,True
+Phaenicophaeus curvirostris,,Chestnut-breasted Malkoha,,True,True,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Bengkunat;ebird_ForestTrail;ebird_hotspot_L7940372,,False
+Phaenicophaeus diardi,,Black-bellied Malkoha,NT,True,True,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Bengkunat;ebird_ForestTrail,,False
+Phaenicophaeus sumatranus,Phaenicophaeus sumatranus,Chestnut-bellied Malkoha,NT,True,False,False,lowland,True,False,gooddie2015;brickle_wcrs;ebird_ID-SM-LA;ebird_Belimbing;ebird_ForestTrail,Phaenicophaeus sumatranus_Chestnut-bellied Malkoha,True
+Phaenicophaeus tristis,Phaenicophaeus tristis,Green-billed Malkoha,,True,True,True,lowland,False,False,gooddie2015;ebird_ID-SM-LA,Phaenicophaeus tristis_Green-billed Malkoha,True
+Phaethon lepturus,Phaethon lepturus,White-tailed Tropicbird,,False,False,False,unknown,False,False,ebird_ID-SM-LA,Phaethon lepturus_White-tailed Tropicbird,True
+Phalacrocorax sulcirostris,,Little Black Cormorant,,False,False,False,unknown,False,False,ebird_ID-SM-LA,,False
+Philentoma pyrhoptera,Philentoma pyrhoptera,Rufous-winged Philentoma,,False,False,False,unknown,False,False,ebird_ID-SM-LA;ebird_Bengkunat;ebird_ForestTrail,Philentoma pyrhoptera_Rufous-winged Philentoma,True
+Philentoma pyrhopterum,Philentoma pyrhoptera,Rufous-winged Philentoma,,True,True,False,lowland,False,False,gooddie2015,Philentoma pyrhoptera_Rufous-winged Philentoma,True
+Philentoma velata,Philentoma velata,Maroon-breasted Philentoma,,False,False,False,unknown,False,False,ebird_ID-SM-LA,Philentoma velata_Maroon-breasted Philentoma,True
+Philentoma velatum,Philentoma velata,Maroon-breasted Philentoma,NT,True,True,True,lowland,False,False,gooddie2015,Philentoma velata_Maroon-breasted Philentoma,True
+Phodilus badius,Phodilus badius,Oriental Bay-Owl,,False,False,False,unknown,False,False,ebird_ID-SM-LA,Phodilus badius_Oriental Bay-Owl,True
+Phyllergates cucullatus,Phyllergates cucullatus,Mountain Tailorbird,,False,False,False,unknown,False,False,ebird_ID-SM-LA,Phyllergates cucullatus_Mountain Tailorbird,True
+Phylloscopus borealis,Phylloscopus borealis,Arctic Warbler,,True,True,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Bengkunat,Phylloscopus borealis_Arctic Warbler,True
+Phylloscopus castaniceps,Phylloscopus castaniceps,Chestnut-crowned Warbler,,False,False,False,unknown,False,False,ebird_ID-SM-LA,Phylloscopus castaniceps_Chestnut-crowned Warbler,True
+Phylloscopus coronatus,Phylloscopus coronatus,Eastern Crowned Warbler,,True,True,True,lowland,False,False,gooddie2015;ebird_ID-SM-LA,Phylloscopus coronatus_Eastern Crowned Warbler,True
+Phylloscopus grammiceps,Phylloscopus grammiceps,Sunda Warbler,,False,False,False,unknown,False,False,ebird_ID-SM-LA,Phylloscopus grammiceps_Sunda Warbler,True
+Phylloscopus inornatus,Phylloscopus inornatus,Yellow-browed Warbler,,False,False,False,unknown,False,False,ebird_ID-SM-LA,Phylloscopus inornatus_Yellow-browed Warbler,True
+Phylloscopus trivirgatus,Phylloscopus trivirgatus,Mountain Leaf Warbler,,False,False,True,montane,False,False,gooddie2015;ebird_ID-SM-LA,Phylloscopus trivirgatus_Mountain Leaf Warbler,True
+Picoides canicapillus,Yungipicus canicapillus,Grey-capped Woodpecker,,False,True,False,mid,False,False,gooddie2015,Yungipicus canicapillus_Gray-capped Pygmy Woodpecker,True
+Picoides moluccensis,Yungipicus moluccensis,Sunda Pygmy Woodpecker,,True,True,True,lowland,False,False,gooddie2015,Yungipicus moluccensis_Sunda Pygmy Woodpecker,True
+Picumnus innominatus,Picumnus innominatus,Speckled Piculet,,False,False,False,unknown,False,False,ebird_ID-SM-LA,Picumnus innominatus_Speckled Piculet,True
+Picus chlorolophus,Picus chlorolophus,Lesser Yellownape,,False,True,True,mid,False,False,gooddie2015;ebird_ID-SM-LA,Picus chlorolophus_Lesser Yellownape,True
+Picus puniceus,Picus puniceus,Crimson-winged Woodpecker,,True,True,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Bengkunat;ebird_ForestTrail,Picus puniceus_Crimson-winged Woodpecker,True
+Picus vittatus,Picus vittatus,Laced Woodpecker,,False,False,False,unknown,False,False,ebird_ID-SM-LA,Picus vittatus_Laced Woodpecker,True
+Pitta caerulea,Hydrornis caeruleus,Giant Pitta,NT,True,False,False,lowland,True,False,gooddie2015;brickle_wcrs,Hydrornis caeruleus_Giant Pitta,True
+Pitta granatina,Erythropitta granatina,Garnet Pitta,NT,True,False,False,lowland,True,False,gooddie2015;brickle_wcrs,Erythropitta granatina_Garnet Pitta,True
+Pitta irena,Hydrornis irena,Malayan Banded Pitta,NT,True,True,False,lowland,True,False,gooddie2015;brickle_wcrs,Hydrornis irena_Malayan Banded-Pitta,True
+Pitta moluccensis,Pitta moluccensis,Blue-winged Pitta,,False,True,False,mid,False,False,gooddie2015;ebird_ID-SM-LA,Pitta moluccensis_Blue-winged Pitta,True
+Pitta schneideri,,Schneider’s Pitta,VU,True,False,True,lowland,True,True,gooddie2015;brickle_wcrs,,False
+Pitta sordida,Pitta sordida,Hooded Pitta,,True,False,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Belimbing;ebird_Bengkunat,Pitta sordida_Hooded Pitta,True
+Pitta venusta,,Graceful Pitta,VU,False,True,True,mid,False,False,gooddie2015,,False
+Platylophus galericulatus,Platylophus galericulatus,Crested Jay,NT,True,True,False,lowland,True,False,gooddie2015;brickle_wcrs;andriyani2022;ebird_ID-SM-LA,Platylophus galericulatus_Crested Shrikejay,True
+Platysmurus leucopterus,Platysmurus leucopterus,Black Magpie,NT,True,True,True,lowland,True,False,gooddie2015;brickle_wcrs;ebird_ID-SM-LA;ebird_Bengkunat;ebird_ForestTrail;ebird_DanauMenjukut,Platysmurus leucopterus_Black Magpie,True
+Plegadis falcinellus,Plegadis falcinellus,Glossy Ibis,,False,False,False,unknown,False,False,ebird_ID-SM-LA,Plegadis falcinellus_Glossy Ibis,True
+Ploceus philippinus,Ploceus philippinus,Baya Weaver,,False,True,False,mid,False,False,gooddie2015;ebird_ID-SM-LA,Ploceus philippinus_Baya Weaver,True
+Pluvialis fulva,Pluvialis fulva,Pacific Golden Plover,,True,False,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Belimbing,Pluvialis fulva_Pacific Golden-Plover,True
+Pluvialis squatarola,Pluvialis squatarola,Black-bellied Plover,,False,False,False,unknown,False,False,ebird_ID-SM-LA,Pluvialis squatarola_Black-bellied Plover,True
+Pnoepyga pusilla,Pnoepyga pusilla,Pygmy Wren Babbler,,False,True,True,mid,False,False,gooddie2015;ebird_ID-SM-LA,Pnoepyga pusilla_Pygmy Cupwing,True
+Poliolimnas cinereus,Poliolimnas cinereus,White-browed Crake,,False,False,False,unknown,False,False,ebird_ID-SM-LA,Poliolimnas cinereus_White-browed Crake,True
+Polyplectron chalcurum,Polyplectron chalcurum,Bronze-tailed Peacock Pheasant,,True,False,True,lowland,True,False,gooddie2015;brickle_wcrs;ebird_ID-SM-LA,Polyplectron chalcurum_Bronze-tailed Peacock-Pheasant,True
+Pomatorhinus bornensis,,Sunda Scimitar-Babbler,,False,False,False,unknown,False,False,ebird_ID-SM-LA;ebird_Bengkunat;ebird_ForestTrail,,False
+Pomatorhinus montanus,Pomatorhinus montanus,Chestnut-backed Scimitar Babbler,,True,True,False,lowland,False,False,gooddie2015,Pomatorhinus montanus_Chestnut-backed Scimitar-Babbler,True
+Porphyrio indicus,,Black-backed Swamphen,,False,False,False,unknown,False,False,ebird_ID-SM-LA,,False
+Prinia atrogularis,Prinia atrogularis,Hill Prinia,,False,False,True,montane,False,False,gooddie2015,Prinia atrogularis_Black-throated Prinia,True
+Prinia familiaris,Prinia familiaris,Bar-winged Prinia,,True,True,True,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Belimbing;ebird_Bengkunat;ebird_ForestTrail,Prinia familiaris_Bar-winged Prinia,True
+Prinia flaviventris,Prinia flaviventris,Yellow-bellied Prinia,,True,False,True,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Belimbing;ebird_ForestTrail,Prinia flaviventris_Yellow-bellied Prinia,True
+Prinia superciliaris,Prinia superciliaris,Hill Prinia,,False,False,False,unknown,False,False,ebird_ID-SM-LA,Prinia superciliaris_Hill Prinia,True
+Prionochilus maculatus,Prionochilus maculatus,Yellow-breasted Flowerpecker,,True,True,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Bengkunat;ebird_ForestTrail,Prionochilus maculatus_Yellow-breasted Flowerpecker,True
+Prionochilus percussus,,Crimson-breasted Flowerpecker,,True,True,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Bengkunat;ebird_ForestTrail;ebird_hotspot_L7940372,,False
+Prionochilus thoracicus,Prionochilus thoracicus,Scarlet-breasted Flowerpecker,,False,False,False,unknown,False,False,ebird_ID-SM-LA,Prionochilus thoracicus_Scarlet-breasted Flowerpecker,True
+Psarisomus dalhousiae,Psarisomus dalhousiae,Long-tailed Broadbill,,False,True,True,mid,False,False,gooddie2015;ebird_ID-SM-LA,Psarisomus dalhousiae_Long-tailed Broadbill,True
+Psilopogon chrysopogon,Psilopogon chrysopogon,Gold-whiskered Barbet,,True,True,True,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Belimbing;ebird_Bengkunat;ebird_ForestTrail,Psilopogon chrysopogon_Gold-whiskered Barbet,True
+Psilopogon duvaucelii,Psilopogon duvaucelii,Black-eared Barbet,,True,True,True,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Belimbing;ebird_Bengkunat;ebird_ForestTrail;ebird_hotspot_L7940372,Psilopogon duvaucelii_Blue-eared Barbet,True
+Psilopogon haemacephalus,Psilopogon haemacephalus,Coppersmith Barbet,,False,True,False,mid,False,False,gooddie2015;ebird_ID-SM-LA;ebird_hotspot_L7940372,Psilopogon haemacephalus_Coppersmith Barbet,True
+Psilopogon henricii,Psilopogon henricii,Yellow-crowned Barbet,NT,True,True,False,lowland,True,False,gooddie2015;brickle_wcrs;ebird_ID-SM-LA,Psilopogon henricii_Yellow-crowned Barbet,True
+Psilopogon mystacophanos,Psilopogon mystacophanos,Red-throated Barbet,NT,True,True,True,lowland,True,False,gooddie2015;brickle_wcrs;ebird_ID-SM-LA;ebird_Bengkunat;ebird_ForestTrail,Psilopogon mystacophanos_Red-throated Barbet,True
+Psilopogon oorti,Psilopogon oorti,Black-browed Barbet,,False,True,True,mid,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Bengkunat,Psilopogon oorti_Black-browed Barbet,True
+Psilopogon pyrolophus,Psilopogon pyrolophus,Fire-tufted Barbet,,True,False,True,lowland,False,False,gooddie2015;ebird_ID-SM-LA,Psilopogon pyrolophus_Fire-tufted Barbet,True
+Psilopogon rafflesii,Psilopogon rafflesii,Red-crowned Barbet,NT,True,False,True,lowland,True,False,gooddie2015;brickle_wcrs;ebird_ID-SM-LA;ebird_Bengkunat;ebird_hotspot_L7940372,Psilopogon rafflesii_Red-crowned Barbet,True
+Psittacula alexandri,Psittacula alexandri,Red-breasted Parakeet,,True,False,False,lowland,False,False,gooddie2015,Psittacula alexandri_Red-breasted Parakeet,True
+Psittacula longicauda,Psittacula longicauda,Long-tailed Parakeet,,True,False,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Bengkunat,Psittacula longicauda_Long-tailed Parakeet,True
+Psittinus cyanurus,Psittinus cyanurus,Blue-rumped Parrot,NT,True,False,False,lowland,True,False,gooddie2015;brickle_wcrs;ebird_ID-SM-LA;ebird_Bengkunat;ebird_ForestTrail,Psittinus cyanurus_Blue-rumped Parrot,True
+Pterorhinus mitratus,Pterorhinus mitratus,Chestnut-capped Laughingthrush,,False,False,False,unknown,False,False,ebird_ID-SM-LA,Pterorhinus mitratus_Chestnut-capped Laughingthrush,True
+Pteruthius aeralatus,Pteruthius aeralatus,White-browed Shrike-Babbler,,False,False,False,unknown,False,False,ebird_ID-SM-LA,Pteruthius aeralatus_Blyth's Shrike-Babbler,True
+Pteruthius flaviscapis,,White-browed Shrike Babbler,,False,False,True,montane,False,False,gooddie2015,,False
+Ptilinopus melanospilus,Ptilinopus melanospilus,Black-naped Fruit-Dove,,False,False,False,unknown,False,False,ebird_ID-SM-LA,Ptilinopus melanospilus_Black-naped Fruit-Dove,True
+Pycnonotus atriceps,Brachypodius melanocephalos,Black-headed Bulbul,,True,True,True,lowland,False,False,gooddie2015,Brachypodius melanocephalos_Black-headed Bulbul,True
+Pycnonotus aurigaster,Pycnonotus aurigaster,Sooty-headed Bulbul,,True,True,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA,Pycnonotus aurigaster_Sooty-headed Bulbul,True
+Pycnonotus bimaculatus,,Orange-spotted Bulbul,,False,False,True,montane,False,False,gooddie2015,,False
+Pycnonotus brunneus,Pycnonotus brunneus,Red-eyed Bulbul,,True,False,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Belimbing;ebird_Bengkunat;ebird_ForestTrail,Pycnonotus brunneus_Red-eyed Bulbul,True
+Pycnonotus cyaniventris,,Grey-bellied Bulbul,NT,True,True,True,lowland,True,False,gooddie2015;brickle_wcrs,,False
+Pycnonotus dispar,,Ruby-throated Bulbul,,True,True,True,lowland,True,False,gooddie2015;andriyani2022,,False
+Pycnonotus erythropthalmos,,Spectacled Bulbul,,True,False,False,lowland,False,False,gooddie2015,,False
+Pycnonotus eutilotus,,Puff-backed Bulbul,,True,False,False,lowland,False,False,gooddie2015,,False
+Pycnonotus goiavier,Pycnonotus goiavier,Yellow-vented Bulbul,,True,False,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Belimbing;ebird_Bengkunat;ebird_ForestTrail;ebird_hotspot_L7940372,Pycnonotus goiavier_Yellow-vented Bulbul,True
+Pycnonotus leucogrammicus,,Cream-striped Bulbul,,False,True,True,mid,False,False,gooddie2015,,False
+Pycnonotus plumosus,Pycnonotus plumosus,Olive-winged Bulbul,,True,False,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Belimbing;ebird_Bengkunat;ebird_ForestTrail;ebird_hotspot_L7940372,Pycnonotus plumosus_Olive-winged Bulbul,True
+Pycnonotus simplex,Pycnonotus simplex,Cream-vented Bulbul,,True,True,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Belimbing;ebird_Bengkunat;ebird_ForestTrail;ebird_hotspot_L7940372,Pycnonotus simplex_Cream-vented Bulbul,True
+Pycnonotus squamatus,,Scaly-breasted Bulbul,NT,True,False,False,lowland,True,False,gooddie2015;brickle_wcrs,,False
+Pycnonotus tympanistrigus,,Spot-necked Bulbul,NT,False,False,True,montane,False,False,gooddie2015;ebird_ID-SM-LA,,False
+Pycnonotus zeylanicus,Pycnonotus zeylanicus,Straw-headed Bulbul,VU,False,False,False,unknown,False,False,gooddie2015,Pycnonotus zeylanicus_Straw-headed Bulbul,True
+Rallina eurizonoides,Rallina eurizonoides,Slaty-legged Crake,,False,False,False,unknown,False,False,ebird_ID-SM-LA,Rallina eurizonoides_Slaty-legged Crake,True
+Rallina fasciata,Rallina fasciata,Red-legged Crake,,True,False,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Bengkunat,Rallina fasciata_Red-legged Crake,True
+Ramphiculus jambu,,Jambu Fruit Dove,NT,True,False,False,lowland,True,False,gooddie2015;brickle_wcrs;ebird_ID-SM-LA,,False
+Rediscovery of,,"Zetra, B., Rafiastanto, A., Rombang, W. & Trainor, C. (2002)",,False,False,False,unknown,False,False,gooddie2015,,False
+Retrieved from,,Selatan.,,False,False,False,unknown,False,False,gooddie2015,,False
+Rhabdotorrhinus corrugatus,Rhabdotorrhinus corrugatus,Wrinkled Hornbill,NT,False,False,False,unknown,False,False,gooddie2015;ebird_ID-SM-LA,Rhabdotorrhinus corrugatus_Wrinkled Hornbill,True
+Rhaphidura leucopygialis,Rhaphidura leucopygialis,Silver-rumped Spinetail,,True,False,True,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Bengkunat,Rhaphidura leucopygialis_Silver-rumped Needletail,True
+Rhinomyias brunneatus,,Brown-chested Jungle Flycatcher,VU,False,False,False,unknown,False,False,gooddie2015,,False
+Rhinomyias olivacea,Cyornis olivaceus,Fulvous-chested Jungle Flycatcher,,True,True,False,lowland,False,False,gooddie2015,Cyornis olivaceus_Fulvous-chested Jungle-Flycatcher,True
+Rhinomyias umbratilis,Cyornis umbratilis,Grey-chested Jungle Flycatcher,NT,False,True,False,mid,False,False,gooddie2015,Cyornis umbratilis_Gray-chested Jungle-Flycatcher,True
+Rhinoplax vigil,,"Collar, N. J. (2015) Helmeted Hornbills",CR,True,True,True,lowland,True,False,gooddie2015;brickle_wcrs;ebird_ID-SM-LA,,False
+Rhinortha chlorophaea,Rhinortha chlorophaea,Raffles’s Malkoha,,True,True,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Belimbing;ebird_Bengkunat;ebird_ForestTrail,Rhinortha chlorophaea_Raffles's Malkoha,True
+Rhipidura albicollis,Rhipidura albicollis,White-throated Fantail,,False,True,True,mid,False,False,gooddie2015;ebird_ID-SM-LA,Rhipidura albicollis_White-throated Fantail,True
+Rhipidura javanica,Rhipidura javanica,Malaysian Pied-Fantail,,False,False,False,unknown,False,False,ebird_ID-SM-LA,Rhipidura javanica_Malaysian Pied-Fantail,True
+Rhipidura perlata,Rhipidura perlata,Spotted Fantail,,False,True,True,mid,False,False,gooddie2015;ebird_ID-SM-LA,Rhipidura perlata_Spotted Fantail,True
+Rhizothera longirostris,,Long-billed Partridge,NT,False,True,False,mid,False,False,gooddie2015;ebird_ID-SM-LA,,False
+Rhyticeros undulatus,Rhyticeros undulatus,Wreathed Hornbill,,True,True,True,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Bengkunat;ebird_ForestTrail;ebird_hotspot_L7940372,Rhyticeros undulatus_Wreathed Hornbill,True
+Rimator albostriatus,,Sumatran Wren Babbler,,False,True,True,mid,False,False,gooddie2015,,False
+Rollulus rouloul,Rollulus rouloul,Crested Partridge,NT,True,True,False,lowland,True,False,gooddie2015;brickle_wcrs;ebird_ID-SM-LA;ebird_Bengkunat;ebird_ForestTrail,Rollulus rouloul_Crested Partridge,True
+Rostratula benghalensis,Rostratula benghalensis,Greater Painted-Snipe,,False,False,False,unknown,False,False,ebird_ID-SM-LA,Rostratula benghalensis_Greater Painted-Snipe,True
+Rubigula cyaniventris,,Gray-bellied Bulbul,,False,False,False,unknown,False,False,ebird_ID-SM-LA;ebird_Bengkunat,,False
+Rubigula dispar,,Ruby-throated Bulbul,,False,False,False,unknown,False,False,ebird_ID-SM-LA,,False
+Rubigula erythropthalmos,Rubigula erythropthalmos,Spectacled Bulbul,,False,False,False,unknown,False,False,ebird_ID-SM-LA;ebird_Bengkunat;ebird_ForestTrail,Rubigula erythropthalmos_Spectacled Bulbul,True
+Rubigula squamata,,Scaly-breasted Bulbul,,False,False,False,unknown,False,False,ebird_ID-SM-LA;ebird_Bengkunat,,False
+Sasia abnormis,Sasia abnormis,Rufous Piculet,,True,True,True,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Belimbing;ebird_Bengkunat;ebird_ForestTrail,Sasia abnormis_Rufous Piculet,True
+Scolopax saturata,,Javan Woodcock,NT,False,False,True,montane,False,False,gooddie2015,,False
+Seicercus castaniceps,Phylloscopus castaniceps,Chestnut-crowned Warbler,,False,True,True,mid,False,False,gooddie2015,Phylloscopus castaniceps_Chestnut-crowned Warbler,True
+Serilophus lunatus,Serilophus lunatus,Silver-breasted Broadbill,,True,False,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA,Serilophus lunatus_Silver-breasted Broadbill,True
+Setornis criniger,,Hook-billed Bulbul,,False,False,False,unknown,False,False,ebird_ID-SM-LA,,False
+Shortell for,,"number of key references, and to Troy",,False,False,False,unknown,False,False,gooddie2015,,False
+Sitta azurea,,Blue Nuthatch,,False,True,True,mid,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Bengkunat,,False
+Sitta frontalis,Sitta frontalis,Velvet-fronted Nuthatch,,True,False,True,lowland,True,False,gooddie2015;andriyani2022;ebird_ID-SM-LA;ebird_ForestTrail,Sitta frontalis_Velvet-fronted Nuthatch,True
+Spilopelia chinensis,,Eastern Spotted Dove,,True,False,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Belimbing;ebird_Bengkunat;ebird_ForestTrail;ebird_hotspot_L7940372,,False
+Spilornis cheela,Spilornis cheela,Crested Serpent Eagle,,True,True,True,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Belimbing;ebird_Bengkunat;ebird_ForestTrail;ebird_hotspot_L7940372,Spilornis cheela_Crested Serpent-Eagle,True
+Stachyridopsis chrysaea,Cyanoderma chrysaeum,Golden Babbler,,False,True,True,mid,False,False,gooddie2015,Cyanoderma chrysaeum_Golden Babbler,True
+Stachyridopsis rufifrons,Cyanoderma rufifrons,Rufous-fronted Babbler,,True,True,False,lowland,False,False,gooddie2015,Cyanoderma rufifrons_Rufous-fronted Babbler,True
+Stachyris erythroptera,Cyanoderma erythropterum,Chestnut-winged Babbler,,True,False,False,lowland,False,False,gooddie2015,Cyanoderma erythropterum_Chestnut-winged Babbler,True
+Stachyris leucotis,,White-necked Babbler,,False,False,False,unknown,False,False,ebird_ID-SM-LA,,False
+Stachyris maculata,Stachyris maculata,Chestnut-rumped Babbler,NT,True,True,False,lowland,True,False,gooddie2015;brickle_wcrs;ebird_ID-SM-LA;ebird_Bengkunat,Stachyris maculata_Chestnut-rumped Babbler,True
+Stachyris nigriceps,Stachyris nigriceps,Grey-throated Babbler,,True,True,True,lowland,False,False,gooddie2015;ebird_ID-SM-LA,Stachyris nigriceps_Gray-throated Babbler,True
+Stachyris nigricollis,Stachyris nigricollis,Black-throated Babbler,NT,True,False,False,lowland,True,False,gooddie2015;brickle_wcrs;ebird_ID-SM-LA;ebird_Bengkunat,Stachyris nigricollis_Black-throated Babbler,True
+Stachyris poliocephala,Stachyris poliocephala,Grey-headed Babbler,,True,False,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_ForestTrail,Stachyris poliocephala_Gray-headed Babbler,True
+Stachyris strialata,Stachyris strialata,Spot-necked Babbler,,False,True,True,mid,False,False,gooddie2015;ebird_ID-SM-LA,Stachyris strialata_Spot-necked Babbler,True
+Stercorarius parasiticus,Stercorarius parasiticus,Parasitic Jaeger,,False,False,False,unknown,False,False,ebird_ID-SM-LA,Stercorarius parasiticus_Parasitic Jaeger,True
+Sterna dougallii,Sterna dougallii,Roseate Tern,,False,False,False,unknown,False,False,ebird_ID-SM-LA,Sterna dougallii_Roseate Tern,True
+Sterna hirundo,Sterna hirundo,Common Tern,,True,False,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Belimbing,Sterna hirundo_Common Tern,True
+Sterna sumatrana,Sterna sumatrana,Black-naped Tern,,False,False,False,unknown,False,False,ebird_ID-SM-LA,Sterna sumatrana_Black-naped Tern,True
+Sternula albifrons,Sternula albifrons,Little Tern,,True,False,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA,Sternula albifrons_Little Tern,True
+Strix leptogrammica,Strix leptogrammica,Brown Wood-Owl,,False,False,False,unknown,False,False,ebird_ID-SM-LA,Strix leptogrammica_Brown Wood-Owl,True
+Sula leucogaster,Sula leucogaster,Brown Booby,,False,False,False,unknown,False,False,ebird_ID-SM-LA,Sula leucogaster_Brown Booby,True
+Sula sula,Sula sula,Red-footed Booby,,False,False,False,unknown,False,False,ebird_ID-SM-LA,Sula sula_Red-footed Booby,True
+Sumatra bird,,"Holmes, D. A. (1996)",,False,False,False,unknown,False,False,gooddie2015,,False
+Sumatra of,,second to fourth records from,,False,False,False,unknown,False,False,gooddie2015,,False
+Surniculus lugubris,Surniculus lugubris,Square-tailed Drongo Cuckoo,,False,True,False,mid,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Belimbing;ebird_Bengkunat;ebird_ForestTrail,Surniculus lugubris_Square-tailed Drongo-Cuckoo,True
+Synoicus chinensis,Synoicus chinensis,Asian Blue Quail,,True,False,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA,Synoicus chinensis_Blue-breasted Quail,True
+Tachyspiza gularis,,Japanese Sparrowhawk,,False,False,False,unknown,False,False,ebird_ID-SM-LA,,False
+Tachyspiza soloensis,,Chinese Sparrowhawk,,False,False,False,unknown,False,False,ebird_ID-SM-LA,,False
+Tachyspiza virgata,,Besra,,False,False,False,unknown,False,False,ebird_ID-SM-LA,,False
+Taenioptynx sylvaticus,,Sunda Owlet,,False,False,False,unknown,False,False,ebird_ID-SM-LA,,False
+Tephrodornis gularis,Tephrodornis virgatus,Large Woodshrike,,True,True,False,lowland,False,False,gooddie2015,Tephrodornis virgatus_Large Woodshrike,True
+Tephrodornis virgatus,Tephrodornis virgatus,Large Woodshrike,,False,False,False,unknown,False,False,ebird_ID-SM-LA;ebird_Belimbing;ebird_Bengkunat;ebird_ForestTrail,Tephrodornis virgatus_Large Woodshrike,True
+Terpsiphone affinis,Terpsiphone affinis,Blyth's Paradise-Flycatcher,,False,False,False,unknown,False,False,ebird_ID-SM-LA;ebird_Bengkunat;ebird_ForestTrail,Terpsiphone affinis_Blyth's Paradise-Flycatcher,True
+Terpsiphone atrocaudata,Terpsiphone atrocaudata,Black Paradise-Flycatcher,,False,False,False,unknown,False,False,ebird_ID-SM-LA,Terpsiphone atrocaudata_Japanese Paradise-Flycatcher,True
+Terpsiphone incei,Terpsiphone incei,Amur Paradise-Flycatcher,,False,False,False,unknown,False,False,ebird_ID-SM-LA,Terpsiphone incei_Amur Paradise-Flycatcher,True
+Terpsiphone paradisi,Terpsiphone paradisi,Asian Paradise-flycatcher,,True,True,True,lowland,False,False,gooddie2015,Terpsiphone paradisi_Indian Paradise-Flycatcher,True
+Thalasseus bengalensis,Thalasseus bengalensis,Lesser Crested Tern,,False,False,False,unknown,False,False,ebird_ID-SM-LA,Thalasseus bengalensis_Lesser Crested Tern,True
+Thalasseus bergii,Thalasseus bergii,Great Crested Tern,,False,False,False,unknown,False,False,ebird_ID-SM-LA;ebird_Belimbing,Thalasseus bergii_Great Crested Tern,True
+The birds,,"van Marle, J. G. & Voous, K. H. (1988)",,False,False,False,unknown,False,False,gooddie2015,,False
+Thinornis dubius,,Little Ringed Plover,,False,False,False,unknown,False,False,ebird_ID-SM-LA,,False
+Three taxa,,& Collar (2014).,,False,False,False,unknown,False,False,gooddie2015,,False
+Threskiornis melanocephalus,Threskiornis melanocephalus,Black-headed Ibis,NT,False,False,False,unknown,False,False,gooddie2015,Threskiornis melanocephalus_Black-headed Ibis,True
+Todiramphus chloris,Todiramphus chloris,Collared Kingfisher,,True,True,True,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Belimbing;ebird_Bengkunat;ebird_ForestTrail;ebird_hotspot_L7940372,Todiramphus chloris_Collared Kingfisher,True
+Todiramphus sanctus,Todiramphus sanctus,Sacred Kingfisher,,False,False,False,unknown,False,False,ebird_ID-SM-LA;ebird_Belimbing,Todiramphus sanctus_Sacred Kingfisher,True
+Treron capellei,,Large Green Pigeon,VU,True,False,False,lowland,True,False,gooddie2015;brickle_wcrs;ebird_ID-SM-LA;ebird_Bengkunat;ebird_ForestTrail,,False
+Treron curvirostra,Treron curvirostra,Thick-billed Green Pigeon,,True,False,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Bengkunat;ebird_ForestTrail,Treron curvirostra_Thick-billed Green-Pigeon,True
+Treron fulvicollis,Treron fulvicollis,Cinnamon-headed Green-Pigeon,,False,False,False,unknown,False,False,ebird_ID-SM-LA,Treron fulvicollis_Cinnamon-headed Green-Pigeon,True
+Treron olax,Treron olax,Little Green Pigeon,,True,False,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Belimbing;ebird_Bengkunat;ebird_ForestTrail,Treron olax_Little Green-Pigeon,True
+Treron oxyurus,,Sumatran Green Pigeon,NT,True,True,True,lowland,True,False,gooddie2015;brickle_wcrs;ebird_ID-SM-LA;ebird_hotspot_L7940372,,False
+Treron sphenurus,Treron sphenurus,Wedge-tailed Green Pigeon,,False,True,False,mid,False,False,gooddie2015;ebird_ID-SM-LA,Treron sphenurus_Wedge-tailed Green-Pigeon,True
+Treron vernans,Treron vernans,Pink-necked Green Pigeon,,True,False,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Belimbing;ebird_Bengkunat;ebird_ForestTrail;ebird_hotspot_L7940372,Treron vernans_Pink-necked Green-Pigeon,True
+Trichastoma bicolor,Pellorneum bicolor,Ferruginous Babbler,,True,False,False,lowland,False,False,gooddie2015,Pellorneum bicolor_Ferruginous Babbler,True
+Trichastoma rostratum,Pellorneum rostratum,White-chested Babbler,NT,True,True,False,lowland,True,False,gooddie2015;brickle_wcrs,Pellorneum rostratum_White-chested Babbler,True
+Trichixos pyrropyga,Copsychus pyrropygus,Rufous-tailed Shama,NT,True,False,False,lowland,False,False,gooddie2015,Copsychus pyrropygus_Rufous-tailed Shama,True
+Trichoglossus haematodus,Trichoglossus haematodus,Coconut Lorikeet,,False,False,False,unknown,False,False,ebird_ID-SM-LA,Trichoglossus haematodus_Coconut Lorikeet,True
+Tricholestes criniger,Tricholestes criniger,Hairy-backed Bulbul,,True,True,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Bengkunat;ebird_ForestTrail,Tricholestes criniger_Hairy-backed Bulbul,True
+Tringa glareola,Tringa glareola,Wood Sandpiper,,False,False,False,unknown,False,False,ebird_ID-SM-LA;ebird_Bengkunat,Tringa glareola_Wood Sandpiper,True
+Tringa nebularia,Tringa nebularia,Common Greenshank,,False,False,False,unknown,False,False,ebird_ID-SM-LA,Tringa nebularia_Common Greenshank,True
+Tringa totanus,Tringa totanus,Common Redshank,,True,False,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Belimbing,Tringa totanus_Common Redshank,True
+Turdinus epilepidota,,Eyebrowed Wren Babbler,,False,True,True,mid,False,False,gooddie2015,,False
+Turdinus macrodactylus,Turdinus macrodactylus,Large Wren Babbler,NT,False,False,False,unknown,False,False,gooddie2015,Turdinus macrodactylus_Large Wren-Babbler,True
+Turdinus marmoratus,Turdinus marmoratus,Marbled Wren Babbler,,False,False,True,montane,False,False,gooddie2015;ebird_ID-SM-LA,Turdinus marmoratus_Marbled Wren-Babbler,True
+Turdinus rufipectus,,Rusty-breasted Wren Babbler,,False,False,True,montane,False,False,gooddie2015,,False
+Turdus obscurus,Turdus obscurus,Eyebrowed Thrush,,False,False,False,unknown,False,False,ebird_ID-SM-LA,Turdus obscurus_Eyebrowed Thrush,True
+Turnix suscitator,Turnix suscitator,Barred Buttonquail,,True,False,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Belimbing,Turnix suscitator_Barred Buttonquail,True
+Tyto javanica,,Eastern Barn Owl,,False,False,False,unknown,False,False,ebird_ID-SM-LA,,False
+Xenus cinereus,Xenus cinereus,Terek Sandpiper,,False,False,False,unknown,False,False,ebird_ID-SM-LA;ebird_Belimbing;ebird_DanauMenjukut,Xenus cinereus_Terek Sandpiper,True
+Yungipicus canicapillus,Yungipicus canicapillus,Gray-capped Pygmy Woodpecker,,False,False,False,unknown,False,False,ebird_ID-SM-LA,Yungipicus canicapillus_Gray-capped Pygmy Woodpecker,True
+Yungipicus moluccensis,Yungipicus moluccensis,Sunda Pygmy Woodpecker,,False,False,False,unknown,False,False,ebird_ID-SM-LA;ebird_Bengkunat;ebird_DanauMenjukut,Yungipicus moluccensis_Sunda Pygmy Woodpecker,True
+Zanclostomus javanicus,,Red-billed Malkoha,,True,True,False,lowland,False,False,gooddie2015;ebird_ID-SM-LA;ebird_Bengkunat;ebird_ForestTrail,,False
+Zapornia fusca,Zapornia fusca,Ruddy-breasted Crake,,False,False,False,unknown,False,False,ebird_ID-SM-LA,Zapornia fusca_Ruddy-breasted Crake,True
+Zoothera dauma,,Scaly Thrush,,False,False,True,montane,False,False,gooddie2015,,False
+Zoothera interpres,,Chestnut-capped Thrush,NT,True,True,False,lowland,True,False,gooddie2015;brickle_wcrs,,False
+Zosterops atricapilla,Zosterops atricapilla,Black-capped White-eye,,False,True,True,mid,False,False,gooddie2015;ebird_ID-SM-LA,Zosterops atricapilla_Black-capped White-eye,True
+Zosterops japonicus,Zosterops japonicus,Warbling White-eye,,False,False,False,unknown,False,False,ebird_ID-SM-LA,Zosterops japonicus_Warbling White-eye,True
+Zosterops melanurus,,Sangkar White-eye,,False,False,False,unknown,False,False,ebird_ID-SM-LA,,False
+Zosterops palpebrosus,Zosterops palpebrosus,Oriental White-eye,,False,True,True,mid,False,False,gooddie2015,Zosterops palpebrosus_Indian White-eye,True

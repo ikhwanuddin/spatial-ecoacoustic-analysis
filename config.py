@@ -155,8 +155,74 @@ SITE_COORDS: Dict[str, Dict[str, float]] = {
     "2B400": {"lat": -5.6585004, "lon": 104.4046997},
 }
 
+# Plot codes + alias for Way Canguk Research Station (custom species list only here).
+WAY_CANGUK_LOCATIONS = frozenset(
+    list(SITE_COORDS.keys()) + ["waycanguk", "way_canguk", "wcrs", "spwc"]
+)
+
+# Literature-based allow-list for BirdNET (Mode A). Used only for Way Canguk.
+# birdnetlib forbids combining this with lat/lon — custom list replaces geo filter.
+BIRDNET_SPECIES_LIST_WAY_CANGUK = os.path.join(
+    PROJECT_ROOT, "species_lists", "birdnet", "species_list_way_canguk.txt"
+)
+
 BIRDNET_MIN_CONF = 0.4
 BIRDNET_OVERLAP = 0.0
+
+
+def is_way_canguk_location(location_name: Optional[str]) -> bool:
+    """True if pipeline location is Way Canguk (plots or aliases)."""
+    if not location_name:
+        return False
+    return location_name.strip().lower() in {x.lower() for x in WAY_CANGUK_LOCATIONS}
+
+
+def resolve_birdnet_filter(
+    location_name: Optional[str],
+) -> Tuple[Optional[str], Optional[float], Optional[float], str]:
+    """Pick BirdNET filter mode for a pipeline location.
+
+    Returns:
+        (species_list_path, lat, lon, mode_label)
+
+    - Way Canguk → custom species list; lat/lon None (birdnetlib XOR rule)
+    - Other sites with coords → geo lat/lon only
+    - Unknown → no filter (full model labels above min_conf)
+    """
+    # Env override: force disable custom list everywhere
+    use_list_env = os.environ.get("BIRDNET_USE_SPECIES_LIST", "").strip().lower()
+    force_off = use_list_env in ("0", "false", "no", "off")
+    force_on = use_list_env in ("1", "true", "yes", "on")
+
+    list_path = os.environ.get(
+        "BIRDNET_SPECIES_LIST", BIRDNET_SPECIES_LIST_WAY_CANGUK
+    ).strip()
+
+    if is_way_canguk_location(location_name) and not force_off:
+        if list_path and os.path.isfile(list_path):
+            return list_path, None, None, f"custom_list:{os.path.basename(list_path)}"
+        # Missing file: fall through to geo for WC plots
+        if location_name in SITE_COORDS:
+            c = SITE_COORDS[location_name]
+            return None, c["lat"], c["lon"], "geo_fallback_missing_list"
+        c = LOCATION_COORDS.get("waycanguk")
+        if c:
+            return None, c["lat"], c["lon"], "geo_fallback_missing_list"
+
+    if force_on and list_path and os.path.isfile(list_path):
+        # Explicit override: use list even off-site (rare / testing)
+        return list_path, None, None, f"custom_list_forced:{os.path.basename(list_path)}"
+
+    # Non–Way Canguk: geo filter from SITE_COORDS or LOCATION_COORDS
+    if location_name and location_name in SITE_COORDS:
+        c = SITE_COORDS[location_name]
+        return None, c["lat"], c["lon"], "geo"
+    if location_name:
+        key = location_name.strip().lower()
+        if key in LOCATION_COORDS:
+            c = LOCATION_COORDS[key]
+            return None, c["lat"], c["lon"], "geo"
+    return None, None, None, "none"
 
 # ============================================================
 # AUDIO CONFIG

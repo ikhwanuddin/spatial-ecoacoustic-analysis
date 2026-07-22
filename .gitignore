@@ -6,3 +6,10 @@ __pycache__/
 *.ipynb
 ir_cache/
 pipeline_state.json
+
+# Secrets — never commit
+.env
+.env.*
+!.env.example
+**/.env
+**/secrets/

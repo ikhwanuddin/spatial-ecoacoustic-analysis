@@ -1,0 +1,1455 @@
+
+
+===== PAGE 1 =====
+Ornithological records from Bukit Barisan Selatan 
+National Park, Sumatra, Indonesia
+CHRIS GOODDIE
+Previously unpublished data are collated and presented for Bukit Barisan Selatan National Park, an extensive site in south-west Sumatra, 
+Indonesia. Records have been compiled from three separate areas in the park, each of which covers a different altitudinal range: (1) the mid-
+altitude areas around Way Titias, Liwa and Kubuperahu; (2) the montane area surrounding Danau Ranau lake; and (3) the lowland areas of 
+Way Canguk and the southern peninsula including Sukaraja. All known reliable records have been collated and a list of 416 species created. 
+Records of threatened species, significant range extensions and other material of interest are documented, including the first discovery of 
+the nest of Rajah Scops Owl Otus brookii .
+INTRODUCTION
+Bukit Barisan Selatan National Park (hereafter Bukit Barisan) 
+is located in south-west Sumatra, Indonesia (central coordinates 
+5.17°S 104.10°E). The park is in the most southerly part of the Bukit 
+Barisan range, which forms the mountainous spine of the island 
+lying parallel with, and close to, the west coast. It has a total area of 
+3,568 km², including a 216 km
+2 marine sector, and lies within two 
+provinces—Lampung and Bengkulu. It was designated a wildlife 
+sanctuary in 1935 and became a national park on 14 October 1982. 
+Together with Gn Leuser and Kerinci Seblat National Parks to 
+the north it forms a World Heritage Site, the Tropical Rainforest 
+Heritage of Sumatra (UNESCO 2004, BirdLife International 
+2015a). The park lies between sea level and 1,800 m, with two 
+significant higher peaks, Gn Pesagi (2,262 m) and Gn Tangkit 
+Tebak (2,007 m). Habitat includes mangrove forest, lowland 
+tropical forest, and submontane and montane forest. The typical 
+temperature range is 20–30°C and annual rainfall is 1,000–4,000 
+mm/year.
+Bukit Barisan is the third largest officially protected area in 
+Sumatra, although its narrow elongated shape and 700 km long 
+boundary makes protection difficult due to the high boundary-
+to-interior ratio. The park is the main watershed for south-west 
+Sumatra (O’Brien & Kinnaird 1996), providing water and ecological 
+services to many local communities. A series of protected forests 
+were created to form buffer zones to the east of the park, but these 
+have all already been swallowed up by human encroachment. An 
+estimated 450,000 people live within 10 km of the park boundary, 
+which is now bordered by villages, agriculture and plantations 
+(Kinnaird et al . 2003).
+Throughout Sumatra, the most critical threat to wildlife is 
+deforestation, and although the park still contains some of the 
+largest remaining tracts of tropical forest on the island, clear-felling 
+for coffee cultivation has already occurred on a significant scale, for 
+example around low- and mid-altitude areas of Danau Ranau (see 
+site details below). Indonesia is the fourth largest coffee producer in 
+the world and the second largest producer of Coffea robusta. Robusta 
+coffee does not require shade to grow, allowing entire forests to be 
+clear-felled and converted to plantations.
+In 1977 the park suffered its most serious set-back when the 
+international price of robusta coffee peaked, triggering spontaneous 
+mass migration to the mountainous areas of southern Sumatra and 
+led to major deforestation on the eastern side of the park. Between 
+1976 and 1982, about 195,000 ha were illegally cleared and converted 
+into coffee plantations by an estimated 100,000 immigrant squatters, 
+mainly originating from Java (Gaveau et al . 2009). By the end of 
+the twentieth century, all easily accessible legally protected forest 
+(hutan lindung) in the east of the park had been converted to coffee 
+plantations. Today, a few forest patches remain on the mountain 
+tops, and the forested area of the park has been reduced by 63,726 
+ha—a 21% loss of forest cover from 1972 to date (Gaveau et al . 
+2009). Remarkably, at present a healthy avian biodiversity survives, 
+with significant populations of larger frugivores including nine 
+species of hornbill, and a healthy galliform population persists in 
+the remaining montane forests. However, if the clearance continues 
+these populations will undoubtedly disappear . Recent economic 
+and political difficulties in Indonesia have intensified the pressure 
+on the park, including a large post-tsunami migration from Aceh 
+and North Sumatra provinces. The area around Bukit Barisan is 
+relatively densely populated with post-tsunami immigrants, adding 
+to the pressure already imposed on natural resources by the earlier 
+mass human influx from Java (Levang et al. 2012).
+Whilst the remaining montane forest in Kerinci Seblat 
+National Park (central coordinates 2.25°S 101.50°E) is relatively 
+well known, Bukit Barisan, some 480 km to the south-east, remains 
+largely unexplored. MacKinnon & Phillipps (1993) noted the lack 
+of surveys and that only 121 bird species were confirmed for the 
+park. Indeed Bukit Barisan appears to have been systematically 
+surveyed only once for birds, from 7–24 March 1995 (O’Brien & 
+Kinnaird 1996). This survey recorded 276 species, but included one 
+or two which are questionable (e.g. Greater Adjutant Leptoptilos 
+dubius; omitted here, but possible) and mistakes (e.g. Common 
+Sandpiper Actitis hypoleucos is listed twice under different 
+systematic names, and both Fiery Minivet Pericrocotus igneus  and 
+Small Minivet P. cinnamomeus, and Hair-crested Drongo Dicrurus 
+hottentottus  and Sumatran Drongo  D. sumatranus , are listed). 
+However, following the rediscovery of Sumatran Ground Cuckoo 
+Carpococcyx viridis  in 1997 after 81 years (Zetra et al. 2002), the 
+number of visitors has increased a little. 
+The mammals of Bukit Barisan are rather better documented 
+(UNESCO 2015). The park supports a large number of species, 
+including about 500 ‘Sumatran’ Asian Elephant Elephas maximus 
+sumatranus —about 25% of the remaining population of this 
+taxon. An estimated 60–85 Sumatran Rhinoceros Dicerorhinus 
+sumatrensis  survive, the second largest population anywhere on 
+Sumatra, and 40–50 Critically Endangered Sumatran Tigers 
+Panthera tigris sumatrae are also said to survive in the park—about 
+10% of the remaining population. In addition, the rare Sumatran 
+Striped Rabbit Nesolagus netscheri occurs between 600–1,400 m. 
+Other mammals known to occur include Sunda Pangolin Manis 
+javanica, Western Tarsier Tarsius bancanus, Slow Loris Nycticebus 
+coucang, Mitred Leaf Monkey Presbytis melalophos, Silvered Langur 
+Trachypithecus cristatus , Agile Gibbon Hylobates agilis , Siamang 
+Symphalangus syndactylus , Wild Dog Cuon alpinus , Asian Sun 
+Bear Helarctos  malayanus, Binturong Arctitis binturong, Leopard 
+Cat Prionailurus bengalensis , Marbled Cat Pardofelis marmorata, 
+Clouded Leopard Neofelis nebulosa  and Malayan Tapir Tapirus 
+indicus.
+FORKTAIL 31 (2015): 70–81
+
+===== PAGE 2 =====
+METHODS
+Personal observations
+Between 19 and 28 April 2009 CG and Troy Shortell (TS) visited 
+two areas in Bukit Barisan, Way Titias and Danau Ranau, both a 
+5–6 hour drive north of Bandar Lampung airport, and observed a 
+number of bird species that appeared to be new records for the park, 
+including some which were southward extensions of the species’ 
+known ranges. During these visits no systematic or quantitative 
+survey methods were used. Data on species were collected by direct 
+observation, on occasion using playback techniques. We employed 
+the services of two local guides, Gamal and Toni (the latter based 
+in the nearby town of Liwa), who with a cook and the obligatory 
+forest ranger accompanied us throughout. For details of access, 
+accommodation and local guides see the Birding Indonesia website: 
+http:/ /burung-nusantara.org/birding-sites/sumatra/bukit-barisan-
+selatan.
+Way Titias (5.068°S 104.026°E) in the north-east of the park 
+is a four-hour, 5 km walk along hunting trails south-south-west 
+of Panyungkaian village at 950 m (5.067°S 104.100°E), located 
+about 2 km south-east of Liwa (5.033°S 104.067°E). The site is 
+in a valley and relatively difficult to access, involving a number 
+of river crossings. The terrain is for the most part steep-sided 
+forested valleys intersected by numerous streams. The habitat is 
+submontane forest, in which dipterocarps are far less common than 
+in lowland forest, and are largely superseded in terms of dominance 
+by Clusiaceae, Euphorbiaceae, Fagaceae and Myrtaceae. There are 
+numerous strangling figs including Ficus distica and F. elastica. In 
+the subcanopy between 25 and 30 m the Fagaceae and Myrtaceae 
+become more prominent. Smaller trees and shrubs include endemics 
+such as Dehaasia sumatrana and Vaccinium gracilipes. Tree ferns 
+are locally abundant and include the endemic Cyathea alderwereltii 
+(Rhind 2010). We spent three full and two half days here from 
+19–23 April 2009, camping immediately beyond the last river 
+crossing at about 850 m. All observations at the site were made from 
+hunting trails above the camp between 850–1,100 m. Key species 
+at the site include Long-billed Partridge  Rhizothera longirostris , 
+Ferruginous Partridge Caloperdix oculeus , Salvadori’s Pheasant 
+Lophura inornata , Sumatran Ground Cuckoo and Graceful Pitta 
+Pitta venusta.
+Danau Ranau lake (4.867°S 103.950°E) is located 32 km north-
+west of Liwa; the importance of the area lies not in the lake itself but 
+the areas of primary forest on the surrounding hills and, although 
+partially deforested, these remain rich in montane species. After 
+crossing the lake by ferry we walked about 2 km to the start of the 
+‘Puncak Trail’ (4.917°S 103.867°E). From here it is a five-hour steep 
+(occasionally very steep) climb south-west to the summit of the 
+trail at 1,366 m (4.950°S 103.850°E). The trail winds up through 
+agricultural areas and degraded secondary growth, before entering 
+primary forest just below the summit. We spent three full and two 
+half days at the site, 24–28 April 2009, camping about 0.5 km 
+beyond the summit by a river at about 1,260 m. Most observations in 
+the area (hereafter Danau Ranau) were made from trails around the 
+camp, between 1,200–1,366 m, although a day was spent climbing 
+the nearby Bukit Pogong, reaching 1,678 m. Habitat here is typical 
+montane forest lying between 1,400 and 1,900 m, which usually 
+consists of two tree layers, the 30 m high canopy and a subcanopy 
+layer between 10–20 m; beneath these is a shrub layer 5–10 m 
+in height. Fagaceae, Lauraceae, Myrtaceae, some Theaceae and 
+Sapotaceae are the main upper canopy families. Climbers are still 
+relatively common and include the endemic Passiflora sumatrana. 
+There are also many epiphytic species such as the endemic fern 
+Pyrrosia asterosora. The undergrowth is typically rich and includes 
+several endemics such as Lithocarpus orbicularis  (Fagaceae) and 
+Rhododendron frey-wysslingii (Rhind 2010). The site holds avian 
+species that are scarce/elusive elsewhere, including Sumatran 
+Partridge Arborophila sumatrana , Rajah Scops Owl Otus brookii , 
+Javan Woodcock Scolopax saturata , Schneider’s Pitta  Hydrornis 
+schneideri, Sumatran Cochoa Cochoa beccarii, and possibly still the 
+elusive Sumatran Laughingthrush Garrulax bicolor , although the 
+latter now appears extremely scarce or locally extinct. Access to the 
+not easily accessible high ridges where it may still survive necessitates 
+some tough climbing. 
+Additional data sources
+After our 2009 visit I contacted ornithologists and birdwatchers 
+who had visited Bukit Barisan since 1992 (Appendix 1) in order 
+to collate their (mostly unpublished) data, document the more 
+significant records, and compile a species list for the park to date. 
+Two invaluable contributors, Nick Brickle and Philippe Verbelen, 
+add important evidence from lower-lying areas in the park.
+Nick Brickle kindly supplied a list of 208 bird species together 
+with a list of mammals recorded at the Way Canguk Research 
+Station (WCRS) between 1997 and 2009. This research station, 
+run by the Wildlife Conservation Society Indonesia Program (www.
+wcsip.org), lies at an altitude of about 50 m in the south-west corner 
+of the park (5.689°S 104.409°E) near the village of Sumberejo, and 
+is accessible from Pemerihan to the west of the park. It is about 4 
+km inside primary lowland forest and a network of trails radiates 
+from the research buildings. Many lowland species are found 
+here, including good numbers of Great Argus Argusianus argus , 
+Railbabbler Eupetes macrocerus and Malayan Banded Pitta Pitta 
+irena, with regular sightings of Giant Pitta P. caeruleus.
+Philippe Verbelen kindly supplied records from his visits 
+to Sumatra in 1992, 1995, 1997, 1998 and 2009. These provide 
+early data from Kubuperahu village lying a few km west of Way 
+Titias, between Liwa, Lampung province (c.940 m) and Krui on 
+the coast, and from Danau Ranau, plus records from the lowland 
+Bukit Barisan southern peninsula and from Sukaraja, 60 km west-
+south-west of Kota Agung, Lampung province, just north of the 
+road which crosses the park en route to Bengkunat. Peninsula sites 
+PV visited included Belimbing, Tampang and Way Sleman and his 
+observations added almost 40 species to the park list, including 
+herons and other waterbirds observed in the lowland swamp and 
+beach habitat of Sumatra’s extreme south-west. He also confirmed a 
+few early records from Paul Jepson in 1992 and Jean-Marc Thiollay 
+in 1995–1996.
+Sumatra’s luxuriant lowland forests are some of the most diverse 
+on earth with over 100 species of dipterocarps, six of which are 
+endemic. Trees can reach heights of 60 m, the undergrowth is 
+dominated by shrubs, tree ferns and palms, and lianas and climbers 
+are common, particularly climbing palms mostly represented by 
+rattans. The habitat in the lower Barisan hills (150–500 m) has 
+a different species composition from the true lowland forests, 
+although they are still classed as dipterocarp forests and have 
+canopies reaching 40 m (Rhind 2010). 
+In summary, whilst the coverage of Bukit Barisan as a whole 
+is still far from complete, these sites cover a wide range of habitats 
+and altitudes.
+RESULTS AND DISCUSSION
+Our records, combined with those of other experienced observers 
+listed in Table 1, document 416 species within the national park 
+boundaries. This total includes 96 threatened and Near Threatened 
+species: three Critically Endangered species: Christmas Frigatebird 
+Fregata andrewsi , Sumatran Ground Cuckoo and Helmeted 
+Hornbill Rhinoplax vigil (uplifted from Near Threatened); three 
+Endangered species: White-winged Duck Asarcornis scutulata , 
+Milky Stork Mycteria cinerea, and Storm’s Stork Ciconia stormi; ten 
+Vulnerable species: Large Green Pigeon Treron capellei, Wallace’s 
+Forktail 31 (2015) Orrnithological records from Bukit Barisan Selatan National Park, Sumatra, Indonesia 71
+
+===== PAGE 3 =====
+Hawk Eagle Nisaetus nanus, Asian Woollyneck Ciconia episcopus, 
+Lesser Adjutant Leptoptilos javanicus , Schneider’s Pitta, Graceful 
+Pitta, Brown-chested Jungle Flycatcher Rhynomias brunneatus , 
+Sumatran Cochoa, Straw-headed Bulbul Pycnonotus zeylanicus 
+and Sumatran Laughingthrush Garrulax bicolor ; and 80 Near 
+Threatened species. 
+The Bukit Barisan list may be expected to continue to grow, 
+as a result of visiting birdwatchers using audio playback to search 
+proactively for potential additional species at appropriate altitudes. 
+Species known to occur further north in the Barisan mountain 
+range, but which had never been searched for further to the 
+south-east, have been discovered. For example, in August 2008 a 
+proactive search using playback proved the presence of Sumatran 
+Wren Babbler Rimator albostriatus (R. & S. Thomas pers. comm.); 
+similarly, a short visit to Danau Ranau in April 2009 (CG, TS) 
+revealed the presence of Rusty-breasted Wren Babbler Turdinus 
+rufipectus. However, since only a limited number of sites have been 
+covered, and coverage remains very low, it is likely that a substantial 
+number of species remain to be found.
+Selected species accounts
+Details are provided in the selected species accounts below for 
+threatened species (Critically Endangered, Endangered, Vulnerable 
+and Near Threatened) and species which are new for the park (taxa 
+marked †) and/or which represent significant range extensions. 
+Observers are cited by their initials; full names are in Table 1. 
+Appendix 1 gives the full list of avian species known to have 
+occurred within the park boundaries. Species nomenclature and 
+taxonomy for passerines generally follow Inskipp et al . (2001), 
+except where superseded by more recent published information 
+(taxa marked *). For non-passerines taxonomy follows del Hoyo & 
+Coller (2014). Three taxa marked ** were at the time of preparation 
+of the paper not of conservation concern, but have recently been 
+uplifted to Near Threatened.
+Long-billed Partridge Rhizothera longirostris †
+Near Threatened. A pair heard and seen duetting c.1 km above camp 
+at Way Titias, 21 April 2009 (TS, G), with probably the same pair 
+heard and seen, 22 April 2009 (CG, TS, G). PV recorded a pair’s 
+contact calls at Way Titias, 18 February 2009 (avocet.zoology.msu.
+edu/recordings/3467) and contact calls were heard there, June 2009 
+(ZE, TJ). There have been few recent records from Sumatra (Madge 
+& McGowan 2002) and these are apparently the first records for 
+the park.
+Sumatran Partridge Arborophila sumatrana *
+Seen at Danau Ranau, 22 June 2008 (NB). Heard in forest above 
+Kubuperahu and in forest between there and Liwa, March 2009 
+(PV). Heard daily at Danau Ranau 24–28 April 2009 (CG, TS, 
+G), June 2009 (ZE, TJ) and 11, 12, 14 February 2013 (GK). Three 
+seen at Way Titias, September 2009 (WN).
+Ferruginous Partridge Caloperdix oculeus †
+Near Threatened. Two seen near Kubuphrahu, 23 June 1998 (PM). 
+Two heard at Way Titias, July 2007 (SL, E-LA). A pair seen at the 
+same site, 26 August 2007 (AL, AM), with a pair at Way Titias, 
+December 2007 (AB, JG). Another heard at Way Titias, June 2008 
+(JO), and two there, September 2009 (WN et al.). One was heard in 
+a forest edge coffee plantation during the walk to Danau Ranau, 28 
+April 2009 (CG, TS, G). Single birds were heard distantly at Way 
+Titias, June 2009 (ZE, TJ) and 8–9 February 2013 (GK). 
+Crested Partridge Rollulus rouloul
+Near Threatened. Heard in the southern peninsula, July 1997 (PV) 
+and a group heard and seen in forest near Sukaraja, March 2009 
+(PV). Present at WCRS where one seen 4 June 2004 (NB). Three 
+birds seen at Way Titias, 22 April 2009 (CG, TS) were rather high 
+at c.950 m: MacKinnon & Phillipps (1993) state ‘common resident 
+in lowland forests on Sumatra…to 800 m’. 
+Salvadori’s Pheasant Lophura inornata
+Near Threatened. There are 20+ camera trap records from WCRS 
+dating back to 1999 (NB). Two males and a female seen at Way 
+Titias, December 2007, and four more seen 10–13 April 2008 (AB, 
+JG). A single male seen at close range crossing a hunting trail 2.5 km 
+above camp, Way Titias, 22 April 2009 (CG, TS, G). A male seen 
+twice at Way Titias, June 2010 (JO). These are apparently the first 
+sight records for the park. The species is known from few localities 
+(Madge & McGowan 2002), the nearest being Gn Dempo, 150 km 
+to the north-west.
+Malay Crested Fireback Lophura rufa
+Near Threatened. Listed for the park by O’Brien & Kinnaird (1996) 
+but no confirmed records since.
+Bronze-tailed Peacock Pheasant Polyplectron chalcurum 
+Heard on the waterfall trail, Kubuperahu, July 1997 (PV), well 
+below 800 m (van Marle & Voous 1988). Singles seen at Way Titias, 
+22 March 2007, and Danau Ranau, 22 June 2008 (NB), a male at 
+Way Titias, late June 2009 (BC) and a pair at Danau Ranau, July 
+2009 (BC). Singles heard at Way Titias 20 April 2009 (CG, TS, G) 
+and Danau Ranau, 26 April 2009 (CG, TS, G), with other ‘heard 
+only’ records from several observers. One glimpsed at Danau Ranau, 
+February 2013 (MG).
+Table 1. Summary of observers. 
+WC/S = Way Canguk/southern peninsula (in text WCRS stands for Way Canguk Research Station); WT/L/K = Way Titias/Liwa/Kubuperahu area; DR 
+= Danau Ranau
+   Sites visited  
+Observers Visit date(s) WC/S WT/L/K DR
+Philippe Verbelen (PV) October 1992, October 1995, July–August 1997, July–August 1998, February–March 2009 * * *
+Pete Morris (PM) June 1998, June 2000  *  
+Nick Brickle (NB)  Jun 2004, July 2005, February 2006, March 2007, April 2008, June 2008 * * *
+Sander Lagerveld (SL), Eeva-Liisa Alanen (E-LA) July 2007  *  
+Albert Low (AL), Andy Mears (AM) August 2007  *  
+Ashley Banwell (AB), John Gregory (JG) December 2007, April 2008  * *
+Janos Olah (JO)  June 2008, June 2010, June 2012  *  
+Richard Thomas (RT), Sarah Thomas (ST) August–September 2008  * *
+Chris Gooddie (CG), Troy Shortell (TS), Gamal (G) April 2009  * *
+Brian Cox (BC) June–July 2009  * *
+Zoltán Ecsedi (ZE), Tibor Juhász (TJ) per Tamas Zalai June–July 2009  * *
+Wendy Newnham (WN), Fabian Ducry (FD), David Marques (DM) September 2009  * *
+Gareth Knass (GK), Martin Gottschling (MG), Holger Lauruschkus (HL) February 2013  * *
+72  CHRIS GOODDIE Forktail 31 (2015)
+
+===== PAGE 4 =====
+Great Argus Argusianus argus
+Near Threatened. Seen regularly in forests around Kubuperahu, 
+1995, 1997 and 2009 (PV) and in forested areas of the southern 
+peninsula, 1998 (PV). Heard near Kubuperahu, 22 and 23 June 
+2000 (PM). Present in good numbers at WCRS (NB).
+White-winged Duck Asarcornis scutulata
+Endangered. One seen flying at dusk over swamp forest near Rawa 
+Sleman, southern peninsula, 24 August 1998 (PV). Local porter/
+guide reported knowing the species well and confirmed its presence 
+on Way Sleman and in forest on nearby Way Blambangan (PV). Also 
+recorded at WCRS since 1997, but exact date(s) unknown (NB).
+Malaysian Honeyguide Indicator archipelagicus
+Near Threatened. Listed by O’Brien & Kinnaird (1996) without 
+further data. A singing male seen at WCRS, 22 Aug 2010, where 
+it had held a territory for several years (NB).
+Olive-backed Woodpecker Dinopium rafflesii †
+Near Threatened. One seen near Way Titias, 16 July 2007 (SL, 
+E-LA), and a pair seen there, June 2010 (JO). This species is 
+uncommon throughout its entire range, and there are few recent 
+records for Sumatra (Buij et al. 2006).
+Buff-necked Woodpecker Meiglyptes tukki
+Near Threatened. Three seen near Kubuperahu, 23 June 2000 
+(PM). Present at WCRS where seen 4 June 2004 (NB). Seen in the 
+Sukaraja area, March 2009 (PV).
+Red-crowned Barbet Psilopogon rafflesii
+Near Threatened. Two birds seen in a fruiting tree near Tampang, 
+southern peninsula, July 1998 (PV). Seen at Danau Ranau, early 
+September 2008 (RT, ST). Present at WCRS (NB).
+Red-throated Barbet Psilopogon mystacophanos
+Near Threatened. Rather common around Kubuperaha and 
+Sukaraja; also regularly recorded in the southern peninsula (PV). 
+One seen and up to five heard Way Titias, July 2007 (SL, E-LA). 
+One heard there, 19 April 2009 (CG, TS) and two seen there June 
+2012 (JO). Singles heard at Danau Ranau, 10, 13, 14 February 2013 
+(GK). Present at WCRS where one seen 4 June 2004 (NB).
+Yellow-crowned Barbet Psilopogon henricii
+Near Threatened. Seen in Kubuperahu and the southern peninsula 
+(PV). One seen near Kubuperahu on 22 June 2000 (PM). One seen 
+at Way Titias, 22 March 2007 (NB). Present at WCRS (NB).
+Black Hornbill Anthracoceros malayanus
+Near Threatened. Seen at Way Titias, early September 2008 (RT, 
+ST). Heard there, September 2009 (WN). Present at WCRS (NB).
+Rhinoceros Hornbill Buceros rhinoceros
+Near Threatened. Flocks of up to 19 birds seen in the Kubuperahu 
+area 1995 (PV), and rather common in the southern peninsula and 
+Sukaraja (PV). T wo seen between Landos and Way Titias, July 2007 
+(SL, E-LA). One at Way Titias, 27 August 2007 (AL, AM). Two 
+heard between Landos and the Way Titias camp, 20 April 2009 
+(CG, TS). T wo seen at Danau Ranau, September 2009 (WN). Seen 
+once at Way Titias and twice at Danau Ranau, February 2013 (GK). 
+Present at WCRS where one seen 4 June 2004 (NB).
+Great Hornbill Buceros bicornis
+Near Threatened. Seen in lowland forest near Belimbing and in 
+forest between Danau Menjukut and Tampang, July 1998 (PV). 
+Seen at Way Titias, early September 2008 (RT, ST). Present at 
+WCRS (NB).
+Helmeted Hornbill Rhinoplax vigil *
+Critically Endangered. Near Threatened at the time of preparation 
+of the paper, recently uplifted to the highest threat level as the 
+result of trade in ‘hornbill ivory’ (Collar 2015). Regularly seen in 
+Kubuperahu, Sukaraja, the southern peninsula and at Way Titias 
+(PV). One seen Way Titias July 2007 (SL, E-LA). Singles seen at 
+both Way Titias and Danau Ranau, August/September 2008 (RT, 
+ST). One heard at Way Titias, 22 April 2009 (CG, TS) with one 
+heard there, September 2009 (WN). Heard at Way Titias, 5–8 
+February 2013 (GK). Present at WCRS where seen 4 June 2004 
+and 22 April 2008 (NB).
+White-crowned Hornbill Berenicornis comatus 
+Near Threatened. Two feeding in a fruiting tree, Way Titias camp, 
+December 2007 (AB, JG). Recorded daily (usually heard only) in 
+Sukaraja area, February and March 2009, with sound recording 
+made, 28 February 2009 (PV). One heard Danau Ranau, 11 
+February 2013 (GK). Present at WCRS (NB).
+Wrinkled Hornbill Rhabdotorrhinus corrugatus
+Near Threatened. Listed by O’Brien & Kinnaird (1996) but no 
+confirmed records since.
+Red-naped Trogon Harpactes kasumba †
+Near Threatened. Several heard at Kubuperahu in July 1997 with 
+one seen well in response to tape playback (PV).
+Diard’s Trogon Harpactes diardii
+Near Threatened. Present at WCRS, where one seen 4 June 2004 
+(NB). One seen at Sukaraja, February 2009 (PV).
+Cinnamon-rumped Trogon Harpactes orrhophaeus †
+Near Threatened. One male seen at c.800 m, along the waterfall 
+trail, Kubuperahu, July 1997 (PV). This is some 200 m higher than 
+the existing record of 600 m for the species on Sumatra (van Marle 
+& Voous 1988). MacKinnon (1993) described it as a rare montane 
+resident, recorded between 1,000–1,500 m, an error probably 
+resulting from observations on Borneo where the species does 
+occur in hill and montane forests. Few recent records on Sumatra, 
+although it is probably overlooked. Wells (1999) comments that ‘in 
+peninsular Malaysia, mist-netting suggests that this is actually the 
+commonest trogon, but is difficult to find due to its consistent use 
+of low, concealed perches and generally silent behaviour’.
+Scarlet-rumped Trogon Harpactes duvaucelii
+Near Threatened. Photographed and sound recording made (avocet.
+zoology.msu.edu/recordings/3332) in forests around Sukaraja, 28 
+February 2009 (PV). Present at WCRS (NB).
+Red-headed Trogon Harpactes erythrocephalus †
+At Danau Ranau, 25 April 2009, a single was heard shortly after 
+dawn at c.1,300 m in response to tape playback about 200 m from 
+camp towards the summit (CG, TS). Another was heard here, 14 
+February 2013 (GK). Collar (2001) described it as ‘rather rare in 
+Sumatra, where only one record in the period 1930–1985’. However, 
+it is surely under-reported, with e.g. sightings of ‘several’ on the 
+lower Tapan Road in the foothills of Gn Kerinci in July 2008 (JO). 
+Malay Blue-banded Kingfisher Alcedo peninsulae *
+Near Threatened. One on the waterfall trail, Kubuperahu, July 1997 
+(PV). One on a small stream at Way Titias, late June 2008 (JO) and 
+another in similar location there, June 2009 (ZE, TJ). Seen daily 
+there June 2012 (JO). Present at WCRS (NB).
+Rufous-collared Kingfisher Actenoides concretus
+Near Threatened. Heard at Tampang, southern peninsula, August 
+Forktail 31 (2015) Orrnithological records from Bukit Barisan Selatan National Park, Sumatra, Indonesia 73
+
+===== PAGE 5 =====
+1998 (PV). Heard daily, February and March 2009, in Sukaraja 
+area (PV), photographed and sound recording made, 28 February 
+2009 (avocet.zoology.msu.edu/recordings/3240). One heard near 
+Kubuperahu, 23 June 1998 (PM), and there on 22 June 2000 (PM). 
+Another heard at Way Titias, 19 April 2009 (CG, TS). Present at 
+WCRS where one seen 4 June 2004 (NB).
+Moustached Hawk Cuckoo Hierococcyx vagans †
+Near Threatened. One heard between Landos and Way Titias, 16 
+July 2007 (SL, E-LA). 
+Horsfield’s Bronze Cuckoo Chrysococcyx basilis †
+A juvenile seen at Belimbing, southern peninsula, 22 May 1992, by 
+Paul Jepson was the first record in Sumatra for 55 years (per PV).
+Black-bellied Malkoha Phoenicophaeus diardi †
+Near Threatened. One seen at Kubuperahu, July 1997 (PV). 
+Chestnut-bellied Malkoha Phaenicophaeus sumatranus
+Near Threatened. Records from the Kubuperahu area, July 1997 
+(PV), also seen near Sukaraja, March 2009 (PV). Present at WCRS 
+(NB).
+Sumatran Ground Cuckoo Carpococcyx viridis
+Critically Endangered. Following the rediscovery of the species 
+at Sukaraja (Zetra et al. 2002), birds have been heard and seen by 
+a number of observers (including NB, ZE, TJ, WN, RT, ST, PV) 
+at Way Titias, between 2007–2013, e.g. one seen, 22 March 2007 
+(NB), up to three heard between 0.5–2 km from camp, 20–23 April 
+2009 (CG, TS, G).
+Blue-rumped Parrot Psittinus cyanurus
+Near Threatened. Seen occasionally in the Sukaraja area, and 2 
+singles seen in the Belimbing area, southern peninsula, August 
+1998 (PV). Also present at WCRS (NB).
+Reddish Scops Owl Otus rufescens
+Near Threatened. Heard in lowland forest between Tampang and 
+Belimbing, southern peninsula (PV). One seen at Way Titias 22 
+March 2007. Present at WCRS where seen 1 July 2005, 22 April 
+2008 (NB).
+Rajah Scops Owl Otus brookii †
+At Danau Ranau, 27 April 2009, a scops owl sp. was flushed 
+from cover (TS, G) in the morning and subsequently seen and 
+photographed sitting on a nest in a tree cavity, 500 m from camp at 
+c.1,300 m (TS, CG, G). At first we thought the bird was a Mountain 
+Scops Owl O. spilocephalus but the face pattern and iris colour did 
+not appear to fit that species. The bird and eggs were photographed, 
+and we subsequently confirmed identification as Rajah Scops Owl 
+O. brookii, presumably race solokensis. Our identification is based 
+on the combination of the striking contrast between the blackish 
+crown and rufous face and the white supercilia and ear-tufts. 
+Mountain Scops Owl and Sunda Scops Owl O. lempiji do not show 
+such a contrast. In addition the iris was a pale yellow-orange colour, 
+which rules out Mountain Scops Owl, which has a pale yellow iris.
+The nest site was located 2.5 m above ground in a large, old cavity 
+in the main trunk of a 5 m tall tree next to the main summit trail; 
+the hole was about 50 cm in diameter. The nest itself was not clearly 
+visible, but the cavity had been lined with soft mossy material. The 
+two eggs were off-white, with obscure, sparse and irregular buff, grey 
+and brown blotching which may possibly have been discolouration 
+resulting from contact with material within the nest-cavity. An 
+extensive literature search found no reference to the nest of Rajah 
+Scops Owl having previously been found; therefore this appears to 
+be the first record. 
+Collared Owlet Glaucidium brodiei †
+One seen at Danau Ranau 10  February 2013 (GK). This record 
+represents a southerly range extension of 425 km.
+Short-tailed Frogmouth Batrachostomus poliolophus †
+Near Threatened. Two calling around the camp at Danau Ranau 
+on 22 June 2008 (NB), one seen there, 5 July 2009 (BC) and one 
+heard there, September 2009 (WN). 
+Salvadori’s Nightjar Caprimulgus pulchellus †
+Near Threatened. One heard at Danau Ranau, 14 April 2008, (AB, 
+JG). In Sumatra the species was for long known only from the type 
+specimen collected in 1878, at Gn Singgalang, Padang Highlands, 
+west Sumatra, and a second male taken on Gn Dempo, 15 July 1936 
+(Cleere & Nurney 2000). There are recent records from Gn Kerinci, 
+August 2004 (D. Guthrie pers. comm.) and August 2009 (FD & 
+DM; http://www.xeno-canto.org/90805). This record represents a 
+south-east range extension of 150 km.
+Large Green Pigeon Treron capellei
+Vulnerable. Observed in primary forest at Tampang, southern 
+peninsula, August 1998 (PV). Present at WCRS, where seen 4 
+June 2004 (NB).
+Sumatran Green Pigeon Treron oxyurus
+Near Threatened. At least four seen near Kubuperahu, 24 June 
+1998 (PM), two seen there, 23 June 2000 (PM). Heard at Way 
+Titias, February 2009 (PV). Three in flight at Danau Ranau, 27 
+April 2009, at the lower edge of the forest below camp (CG, TS, 
+G). Singles heard daily at Danau Ranau, 11–14 February 2013, with 
+singles seen 12 and 13 February (GK). One seen at Way Titias, 5 
+February 2013, another heard there, 8 February 2013 (GK). Present 
+at WCRS (NB).
+Jambu Fruit Dove Ramphiculus jambu
+Near Threatened. One in the Tampang area, southern peninsula, 
+August 1998 (PV). Present at WCRS (NB).
+Javan Woodcock Scolopax saturata †
+Near Threatened. At Danau Ranau, 3–4 birds seen before dawn, 
+flying around in the forest near camp, each morning 22–24 June 
+2008 (NB). 
+Eurasian Curlew Numenius arquata †
+Near Threatened. One on the beach at Belimbing, southern 
+peninsula, August 1998 (PV). 
+Beach Thick-knee Esacus magnirostris
+Near Threatened. Several on the beach between the Way Sleman 
+river mouth and Danau Menjukut, 25 August 1998, including an 
+alarm-calling adult close to a nest containing one egg (PV). This is 
+the second record for Bukit Barisan and mainland Sumatra, and 
+the first breeding record—Paul Jepson observed this species at the 
+same locality in 1992. There are few records from the Sumatran 
+faunal region (Holmes 1996) (per PV).
+Malaysian Plover Charadrius peronii †
+Near Threatened. At least 5 pairs with young seen on the beach at 
+Belimbing, 24 August 1998 (PV). 
+Lesser Fish Eagle Icthyophaga humilis
+Near Threatened. Present at WCRS (NB).
+Grey-headed Fish Eagle Icthyophaga ichthyaetus
+Near Threatened. Adult photographed, Rawa Sleman, 24 August 
+1998 (PV). Present at WCRS (NB).
+74  CHRIS GOODDIE Forktail 31 (2015)
+
+===== PAGE 6 =====
+Wallace’s Hawk Eagle Nisaetus nanus
+Vulnerable. Present at WCRS (NB). 
+Black-headed Ibis Threskiornis melanocephalus
+Near Threatened. Listed by O’Brien & Kinnaird (1996) but no 
+confirmed records since.
+Milky Stork Mycteria cinerea
+Endangered . Listed by O’Brien & Kinnaird (1996) but no 
+confirmed records since.
+Asian Woollyneck Ciconia episcopus *
+Vulnerable. Listed by O’Brien & Kinnaird (1996) but no confirmed 
+records since.
+Storm’s Stork Ciconia stormi
+Endangered. The species has been recorded at WCRS since 1997, 
+but exact date(s) are unknown (NB).
+Lesser Adjutant Leptoptilos javanicus
+Vulnerable. Listed by O’Brien & Kinnaird (1996) but no confirmed 
+records since.
+Christmas Frigatebird Fregata andrewsi
+Critically Endangered. Listed by O’Brien & Kinnaird (1996) but 
+no confirmed records since.
+Schneider’s Pitta Pitta schneideri
+Vulnerable. Regularly seen at Danau Ranau. A single on 22 June 
+2008 (NB), a male seen well and photographed at c.1,200 m 25 April 
+2009 and two seen briefly in response to tape playback less than 
+1 km below camp at c.1,100 m on 27 April (CG, TS, G). Heard 
+only, June 2009 (ZE, TJ). One male seen and two heard, September 
+2009 (WN). A female seen 11–12 February 2013 (GK) with another 
+heard 13–14 February.
+ There are numerous old camera trap records 
+from the higher elevations at WCRS (NB).
+Giant Pitta Pitta caerulea
+Near Threatened. One calling at Sukaraja, March 2009 (PV). One 
+almost certainly heard near Kubuperahu, 22 June 1998 (PM). 
+These are the only mid-altitude records in the park. However, in 
+the lowlands the species is present in small numbers at WCRS 
+where ‘September–November, when they are calling, they can be 
+relatively easy to see’ (NB).
+Malayan Banded Pitta Pitta irena 
+Near Threatened. Common in the southern peninsula and around 
+Sukaraja (PV). One seen at Way Titias, between 800–1,000 m, 22 
+March 2007 (NB), was close to the upper limit for the Sumatran 
+population, which is usually ‘at least as high as 750 m’ (Lambert 
+& Woodcock 1996). Common at WCRS where seen 4 June 2004 
+and 22 April 2008 (NB).
+Garnet Pitta Pitta granatina
+Near Threatened. Present at WCRS (NB). In Sumatra this species 
+inhabits lowland forest from 0–200 m (Lambert & Woodcock 
+1996). At higher altitudes it is replaced by Graceful Pitta Pitta 
+venusta, and this is corroborated by the lack of records from either 
+Way Titias or Danau Ranau.
+Graceful Pitta Pitta venusta
+Vulnerable. Observed in the Kubuperahu area in 1995, 1997 and 
+2009 and commonly heard at Way Titias (PV). At Way Titias one 
+seen and photographed about 1 km from the camp, 21 April 2009 
+(CG). At Danau Ranau one was seen and photographed c.500 m 
+from camp at 1,240 m, 25 and 26 April 2009 (CG, TS, G), one 
+seen immediately behind camp, 26 April 2009 (G) and one c.600 
+m below camp 27 April 2009 (CG, TS, G). Other records from 
+Way Titias, March 2007 (NB), August and September 2008 (RT, 
+ST), February 2013 (GK) and from Danau Ranau, June 2008 (NB), 
+August and September 2008 (RT, ST), June 2009 (ZE, TJ) and 
+February 2013 (GK).
+Black-and-yellow Broadbill Eurylaimus ochromalus
+Near Threatened. Common in the Sukaraja area and below 
+Kubuperahu towards Krui, also throughout the lowland forests of 
+the southern peninsula (PV). Present at WCRS where e.g. one seen 
+4 June 2004 (NB). Two heard Way Titias, July 2007 (SL, E-LA), 
+with singles heard there, 26 August 2007 (AL, AM), 20 April 2009 
+(CG, TS) and 5 February 2013 (GK). 
+Green Broadbill Calyptomena viridis
+Near Threatened. Singles seen and heard at Way Titias, 1995 and 
+1997, also regular in the southern peninsula and the Sukaraja area 
+(PV). Singles seen near Kubuperahu, 23 and 24 June 1998 (PM). 
+Two heard at Way Titias, July 2007 (SL, E-LA), one heard there, 
+April 2008 (AB, JG), 1–2 seen on two days there, September 2009 
+(WN), three there, June 2010 and ‘a few’ there June 2012 (JO). 
+Present at WCRS (NB).
+Lesser Green Leafbird Chloropsis cyanopogon
+Near Threatened. Present in the Sukaraja area, March 2009 (PV). 
+Present at WCRS where one seen 4 June 2004 (NB).
+Sumatran Leafbird Chloropsis media *
+A little-known Sumatran endemic. A pair seen on Bukit Pogong 
+at Danau Ranau, 26 September 2009 (CG, TS). Two seen in the 
+Kubuperahu area, date unknown (PV). This species has only recently 
+been split from the Gold-fronted Leafbird C. aurifrons of South 
+Asia and mainland South-East Asia. It is designated Least Concern 
+(BirdLife International 2015b), although it has long been neglected 
+and is little known. We recommend that all visitors report sightings 
+to BirdLife International.
+Blue-masked Leafbird Chloropsis venusta
+Near Threatened. A male seen near Kubuperahu, 24 June 2000 
+(PM). One seen at Danau Ranau, 22 June 2008 (NB). A female seen 
+at Way Titias, September 2009 (WN). One seen at Danau Ranau, 
+12 February 2013, and 5 birds seen in a mixed species flock there 
+the following day (MG, HL).
+Railbabbler Eupetes macrocerus
+Near Threatened. Frequently observed in the southern peninsula, 
+August 1998, and in Kubuperahu up to 900 m (PV). One seen at 
+Way Titias, 22 March 2007 (NB). One heard there, July 2007 (SL, 
+E-LA) and a bird thought to be this species heard between Way 
+Titias and Landos, August 2007 (AL, AM). A pair seen between 
+Way Titias and Landos, September 2009 (WN). Common at 
+WCRS (NB).
+Crested Jay Platylophus galericulatus
+Near Threatened. Frequently observed in Kubuperahu area (1995, 
+1997) and Sukaraja area (2009) (PV). Present at WCRS (NB). 
+Two seen at Way Titias, June 2008 (JO), with a single heard there 
+September 2009 (WN).
+Black Magpie Platysmurus leucopterus
+Near Threatened. Seen in the Kubuperahu area, 1998 (PM). Two 
+heard near Duku Banyak on the Blambangan River, August 1998 
+(PV). Two heard at Way Titias, July 2007 (SL, E-LA). One heard 
+at Danau Ranau, 27 April 2009 (CG, TS). Present at WCRS where 
+seen 4 June 2004 (NB).
+Forktail 31 (2015) Orrnithological records from Bukit Barisan Selatan National Park, Sumatra, Indonesia 75
+
+===== PAGE 7 =====
+Dark-throated Oriole Oriolus xanthonotus
+Near Threatened. Present at Kubuperahu, July 1997 (PV). Present 
+at WCRS (NB).
+Fiery Minivet Pericrocotus igneus
+Near Threatened. Several observations of single birds, August 1998, 
+southern peninsula (PV). Present at WCRS (NB).
+Sumatran Drongo Dicrurus sumatranus *
+Near Threatened. Recorded in forest above Kubuperahu, July 1997 
+(PV). Frequently recorded at Way Titias, with lower numbers at 
+Danau Ranau (several observers). Present at WCRS (NB).
+Green Iora Aegithina viridissima
+Near Threatened. A single seen in Kubuperahu, 20 July 1997 (PV). 
+Present at WCRS (NB).
+Maroon-breasted Philentoma Philentoma velatum
+Near Threatened. A pair seen in the Kubuperahu area, 23 July 1997 
+(PV). Also seen at Way Titias and Sukaraja in February–March 
+2009 (PV). Singles recorded at both Way Titias and Danau Ranau 
+2007–2013 (several observers).
+Chestnut-capped Thrush Zoothera interpres
+Near Threatened. Several observed along the river on the waterfall 
+trail, Kubuperahu, July 1997 (PV). One seen well in primary 
+lowland forest near the Way Sleman shelter, near Belimbing, 22 
+August 1998 (PV). A few days later an adult and two very young 
+juveniles seen in the bird market, Kota Agung, were said to come 
+from the Tampang area (PV). Also seen at WCRS (NB) but detail 
+and date(s) unknown.
+Scaly Thrush Zoothera dauma †
+A single, presumably the endemic race horsefieldi, seen at Danau 
+Ranau on 30 June 2009 (ZE, TJ). Taxonomic relationships within 
+Z. dauma continue to require detailed evaluation (Collar 2004).
+Brown-chested Jungle Flycatcher Rhinomyias brunneatus † 
+Vulnerable. Although the species is not included in van Marle & 
+Voous (1988), Parrott & Andrews (1996) reviewed ‘provisional’ 
+records in Way Kambas National Park, Sumatra, and there is now 
+at least one wintering record from the Way Canguk area (60 m), 
+Bukit Barisan, March 2012 which has been verified by Yong & 
+Liu (2015) from images obtained by the discoverer Zulfikri bin 
+Bakhtiar.
+ 
+Grey-chested Jungle Flycatcher Rhinomyias umbratilis †
+Near Threatened. A very territorial singing male was observed in the 
+Kubuperahu area, 22 and 23 July 1997 (PV). One seen west of Liwa 
+near Kubuperahu on 23 June 1998, with another there on 22 June 
+2000 (PM). One seen at Way Titias, 22 March 2007 (NB). O’Brien 
+& Kinnaird (1996) listed the species, but no details were given; 
+these are therefore the first confirmed records for Bukit Barisan.
+Rufous-chested Flycatcher Ficedula dumetoria †
+Near Threatened. Observed several times in the Way Titias area, 
+February 2009 (PV). A male seen, heard and photographed at 
+Danau Ranau, 50 m below camp, 28 April 2009 (CG, TS). A single 
+seen by the campsite at Way Titias, September 2009 (WN), one seen 
+between Landos and Way Titias, 5 February 2013 (GK). According 
+to MacKinnon & Phillipps (1993) ‘a local resident of hill forest, 
+from 600 m to 1500 m, not recorded south of Kaba’. These records 
+represent a southerly range extension of c.215 km.
+White-tailed Flycatcher Cyornis concretus †
+One seen at Way Titias, August 2008 (RT, ST).
+Malaysian Blue Flycatcher Cyornis turcosus
+Near Threatened. Listed (specific location unknown) by O’Brien 
+& Kinnaird (1996) but no confirmed records since. However, a 
+Cyornis sp. seen by a stream at Danau Ranau, April 2008 (AB, 
+JG) may have been this species. A second bird, an adult female, 
+also thought to have been this species, was video-recorded at 
+the same location, 4 July 2009 (BC). The species has been                   
+recorded to 800 m in Borneo (MacKinnon & Phillipps 1993), 
+but only to 60 m in Peninsular Malaysia (Wells 2007), whilst 
+for Sumatra, van Marle & Voous (1988) noted ‘along rivers and 
+small streams in swamp forest and marsh in lowland, usually well 
+below 100 m.’ If identification is confirmed, it appears that this 
+sighting would represent a significant altitudinal range extension 
+for Sumatra.
+Pygmy Blue Flycatcher Muscicapella hodgsoni †
+Singles seen at Danau Ranau, 8 and 10 September 2009 (WN), one 
+seen and photographed there, 13 February 2013 (GK). 
+Rufous-tailed Shama Trichixos pyrropyga †
+Near Threatened. One heard along the Blambangan River, southern 
+peninsula, 20 August 1998 (PV); species also photographed 
+and sound-recorded several times in rainforest (c.450 m) around 
+Sukaraja, March 2009 (PV).
+Sunda Robin Myiomela diana †
+An immature seen at Danau Ranau, 3 July 2009 (BC). 
+Chestnut-naped Forktail Enicurus ruficapillus
+Near Threatened. Present at WCRS where one seen 1 February 
+2006 (NB). One at Way Titias 22 March 2007 (NB).
+Sumatran Cochoa Cochoa beccarii †
+Vulnerable. One seen at Danau Ranau, 22 June 2008 (NB). Another, 
+probably an adult female, was seen, heard and photographed there in 
+a mixed flock (c.1,230 m), 25 April 2009, about 250 m from camp 
+towards the summit (CG, TS, G). A single heard and briefly seen, 
+Way Titias, September 2009 (WN). One heard and seen, Danau 
+Ranau (c.1,330 m), 12–14 February 2013 (GK). 
+Straw-headed Bulbul Pycnonotus zeylanicus
+Vulnerable . Listed without specific location by O’Brien and 
+Kinnaird (1996) but no confirmed records since. The continuing 
+presence of this species requires confirmation given the decimation 
+of its population in Sumatra by trapping for the cagebird trade 
+(BirdLife International 2001).
+Spot-necked Bulbul Pycnonotus tympanistrigus † 
+Near Threatened. Endemic. Seen Danau Ranau, late August/early 
+September 2008 (RT, ST). The species is regularly recorded at 
+Bukit Tapan, Gn Kerinci foothills (PV), but there appear to be few 
+documented records further south. 
+Ruby-throated Bulbul Pycnonotus dispar *
+Common in the Kubuperahu area, July 1997 (PV). 
+Scaly-breasted Bulbul Pycnonotus squamatus
+Near Threatened. One seen in Kubuperahu, 19 July 1997. One 
+in a fruiting tree, at Sukaraja, March 2009 (PV). Also present at 
+WCRS (NB).
+Grey-bellied Bulbul Pycnonotus cyaniventris
+Near Threatened. At least three seen at Kubuperahu, July 1997 
+(PV). One seen Way Titias, July 2007 (SL, E-LA). One seen 
+at Danau Ranau, 24 April 2009 (CG, TS). Present at WCRS                       
+(NB).
+76  CHRIS GOODDIE Forktail 31 (2015)
+
+===== PAGE 8 =====
+Orange-spotted Bulbul Pycnonotus bimaculatus †
+Two seen at Danau Ranau, 3 July 2009 (BC). At least two on 
+different days, in a paddyfield below Danau Ranau campsite, 
+September 2009 (WN).
+Finsch’s Bulbul Alophoixus finschii
+Near Threatened. Although previously recorded at WCRS (NB), 
+there appear to be no confirmed records since at least 2004.
+Buff-vented Bulbul Iole olivacea †
+Near Threatened. Several seen at both Kubuperahu and Tampang, 
+October 1995 and July 1997 (PV). 
+Streaked Bulbul Ixos malaccensis
+Near Threatened. Several observations from Kubuperahu, October 
+1995 and July 1997 (PV). One at Way Titias, 22 March 2007 (NB). 
+Present at WCRS (NB).
+Mountain Leaf Warbler Phylloscopus trivirgatus †
+At least two singles, Danau Ranau, 9 September 2009 (WN). 
+Sumatran Laughingthrush Garrulax bicolor *
+Vulnerable. Three birds heard calling at close range several times 
+over a one-hour period at c.1,500 m at Danau Ranau, 16 April 2008 
+(AB, JG). Birds thought to be this species also heard distantly on 
+other occasions around this date. A captive bird seen near Liwa, 
+February 2013, was either this species, local name Poxai Haji , or 
+an imported White-crested Laughingthrush G. leucolophus (GK).
+White-chested Babbler Trichastoma rostratum
+Near Threatened. Frequently seen (sound recordings made) in 
+the extreme lowland forest and riverine forest patches along Way 
+Sleman, southern peninsula, August 1998 (PV). Three near Way 
+Titias, August 2007 (AL, AM), one seen briefly there September 
+2009 (WN et al. ). Present at WCRS (NB).
+Short-tailed Babbler Malacocincla malaccensis  
+Near Threatened. Common in the Kubuperahu area, October 1995 
+and July 1997, and the Sukaraja area, March 2009 (PV). Two seen 
+near Kubuperahu, 23–24 June 1998, with two seen there 22 and 
+23 June 2000 (PM). One seen Way Titias, 22 March 2007 (NB), 
+another there, July 2007 (SL, E-LA), and a single there, September 
+2009 (WN). Present at WCRS where one seen 4 June 2004 (NB). 
+Sumatran Babbler Pellorneum buettikoferi *
+Near Threatened. Several observations in the Landos and Sukaraja 
+areas (PV). One seen 5 February 2013 near Gamal’s house in Landos 
+village, and one heard there 9 February 2013 (GK). A poorly known 
+but possibly overlooked species (Verbelen 2009). 
+Sooty-capped Babbler Malacopteron affine 
+Near Threatened. Not uncommon in lowland forest around 
+Belimbing, southern peninsula, August 1998 (PV). Recorded in 
+small numbers at WCRS June 2004 (NB) and Way Titias April 
+2009 (CG, TS). 
+Rufous-crowned Babbler Malacopteron magnum
+Near Threatened. Seen in the Kubuperahu area, October 1995 and 
+July 1997, in the lowland forests of the southern peninsula, August 
+1998 and at Sukaraja, March 2009 (PV). Present at WCRS (NB).
+Sumatran Wren Babbler Rimator albostriatus *
+One seen Way Titias, late August 2008 (RT, ST). One seen at 
+c.1,115 m, Danau Ranau, 12 February 2013, a notably low altitude 
+(GK, MG, HL). An uncommon bird of mountain forest between 
+1,200–2,850 m, the species had previously been recorded south 
+to Gn Dempo (PV). This thus appears to be a southward range 
+extension of c.150 km.
+Large Wren Babbler Turdinus macrodactylus
+Near Threatened. Listed without location by O’Brien & Kinnaird 
+(1996) but no confirmed records since.
+Rusty-breasted Wren Babbler Turdinus rufipectus †
+A single heard and subsequently seen in rhododendron forest with 
+mixed bamboo cover at 1,678 m on Bukit Pogong, Danau Ranau, 
+26 April 2009 (CG, TS, G). Three seen in response to tape playback 
+near the camp (c.1,240 m), 27 April 2009. Birds also seen at Danau 
+Ranau, June 2009 (ZE, TJ) and 11–12 February 2013 (GK); it 
+appears that this species is not uncommon here.
+Marbled Wren Babbler Turdinus marmorata †
+An adult and newly fledged juvenile seen in a streambed at Danau 
+Ranau, June 2008 (JO). One was heard and seen with a second 
+heard simultaneously about 50 m away at 1,222 m, between the 
+camp and summit, Danau Ranau, April 2009 (CG, TS, G). Two 
+were heard there, 14 February 2013 (GK). Previously only recorded 
+as far south as Gn Kaba (van Marle & Voous 1988). These records 
+indicate a southerly range extension of c.215 km.
+Rufous-fronted Babbler Stachyris rufifrons †
+A flock of 5 observed near Kubuperahu, October 1995 (PV), and 
+several in the Sukaraja area, March 2008 (PV). One seen in a mixed 
+species flock, Way Titias, 6 September 2009 (WN).
+Black-throated Babbler Stachyris nigricollis
+Near Threatened. Seen twice and others heard in forest, southern 
+peninsula, August 1998 (PV). Present at WCRS (NB).
+Chestnut-rumped Babbler Stachyris maculata
+Near Threatened. T wo at Kubuperahu, October 1995, and one seen 
+well in lowland forest near Tampang, southern peninsula, August 
+1998 (PV). One heard near Kubuperahu, 22 June 2000 (PM). 
+Present at WCRS (NB).
+Fluffy-backed Tit Babbler Macronous ptilosus
+Near Threatened. A party observed in lowland forest, southern 
+peninsula, August 1998 (PV). Present at WCRS where one seen 
+4 June 2004 (NB).
+Brown Fulvetta Alcippe brunneicauda 
+Near Threatened. Common at Kubuperahu (PV). Common at Way 
+Titias, including 22 March 2007 (NB), 20–23 April 2009 (CG, TS).
+Red-throated Sunbird Anthreptes rhodolaemus
+Near Threatened. Two seen near Kubuperahu, 23 June 2000 
+(PV). Present at WCRS (NB). One ‘well below 500 m’ in roadside 
+forest between Kubuperahu and Krui, August 1998 (PV) was just 
+outside the park, but is included here since there are few confirmed 
+Sumatran records.
+Pin-tailed Parrotfinch Erythrura prasina †
+On 26 April 2009, one male and three female/immature birds seen 
+and photographed (CG, TS, G) in a small area of woodland in a 
+ravine below the camp, while en route to Bukit Pogong, Danau 
+Ranau. 
+White-capped Munia Lonchura ferruginosa *
+Ten birds seen in paddyfield between Landos and Panyungkaian, 
+April 2008 (AB, JG), seen near Liwa, March 2009 (PV), and a flock 
+of 25 seen near Landos, June 2012 (JO). Although probably outside 
+the park, these records are included because they appear to be the 
+Forktail 31 (2015) Orrnithological records from Bukit Barisan Selatan National Park, Sumatra, Indonesia 77
+
+===== PAGE 9 =====
+second to fourth records from Sumatra of a species once thought 
+to be endemic to Java and Bali; it was first recorded from South 
+Sumatra province in August 2007 (Iqbal 2011).
+ACKNOWLEDGEMENTS
+Thanks to the observers named in Table 1 who responded to my request for 
+information and many of whom (in particular Nick Brickle and Philippe 
+Verbelen) volunteered suggestions for improvements to an early draft. I am 
+grateful to Andy Mears for his assistance in tracking down and providing a 
+number of key references, and to Troy Shortell for his companionship in the 
+field. I am indebted to James Eaton, Rob Hutchinson and others for advice on 
+scops owl identification and for suggested improvements to the draft manuscript.
+REFERENCES
+BirdLife International (2001) Threatened birds of Asia: the BirdLife International 
+Red Data Book. Cambridge UK: BirdLife International.
+BirdLife International (2015a) Important Bird Areas factsheet : Bukit Barisan 
+Selatan. Retrieved from http://www.birdlife.org/datazone/sitefactsheet 
+on 07/06/2015.
+BirdLife International (2015b) Species factsheet: Chloropsis media.Retrieved  
+from http://www.birdlife.org on 07/06/2015.
+Buij, R., Fox, E. A. & Wich, S. A. (2006) Birds of Gunung Leuser National Park, 
+northern Sumatra. Kukila 13: 23–41.
+Cleere, N. & Nurney, D. (2000) Nightjars: a guide to the nightjars and related 
+nightbirds. Robertsbridge UK: Pica Press.
+Collar, N. J. (2001) Family Trogonidae (trogons). Pp.80–127 in J. del Hoyo, A. 
+Elliott & J. Sargatal, eds. Handbook of the birds of the world, 6. Barcelona: 
+Lynx Edicions. 
+Collar, N. J. (2004) Species limits in some Indonesian thrushes. Forktail 20: 
+71–87.
+Collar, N. J. (2015) Helmeted Hornbills Rhinoplax vigil and the ivory trade: the 
+crisis that came out of nowhere. BirdingASIA 15: 12–17.
+Gaveau, D. L. A., Linkie, M., Suyadi, S., Levang, P . & Leader-Williams, N. (2009) 
+Three decades of deforestation in southwest Sumatra: effects of coffee 
+prices, law enforcement and rural poverty . Biol. Conserv. 142: 597–605.
+Holmes, D. A. (1996) Sumatra bird report. Kukila 8: 9–56.
+del Hoyo, J. & Collar, N. J. (2014) The HBW and BirdLife International illustrated 
+checklist of the birds of the world , 1: non-passerines . Barcelona: Lynx 
+Edicions.
+Inskipp, T., Lindsey, N. & Duckworth, W . (2001) A checklist of the birds of the 
+Oriental Region. Available at www.orientalbirdclub.org/publications/
+checklist.
+Iqbal, M. (2011) First records of White-capped Munia Lonchura ferruginosa 
+in Sumatra. Kukila 15: 103–105.
+Kinnaird, M. F., Sanderson, E. W., O’Brien, T. G., Wibisono, H. T. & Woolmer, G. 
+(2003) Deforestation trends in a tropical landscape and implications for 
+endangered large mammals. Conserv. Biol . 17: 245–257.
+Lambert, F. & Woodcock, M. (1996) Pittas, broadbills and asities. Robertsbridge 
+UK: Pica Press.
+Levang, P., Sitorus, S., Gaveau, D. & Sunderland, T. (2012) Landless farmers, 
+sly opportunists, and manipulated voters: the squatters of the Bukit 
+Barisan Selatan National Park (Indonesia). Conservation & Society  10: 
+243–255.
+MacKinnon, J. & Phillipps, K. (1993) A field guide to the birds of Borneo, Sumatra, 
+Java and Bali. Oxford: Oxford University Press.
+Madge, S. & McGowan, P . (2002) Pheasants, partridges and grouse. London: 
+Christopher Helm.
+van Marle, J. G. & Voous, K. H. (1988) The birds of Sumatra. Tring UK: British 
+Ornithologists’ Union Check-list 10.
+O’Brien, G. & Kinnaird, M. F. (1996) Birds and mammals of the Bukit Barisan 
+Selatan National Park, Sumatra, Indonesia. Oryx 30: 201–217.
+Rhind, P. M. (2010) Sumatran rainforest. Available at http://www.biome-
+explorer.net/
+UNESCO (2004) Tropical rainforest of Sumatra. Available at  http://whc.
+unesco.org.
+UNESCO (2015) http://whc.unesco.org/en/list/1167 visited December 2015.
+Verbelen, P . (2009) Sumatran Babbler Pellorneum buettikofferi . BirdingASIA 
+12: 56–57.
+Wells, D. R. (1999) The birds of the Thai-Malay peninsula, 1. London: Academic 
+Press.
+Yong D. L. & Liu Y. (2015) Passage of Brown-chested Jungle Flycatcher 
+Rhinomyias brunneatus  through Singapore, with notes on wintering 
+status in South-East Asia. Forktail 31:  43–46.
+Zetra, B., Rafiastanto, A., Rombang, W. & Trainor, C. (2002) Rediscovery of 
+the Critically Endangered Sumatran Ground Cuckoo Carpococcyx viridis. 
+Forktail 18: 63–65.
+Chris GOODDIE, 33 Ripplevale Grove, London N1 1HS, UK. Email: 
+chrisgooddie@me.com
+Appendix 1
+List of all species known to have occurred within Bukit Barisan Selatan National Park, Sumatra, Indonesia, between 1992 and 2013. 
+Site initials: WC/S = Way Canguk/southern peninsula (in text WCRS stands for Way Canguk Research Station); WT/L/K = Way Titias/Liwa/Kubuperahu 
+area; DR = Danau Ranau.
+Species nomenclature and taxonomy for passerines generally follow Inskipp et al. (2001), except where superseded by more recent published 
+information (taxa marked *). For non-passerines taxonomy follows del Hoyo & Collar (2014). Three taxa marked ** were, at the time of preparation 
+of the paper, not of conservation concern, but have recently been uplifted to Near Threatened.
+  Sites 
+Species WC/S WT/L/K DR
+Long-billed Partridge Rhizothera longirostris (NT)   x  
+Asian Blue Quail Synoicus chinensis  x    
+Sumatran Partridge Arborophila sumatrana    x x
+Red-billed Partridge Arborophila rubrirostris   x x
+Ferruginous Partridge Caloperdix oculeus (NT)   x x
+Crested Partridge Rollulus rouloul (NT) x x  
+Red Junglefowl Gallus gallus x    
+Salvadori’s Pheasant Lophura inornata (NT) x x  
+Malay Crested Fireback Lophura rufa (NT)      
+Bronze-tailed Peacock Pheasant Polyplectron chalcurum  x             x  
+Great Argus Argusianus argus (NT) x    
+Wandering Whistling Duck Dendrocygna arcuata   x  
+White-winged Duck Asarcornis scutulata (EN)  x    
+Barred Buttonquail Turnix suscitator x    
+  Sites 
+Species WC/S WT/L/K DR
+Malaysian Honeyguide Indicator archipelagicus (NT) x    
+Rufous Piculet Sasia abnormis x x x
+Sunda Pygmy Woodpecker Picoides moluccensis  x x x
+Grey-capped Woodpecker Picoides canicapillus    x  
+Rufous Woodpecker Micropternus brachyurus  x x  
+White-bellied Woodpecker Dryocopus javensis x    
+Lesser Yellownape Picus chlorolophus   x x
+Crimson-winged Woodpecker Picus puniceus x x 
+Banded Woodpecker Chrysophlegma miniaceum  x    
+Greater Yellownape Chrysophlegma flavinucha      x
+Chequer-throated Yellownape Chrysophlegma humii (NT)  x x  
+Olive-backed Woodpecker Dinopium rafflesii (NT)   x  
+Common Flameback Dinopium javanense   x  
+Greater Flameback Chrysocolaptes guttacristatus  x    
+78  CHRIS GOODDIE Forktail 31 (2015)
+
+===== PAGE 10 =====
+  Sites 
+Species WC/S WT/L/K DR
+Orange-backed Woodpecker Chrysocolaptes validus    x x x
+Maroon Woodpecker Blythipicus rubiginosus x x x
+Buff-rumped Woodpecker Meiglyptes grammithorax  x   x
+Buff-necked Woodpecker Meiglyptes tukki (NT) x    
+Grey-and-buff  Woodpecker Hemicircus sordidus  x x  
+Fire-tufted Barbet Psilopogon pyrolophus x   x
+Gold-whiskered Barbet Psilopogon chrysopogon  x x x
+Red-crowned Barbet Psilopogon rafflesii (NT)  x   x
+Red-throated Barbet Psilopogon mystacophanos (NT)  x x x
+Black-browed Barbet Psilopogon oorti    x x
+Yellow-crowned Barbet Psilopogon henricii (NT)  x x  
+Black-eared Barbe t Psilopogon duvaucelii  x x x
+Coppersmith Barbet Psilopogon haemacephalus    x  
+Malay Brown Barbet Calorhamphus hayii (NT)  x x  
+Oriental Pied Hornbill Anthracoceros albirostris x    
+Black Hornbill Anthracoceros malayanus (NT) x x  
+Rhinoceros Hornbill Buceros rhinoceros (NT) x x x
+Great Hornbill Buceros bicornis (NT) x x  
+Helmeted Hornbill Rhinoplax vigil (CR)  x x x
+Bushy-crested Hornbill Anorrhinus galeritus x x x
+White-crowned Hornbill Berenicornis comatus (NT)  x x x
+Wrinkled Hornbill Rhabdotorrhinus corrugatus (NT)      
+Wreathed Hornbill Rhyticeros undulatus  x x x
+Sumatran Trogon Apalharpactes mackloti    x x
+Red-naped Trogon Harpactes kasumba (NT) x x  
+Diard’s Trogon Harpactes diardii (NT) x    
+Cinnamon-rumped Trogon Harpactes orrhophaeus (NT) x x  
+Scarlet-rumped Trogon Harpactes duvaucelii (NT) x    
+Orange-breasted Trogon Harpactes oreskios   x  
+Red-headed Trogon Harpactes erythrocephalus      x
+Dollarbird Eurystomus orientalis x    
+Common Kingfisher Alcedo atthis x    
+Blue-eared Kingfisher Alcedo meninting x x  
+Malay Blue-banded Kingfisher Alcedo peninsulae (NT) x x  
+Oriental Dwarf Kingfisher Ceyx erithaca x x  
+Banded Kingfisher Lacedo pulchella x   x
+Stork-billed Kingfisher Pelargopsis capensis  x    
+Ruddy Kingfisher Halcyon coromanda x    
+White-breasted Kingfisher Halcyon smyrnensis x x x
+Black-capped Kingfisher Halcyon pileata x    
+Collared Kingfisher Todiramphus chloris x x x
+Rufous-collared Kingfisher Actenoides concretus (NT) x x  
+Red-bearded Bee-eater Nyctyornis amictus x x  
+Blue-throated Bee-eater Merops viridis x x  
+Chestnut-headed Bee-eater Merops leschenaulti x    
+Chestnut-winged Cuckoo Clamator coromandus x    
+Large Hawk Cuckoo Hierococcyx sparveroides x x x
+Moustached Hawk Cuckoo Hierococcyx vagans (NT)   x  
+Malay Hawk Cuckoo Hierococcyx fugax  x    
+Indian Cuckoo Cuculus micropterus x   x
+Sunda Cuckoo Cuculus lepidus      x
+Banded Bay Cuckoo Cacomantis sonneratii x x x
+Plaintive Cuckoo Cacomantis merulinus x x x
+Brush Cuckoo Cacomantis variolosus    x x
+Little Bronze Cuckoo Chalcites minutillus      x
+Horsfield’s Bronze Cuckoo Chalcites basalis  x    
+Violet Cuckoo Chrysococcyx xanthorhynchus x    
+Square-tailed Drongo Cuckoo Surniculus lugubris    x  
+Western Koel Eudynamys scolopaceus x    
+Black-bellied Malkoha Phaenicophaeus diardi (NT)  x x  
+Chestnut-bellied Malkoha Phaenicophaeus sumatranus (NT) x    
+Green-billed Malkoha Phaenicophaeus tristis x x x
+Chestnut-breasted Malkoha Phaenicophaeus curvirostris x x 
+Raffles’s Malkoha Rhinortha chlorophaea  x x  
+Red-billed Malkoha Zanclostomus javanicus  x x  
+Sumatran Ground Cuckoo Carpococcyx viridis (CR)    x  
+Greater Coucal Centropus sinensis x x x
+Lesser Coucal Centropus bengalensis x    
+Blue-rumped Parrot Psittinus cyanurus (NT) x    
+Blue-crowned Hanging Parrot Loriculus galgulus x x  
+  Sites 
+Species WC/S WT/L/K DR
+Red-breasted Parakeet Psittacula alexandri ** x    
+Long-tailed Parakeet Psittacula longicauda **  x    
+Glossy Swiftlet Collocalia esculenta x x x
+Mossy-nest Swiftlet Aerodramus salangana  x    
+Black-nest Swiftlet Aerodramus maximus x    
+Edible-nest Swiftlet Aerodramus fuciphagus  x    
+Silver-rumped Spinetail Rhaphidura leucopygialis x   x
+Silver-backed Needletail Hirundapus cochinchinensis x    
+Asian Palm Swift Cypsiurus balasiensis x   x
+Pacific Swift Apus pacificus     x
+House Swift Apus nipalensis  x    
+Grey-rumped Treeswift Hemiprocne longipennis x x  
+Whiskered Treeswift Hemiprocne comata x x  
+Reddish Scops Owl Otus rufescens (NT) x x  
+Mountain Scops Owl Otus spilocephalus   x x
+Rajah Scops Owl Otus brookii     x
+Sunda Scops Owl Otus lempiji  x    
+Barred Eagle Owl Bubo sumatranus x   x
+Buffy Fish Owl Ketupa ketupu x x  
+Collared Owlet Glaucidium brodiei  x x
+Brown Boobook Ninox scutulata x    
+Short-tailed Frogmouth Batrachostomus poliolophus (NT)     x
+Sunda Frogmouth Batrachostomus cornutus x    
+Malaysian Eared Nightjar Lyncornis temminckii    x  
+Large-tailed Nightjar Caprimulgus macrurus x    
+Savanna Nightjar Caprimulgus affinis   x  
+Salvadori’s Nightjar Caprimulgus pulchellus (NT)     x
+Eastern Spotted Dove Spilopelia chinensis  x    
+Barred Cuckoo Dove Macropygia unchall   x x
+Little Cuckoo Dove Macropygia ruficeps x x x
+Grey-capped Emerald Dove Chalcophaps indica x x x
+Zebra Dove Geopelia striata x    
+Little Green Pigeon Treron olax x    
+Pink-necked Green Pigeon Treron vernans x    
+Thick-billed Green Pigeon Treron curvirostra x    
+Large Green Pigeon Treron capellei (VU) x    
+Sumatran Green Pigeon Treron oxyurus (NT) x x x
+Wedge-tailed Green Pigeon Treron sphenurus    x 
+Jambu Fruit Dove Ramphiculus jambu (NT)  x    
+Green Imperial Pigeon Ducula aenea x    
+Mountain Imperial Pigeon Ducula badia x x x
+Pied Imperial Pigeon Ducula bicolor x    
+Red-legged Crake Rallina fasciata x    
+Slaty-breasted Rail Lewinia striata  x    
+White-breasted Waterhen Amaurornis phoenicurus   x  
+White-browed Crake Amaurornis cinerea  x    
+Javan Woodcock Scolopax saturata (NT)     x
+Whimbrel Numenius phaeopus x    
+Eurasian Curlew Numenius arquata  (NT) x    
+Common Redshank Tringa totanus x    
+Common Sandpiper Actitis hypoleucos x    
+Ruddy Turnstone Arenaria interpres x    
+Sanderling Calidris alba x    
+Curlew Sandpiper Calidris ferruginea x    
+Beach Thick-knee Esacus magnirostris (NT)  x    
+Pacific Golden Plover Pluvialis fulva x    
+Malay Plover Charadrius peronii (NT) x    
+Lesser Sand Plover Charadrius mongolus x    
+Greater Sand Plover Charadrius leschenaultii x    
+Common Tern Sterna hirundo  x    
+Little Tern Sternula albifrons   x    
+Whiskered Tern Chlidonias hybrida x    
+Brown Noddy Anous stolidus x    
+Osprey Pandion haliaetus x   x
+Jerdon’s Baza Aviceda jerdoni x    
+Oriental Honey Buzzard Pernis ptilorhynchus   x x
+Bat Hawk Macheiramphus alcinus x    
+Black-winged Kite Elanus caeruleus x    
+Brahminy Kite Haliastur indus     x
+White-bellied Sea Eagle Haliaeetus leucogaster x x  
+Forktail 31 (2015) Orrnithological records from Bukit Barisan Selatan National Park, Sumatra, Indonesia 79
+
+===== PAGE 11 =====
+  Sites 
+Species WC/S WT/L/K DR
+Lesser Fish Eagle Icthyophaga humilis (NT) x    
+Grey-headed Fish Eagle Icthyophaga ichthyaetus (NT) x    
+Crested Serpent Eagle Spilornis cheela x x x
+Crested Goshawk Accipter trivirgatus x    
+Japanese Sparrowhawk Accipiter gularis   x  
+Besra Accipiter virgatus   x  
+Black Eagle Ictinaetus malaiensis x x x
+Rufous-bellied Eagle Lophotriorchis kienerii   x x
+Changeable Hawk Eagle Nisaetus cirrhatus   x x
+Blyth’s Hawk Eagle Nisaetus alboniger   x  
+Wallace’s Hawk Eagle Nisaetus nanus (VU) x    
+Black-thighed Falconet Microhierax fringillarius x   x
+Oriental Hobby Falco severus x    
+Little Egret Egretta garzetta x    
+Pacific Reef Egret Egretta sacra x    
+Great-billed Heron Ardea sumatrana x    
+Purple Heron Ardea purpurea x    
+Intermediate Egret Ardea intermedia  x    
+Cattle Egret Bubulcus ibis   x x
+Green-backed Heron Butorides  striata x    
+Rufous Night Heron Nycticorax caledonicus x    
+Malay Night Heron Gorsachius melanolophus x    
+Schrenck’s Bittern Ixobrychus eurhythmus x    
+Cinnamon Bittern Ixobrychus cinnamomeus x    
+Black Bittern Dupetor flavicollis x    
+Black-headed Ibis Threskiornis melanocephalus (NT)     
+Australian Pelican Pelecanus conspicillatus x    
+Milky Stork Mycteria cinerea (EN)     
+Asian Woollyneck Ciconia episcopus (VU)     
+Storm’s Stork Ciconia stormi (EN) x    
+Lesser Adjutant Leptoptilos javanicus  (VU)     
+Lesser Frigatebird Fregata ariel x    
+Christmas Frigatebird Fregata andrewsi (CR)     
+Schneider’s Pitta Pitta schneideri (VU)     x
+Giant Pitta Pitta caerulea (NT) x    
+Malayan Banded Pitta Pitta irena * (NT) x x  
+Hooded Pitta Pitta sordida x    
+Garnet Pitta Pitta granatina (NT) x    
+Graceful Pitta Pitta venusta (VU)   x x
+Blue-winged Pitta Pitta moluccensis   x  
+Dusky Broadbill Corydon sumatranus   x  
+Black-and-red Broadbill Cymbirhynchus macrorhynchos x    
+Banded Broadbill Eurylaimus javanicus x x x
+Black-and-yellow Broadbill Eurylaimus ochromalus (NT) x x  
+Silver-breasted Broadbill Serilophus lunatus x    
+Long-tailed Broadbill Psarisomus dalhousiae   x x
+Green Broadbill Calyptomena viridis (NT) x x  
+Golden-bellied Gerygone Gerygone sulphurea     x  
+Asian Fairy Bluebird Irena puella x    
+Greater Green Leafbird Chloropsis sonnerati x    
+Lesser Green Leafbird Chloropsis cyanopogon (NT) x    
+Blue-winged Leafbird Chloropsis cochinchinensis x x  
+Sumatran Leafbird Chloropsis media *     x
+Blue-masked Leafbird Chloropsis venusta (NT)   x x
+Tiger Shrike Lanius tigrinus x x x
+Long-tailed Shrike Lanius schach   x x
+Railbabbler Eupetes macrocerus (NT) x x  
+Crested Jay Platylophus galericulatus (NT) x x  
+Black Magpie Platysmurus leucopterus (NT) x x x
+Common Green Magpie Cissa chinensis     x
+Sumatran Treepie Dendrocitta occipitalis     x
+Slender-billed Crow Corvus enca x    
+Large-billed Crow Corvus macrorhynchos   x  
+White-breasted Woodswallow Artamus leucorhynchus   x x
+Dark-throated Oriole Oriolus xanthonotus (NT) x    
+Black-naped Oriole Oriolus chinensis x    
+Black-and-crimson Oriole Oriolus cruentus   x x
+Sunda Cuckooshrike Coracina larvata   x x
+Bar-bellied Cuckooshrike Coracina striata x    
+Lesser Cuckooshrike Coracina fimbriata x    
+  Sites 
+Species WC/S WT/L/K DR
+Pied Triller Lalage nigra x    
+Ashy Minivet Pericrocotus divaricatus x    
+Fiery Minivet Pericrocotus igneus (NT) x    
+Grey-chinned Minivet Pericrocotus solaris   x x
+Scarlet Minivet Pericrocotus flammeus x   x
+Bar-winged Flycatcher-shrike Hemipus picatus   x x
+Black-winged Flycatcher-shrike Hemipus hirundinaceus x    
+White-throated Fantail Rhipidura albicollis   x x
+Spotted Fantail Rhipidura perlata   x x
+Ashy Drongo Dicrurus leucophaeus   x x
+Bronzed Drongo Dicrurus aeneus x x x
+Lesser Racket-tailed Drongo Dicrurus remifer   x x
+Sumatran Drongo Dicrurus sumatranus * (NT) x x x
+Greater Racket-tailed Drongo Dicrurus paradiseus x x  
+Black-naped Monarch Hypothymis azurea x x  
+Asian Paradise-flycatcher Terpsiphone paradisi x x x
+Common Iora Aegithina tiphia x    
+Green Iora Aegithina viridissima  (NT) x x  
+Rufous-winged Philentoma Philentoma pyrhopterum x x  
+Maroon-breasted Philentoma Philentoma velatum (NT) x x x
+Large Woodshrike Tephrodornis gularis x x  
+Shiny Whistling Thrush Myophonus melanurus     x
+Sumatran Whistling Thrush Myophonus castaneus * (NT)     x
+Blue Whistling Thrush Myophonus caeruleus x x  
+Chestnut-capped Thrush Zoothera interpres (NT) x x  
+Scaly Thrush Zoothera dauma     x
+Lesser Shortwing Brachypteryx leucophrys     x
+Grey-chested Jungle Flycatcher Rhinomyias umbratilis (NT)  x  
+Brown-chested Jungle Flycatcher Rhinomyias brunneatus (VU)    
+Fulvous-chested Jungle Flycatcher Rhinomyias olivacea x x  
+Dark-sided Flycatcher Muscicapa sibirica   x  
+Asian Brown Flycatcher Muscicapa dauurica x   x
+Ferruginous Flycatcher Muscicapa ferruginea   x  
+Yellow-rumped Flycatcher Ficedula zanthopygia x    
+Mugimaki Flycatcher Ficedula mugimaki   x  
+Rufous-browed Flycatcher Ficedula solitaris   x x
+Snowy-browed Flycatcher Ficedula hyperythra   x x
+Rufous-chested Flycatcher Ficedula dumetoria  (NT)    x x 
+Verditer Flycatcher Eumyias thalassina x x x
+Indigo Flycatcher Eumyias indigo     x
+Large Niltava Niltava grandis   x  
+White-tailed Flycatcher Cyornis concretus   x  
+Pale Blue Flycatcher Cyornis unicolor x    
+Malaysian Blue Flycatcher Cyornis turcosus (NT)    x
+Mangrove Blue Flycatcher Cyornis rufigastra x    
+Pygmy Blue Flycatcher Muscicapella hodgsoni     x
+Grey-headed Canary Flycatcher Culicicapa ceylonensis x x x
+Oriental Magpie Robin Copsychus saularis x x x
+White-rumped Shama Copsychus malabaricus x    
+Rufous-tailed Shama Trichixos pyrropyga (NT) x    
+Sunda Robin Myiomela diana     x
+Sunda Forktail Enicurus velatus   x x
+Chestnut-naped Forktail Enicurus ruficapillus (NT) x x  
+White-crowned Forktail Enicurus leschenaulti x   x
+Sumatran Cochoa Cochoa beccarii (VU)   x x
+Asian Glossy Starling Aplonis panayensis     x
+Asian Pied Starling Gracupica  contra * x    
+Hill Myna Gracula religiosa x    
+Velvet-fronted Nuthatch Sitta frontalis x   x
+Blue Nuthatch Sitta azurea   x x
+Great Tit Parus major   x x
+Barn Swallow Hirundo rustica     x
+Pacific Swallow Hirundo tahitica x x x
+Asian House Martin Delichon dasypus     x
+Straw-headed Bulbul Pycnonotus zeylanicus (VU)     
+Cream-striped Bulbul Pycnonotus leucogrammicus   x x
+Spot-necked Bulbul Pycnonotus tympanistrigus (NT)    x
+Black-headed Bulbul Pycnonotus atriceps x x x
+Ruby-throated Bulbul Pycnonotus dispar * x x x
+Scaly-breasted Bulbul Pycnonotus squamatus (NT) x    
+80  CHRIS GOODDIE Forktail 31 (2015)
+
+===== PAGE 12 =====
+  Sites 
+Species WC/S WT/L/K DR
+Grey-bellied Bulbul Pycnonotus cyaniventris (NT) x x x
+Sooty-headed Bulbul Pycnonotus aurigaster x x  
+Puff-backed Bulbul Pycnonotus eutilotus ** x    
+Orange-spotted Bulbul Pycnonotus bimaculatus      x
+Yellow-vented Bulbul Pycnonotus goiavier x    
+Olive-winged Bulbul Pycnonotus plumosus x    
+Cream-vented Bulbul Pycnonotus simplex x x  
+Red-eyed Bulbul Pycnonotus brunneus x    
+Spectacled Bulbul Pycnonotus erythropthalmos x    
+Finsch’s Bulbul Alophoixus finschii (NT) x    
+Ochraceous Bulbul Alophoixus ochraceus x x  
+Grey-cheeked Bulbul Alophoixus bres x x x
+Yellow-bellied Bulbul Alophoixus phaeocephalus x x  
+Hairy-backed Bulbul Tricholestes criniger x x  
+Buff-vented Bulbul Iole olivacea (NT) x x  
+Streaked Bulbul Ixos malaccensis (NT) x x  
+Sunda Bulbul Ixos virescens   x x
+Ashy Bulbul Hemixos flavala   x x x
+Zitting Cisticola Cisticola juncidis     x
+Hill Prinia Prinia atrogularis     x
+Bar-winged Prinia Prinia familiaris x x x
+Yellow-bellied Prinia Prinia flaviventris x   x
+Oriental White-eye Zosterops palpebrosus   x x
+Black-capped White-eye Zosterops atricapilla   x x
+Lanceolated Warbler Locustella lanceolata x    
+Mountain Tailorbird Orthotomus cuculatus     x
+Common Tailorbird Orthotomus sutorius x    
+Dark-necked Tailorbird Orthotomus atrogularis x    
+Rufous-tailed Tailorbird Orthotomus sericeus x    
+Ashy Tailorbird Orthotomus ruficeps x x x
+Arctic Warbler Phylloscopus borealis x x  
+Eastern Crowned Warbler Phylloscopus coronatus x x x
+Mountain Leaf Warbler Phylloscopus trivirgatus     x
+Chestnut-crowned Warbler Seicercus castaniceps   x x
+Yellow-bellied Warbler Abroscopus superciliaris x   x
+Sunda Laughingthrush Garrulax palliatus     x
+Sumatran Laughingthrush Garrulax bicolor * (VU)     x
+Black Laughingthrush Garrulax lugubris     x
+Chestnut-capped Laughingthrush Garrulax mitratus   x x
+White-chested Babbler Trichastoma rostratum (NT) x x  
+Ferruginous Babbler Trichastoma bicolor x    
+Abbott’s Babbler Malacocincla abbotti   x x x
+Horsfield’s Babbler Malacocincla sepiaria x x  
+Short-tailed Babbler Malacocincla malaccensis (NT) x x  
+Sumatran Babbler Pellorneum buettikoferi *  (NT)   x  
+Black-capped Babbler Pellorneum capistratum x    
+Moustached Babbler Malacopteron magnirostre x x  
+Sooty-capped Babbler Malacopteron affine (NT) x x  
+Scaly-crowned Babbler Malacopteron cinereum x x  
+Rufous-crowned Babbler Malacopteron magnum (NT) x x  
+Chestnut-backed Scimitar Babbler Pomatorhinus montanus x x  
+Sumatran Wren Babbler Rimator albostriatus *     x x
+Large Wren Babbler Turdinus macrodactylus (NT)     
+Rusty-breasted Wren Babbler Turdinus rufipectus     x
+  Sites 
+Species WC/S WT/L/K DR
+Marbled Wren Babbler Turdinus marmoratus     x
+Eyebrowed Wren Babbler Turdinus epilepidota   x x
+Pygmy Wren Babbler Pnoepyga pusilla   x x
+Rufous-fronted Babbler Stachyridopsis rufifrons * x x  
+Golden Babbler Stachyridopsis chrysaea *   x x
+Grey-throated Babbler Stachyris nigriceps x x x
+Grey-headed Babbler Stachyris poliocephala x    
+Spot-necked Babbler Stachyris strialata   x x
+Black-throated Babbler Stachyris nigricollis (NT) x    
+Chestnut-rumped Babbler Stachyris maculata (NT) x x  
+Chestnut-winged Babbler Stachyris erythroptera x    
+Pin-striped Tit Babbler Macronous gularis * x x x
+Fluffy-backed Tit Babbler Macronous ptilosus (NT) x    
+Silver-eared Mesia Leiothrix argentauris x    
+White-browed Shrike Babbler Pteruthius flaviscapis     x
+Brown Fulvetta Alcippe brunneicauda (NT)   x  
+Long-tailed Sibia Heterophasia picaoides     x
+Yellow-breasted Flowerpecker Prionochilus maculatus x x  
+Crimson-breasted Flowerpecker Prionochilus percussus x x  
+Thick-billed Flowerpecker Dicaeum agile x x  
+Yellow-vented Flowerpecker Dicaeum chrysorrheum x x  
+Orange-bellied Flowerpecker Dicaeum trigonostigma x x x
+Plain Flowerpecker Dicaeum concolor   x  
+Fire-breasted Flowerpecker Dicaeum ignipectus     x
+Scarlet-backed Flowerpecker Dicaeum cruentatum x    
+Scarlet-headed Flowerpecker Dicaeum trochileum x    
+Plain Sunbird Anthreptes simplex x    
+Brown-throated Sunbird Anthreptes malacensis x   x
+Red-throated Sunbird Anthreptes rhodolaema (NT) x    
+Ruby-cheeked Sunbird  Chalcoparia singalensis x x x
+Purple-naped Sunbird Hypogramma hypogrammicum x x  
+Purple-throated Sunbird Leptocoma sperata  x    
+Olive-backed Sunbird Nectarinia jugularis x x x
+Crimson Sunbird Aethopyga siparaja x    
+Temminck’s Sunbird Aethopyga temminckii   x x
+Little Spiderhunter Arachnothera longirostra x x x
+Thick-billed Spiderhunter Arachnothera crassirostris x x  
+Long-billed Spiderhunter Arachnothera robusta x x  
+Spectacled Spiderhunter Arachnothera flavigaster x    
+Yellow-eared Spiderhunter Arachnothera chrysogenys x x  
+Grey-breasted Spiderhunter Arachnothera affinis x x  
+Eurasian Tree Sparrow Passer montanus x x x
+Yellow Wagtail Motacilla flava x    
+Grey Wagtail Motacilla cinerea   x x
+Paddyfield Pipit Anthus rufulus x    
+Baya Weaver Ploceus philippinus   x  
+Pin-tailed Parrotfinch Erythrura prasina     x
+White-rumped Munia Lonchura striata   x  
+Javan Munia Lonchura leucogastroides x x x
+Scaly-breasted Munia Lonchura punctulata   x x
+White-bellied Munia Lonchura leucogastra   x x
+Chestnut Munia Lonchura atricapilla * x    
+White-capped Munia Lonchura ferruginosa *   x  
+White-headed Munia Lonchura maja   x x
+    
+    
+Forktail 31 (2015) Orrnithological records from Bukit Barisan Selatan National Park, Sumatra, Indonesia 81
