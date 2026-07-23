@@ -29,6 +29,7 @@ from config import ANALYSIS_OUTPUT
 
 STEP_BF_PREFIX = "bf_"
 STEP_BIRNET_PREFIX = "birdnet_bf_"
+STEP_PREFILTER_PREFIX = "prefilter_"  # new: pre-filter + merge step
 STEP_SA = "sa"
 STEP_BIRNET_SA = "birdnet_sa"
 STEP_MONO = "mono"
@@ -113,30 +114,42 @@ class PipelineState:
         hour_str, minute_str = _extract_hour_minute(base_name)
         completed: Set[str] = set()
 
-        for ir_name in ir_types:
-            bf_dir = os.path.join(
+        from config import PREFILTER_GROUPS
+
+        # Pre-filter groups (merged) — check target dirs
+        for group_name, group_cfg in PREFILTER_GROUPS.items():
+            target_dir = os.path.join(
                 ANALYSIS_OUTPUT, location_name, date_str,
-                f"bf_{ir_name}", f"h_{hour_str}", f"m_{minute_str}",
+                group_cfg["target_dir_prefix"], f"h_{hour_str}", f"m_{minute_str}",
             )
-            if os.path.isdir(bf_dir):
-                results_json = os.path.join(bf_dir, "results.json")
-                processed_json = os.path.join(bf_dir, "processed.json")
+            if os.path.isdir(target_dir):
+                results_json = os.path.join(target_dir, "results.json")
+                processed_json = os.path.join(target_dir, "processed.json")
                 try:
-                    chunks = [f for f in os.listdir(bf_dir)
+                    chunks = [f for f in os.listdir(target_dir)
                               if f.startswith("s_") and f.endswith(".wav")
                               and base_name in f]
                 except OSError:
                     chunks = []
                 if chunks:
-                    bf_step = f"{STEP_BF_PREFIX}{ir_name}"
-                    # Only mark partial if processed.json not yet done
+                    # Beamforming step is per-raw-IR-type; pre-filter is per-group
+                    for irn in group_cfg["sources"]:
+                        bf_step = f"{STEP_BF_PREFIX}{irn}"
+                        raw_dir = os.path.join(
+                            ANALYSIS_OUTPUT, location_name, date_str,
+                            f"bf_{irn}", f"h_{hour_str}", f"m_{minute_str}",
+                        )
+                        if os.path.isdir(raw_dir):
+                            self.mark_complete(key, bf_step)
+                            completed.add(bf_step)
+                    pf_step = f"{STEP_PREFILTER_PREFIX}{group_name}"
                     if os.path.isfile(processed_json):
-                        self.mark_complete(key, bf_step)
+                        self.mark_complete(key, pf_step)
                     else:
-                        self.mark_partial(key, bf_step)
-                    completed.add(bf_step)
+                        self.mark_partial(key, pf_step)
+                    completed.add(pf_step)
                 if run_birdnet and os.path.isfile(results_json) and os.path.isfile(processed_json):
-                    bn_step = f"{STEP_BIRNET_PREFIX}{ir_name}"
+                    bn_step = f"{STEP_BIRNET_PREFIX}{group_name}"
                     self.mark_complete(key, bn_step)
                     completed.add(bn_step)
 

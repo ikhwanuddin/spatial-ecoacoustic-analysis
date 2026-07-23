@@ -169,6 +169,24 @@ BIRDNET_SPECIES_LIST_WAY_CANGUK = os.path.join(
 BIRDNET_MIN_CONF = 0.4
 BIRDNET_OVERLAP = 0.0
 
+# ============================================================
+# PRE-FILTERING (RMS energy threshold before BirdNET)
+# ============================================================
+
+# Keep chunk WAVs whose RMS >= PREFILTER_RMS_THRESHOLD * max RMS
+# within the same IR group × minute.  0.8 = 80% of the loudest chunk.
+PREFILTER_RMS_THRESHOLD = 0.8
+
+# Post–pre-filter BirdNET groups.
+# Each group pools beamformed chunks from one or more IR types
+# and produces a unified output directory for BirdNET analysis.
+#   sources:            IR type names whose chunks contribute
+#   target_dir_prefix:  output directory prefix (e.g. "bf_SPIR")
+PREFILTER_GROUPS: dict = {
+    "LabIR": {"sources": ["LabIR"], "target_dir_prefix": "bf_LabIR"},
+    "SPIR":  {"sources": ["SPIR1", "SPIR2"], "target_dir_prefix": "bf_SPIR"},
+}
+
 
 def is_way_canguk_location(location_name: Optional[str]) -> bool:
     """True if pipeline location is Way Canguk (plots or aliases)."""
