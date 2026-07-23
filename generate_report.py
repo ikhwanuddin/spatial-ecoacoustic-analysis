@@ -7,13 +7,13 @@ Focus: confidence-score comparison across methods, species × method heatmap,
 top species ranking, and hourly activity.
 
 BirdNET analysis keeps its pipeline min_conf (typically 0.4). This dashboard
-only visualises detections with confidence > DASHBOARD_MIN_CONF (default 0.55)
+only visualises detections with confidence > DASHBOARD_MIN_CONF (default 0.6)
 to suppress the weak ~0.5 band that dominates raw output.
 
 Usage:
     python generate_report.py --location 2A400
     python generate_report.py --location 2A400 --dates 2026-04-20
-    python generate_report.py --location 2A400 --dashboard-min-conf 0.55
+    python generate_report.py --location 2A400 --dashboard-min-conf 0.6
 
 Output:
     {data_dir}/{location}/{location}_report.html
@@ -48,18 +48,18 @@ LABIR_ELEVATION: Dict[int, int] = {
     11: 75, 12: 90,
 }
 
-PROCESSING_DIRS = ["bf_LabIR", "bf_SPIR1", "bf_SPIR2", "sa", "mono"]
+PROCESSING_DIRS = ["bf_LabIR", "bf_SPIR", "sa", "mono"]
 
 METHOD_MAP = {
-    "bf_LabIR": "LabIR", "bf_SPIR1": "SPIR1",
-    "bf_SPIR2": "SPIR2", "sa": "SA", "mono": "Mono",
+    "bf_LabIR": "LabIR", "bf_SPIR": "SPIR",
+    "sa": "SA", "mono": "Mono",
 }
 
 # Display / legend order: baseline → spatial methods
-METHOD_ORDER = ["Mono", "SA", "LabIR", "SPIR1", "SPIR2"]
+METHOD_ORDER = ["Mono", "SA", "LabIR", "SPIR"]
 
 # Dashboard-only floor (strict >). Pipeline BirdNET min_conf stays at 0.4.
-DASHBOARD_MIN_CONF = 0.55
+DASHBOARD_MIN_CONF = 0.6
 
 
 def _method_sort_key(method: str) -> Tuple[int, str]:
@@ -69,8 +69,8 @@ def _method_sort_key(method: str) -> Tuple[int, str]:
         return (len(METHOD_ORDER), method)
 
 RE_LABIR = re.compile(r"(?:s_\d{3}_)?.*_LabIR\(S(\d+)_(\d+)\)\.wav$")
-RE_SPIR1 = re.compile(r"(?:s_\d{3}_)?.*_SPIR1\((\d+)m_(\d+)\)\.wav$")
-RE_SPIR2 = re.compile(r"(?:s_\d{3}_)?.*_SPIR2\((\d+)m_180_r(\d+)\)\.wav$")
+RE_SPIR_DIST = re.compile(r"(?:s_\d{3}_)?.*_SPIR[12]?\((\d+)m_(\d+)\)\.wav$")
+RE_SPIR2_R   = re.compile(r"(?:s_\d{3}_)?.*_SPIR2\((\d+)m_180_r(\d+)\)\.wav$")
 RE_SA    = re.compile(r"_sa\.wav$")
 RE_MONO  = re.compile(r"_mono\.wav$")
 
@@ -139,17 +139,16 @@ def parse_direction(filename: str, method: str) -> tuple:
             return ("", f"{azimuth:03d}", f"{elev:+d}",
                     f"S{speaker:02d} elev:{elev:+d}deg az:{azimuth:03d}deg")
         return ("", "", "", filename)
-    elif method == "SPIR1":
-        m = RE_SPIR1.search(filename)
-        if m:
-            dist, azimuth = int(m.group(1)), int(m.group(2))
-            return (f"{dist}m", f"{azimuth:03d}", "", f"{dist}m az:{azimuth:03d}deg")
-        return ("", "", "", filename)
-    elif method == "SPIR2":
-        m = RE_SPIR2.search(filename)
+    elif method == "SPIR":
+        # Try SPIR2 (18-deg rep) pattern first, then generic SPIR1-style
+        m = RE_SPIR2_R.search(filename)
         if m:
             dist, rep = int(m.group(1)), int(m.group(2))
             return (f"{dist}m", "180", "", f"{dist}m az:180deg rep:{rep}")
+        m = RE_SPIR_DIST.search(filename)
+        if m:
+            dist, azimuth = int(m.group(1)), int(m.group(2))
+            return (f"{dist}m", f"{azimuth:03d}", "", f"{dist}m az:{azimuth:03d}deg")
         return ("", "", "", filename)
     elif method == "SA":
         return ("", "", "", "omnidirectional")
@@ -252,7 +251,7 @@ def _flatten(sp_data, date_str, hour_str, method, species_name, source_base):
 
 
 _REPORT_SOURCE_RE = re.compile(
-    r"^(?:s_\d{3}_)?(?P<src>.+?)_(?:LabIR|SPIR1|SPIR2)\([^)]*\)\.wav$"
+    r"^(?:s_\d{3}_)?(?P<src>.+?)_(?:LabIR|SPIR[12]?)\([^)]*\)\.wav$"
     r"|^(?:s_\d{3}_)?(?P<src_sa>.+?)_sa\.wav$"
     r"|^(?:s_\d{3}_)?(?P<src_mono>.+?)_mono\.wav$"
 )
@@ -299,18 +298,18 @@ def _src_label(src: str) -> str:
         return src
 
 
-# Confidence histogram bin edges (BirdNET scores typically ≥ min_conf, ≤ 1.0)
-_CONF_HIST_LO = 0.40
+# Confidence histogram bin edges (dashboard filtered ≥ 0.6)
+_CONF_HIST_LO = 0.6
 _CONF_HIST_HI = 1.00
 _CONF_HIST_STEP = 0.05
 
 
 def _conf_histogram(confs: List[float]) -> List[Dict[str, float]]:
-    """Fixed-width bins from 0.40–1.00 for distribution charts."""
+    """Fixed-width bins from 0.6–1.00 for distribution charts."""
     n_bins = int(round((_CONF_HIST_HI - _CONF_HIST_LO) / _CONF_HIST_STEP))
     counts = [0] * n_bins
     for c in confs:
-        # Epsilon avoids float edge cases e.g. 0.5 → bin [0.45,0.50)
+        # Epsilon avoids float edge cases e.g. 0.6 → bin [0.6,0.65)
         idx = int((float(c) - _CONF_HIST_LO + 1e-9) / _CONF_HIST_STEP)
         idx = max(0, min(n_bins - 1, idx))
         counts[idx] += 1
@@ -424,11 +423,11 @@ def build_labir_spatial(detections: List[Detection]) -> Dict[str, Any]:
 
     Detection = unique BirdNET window (source, start_time) per direction
     (not species-inflated when aggregating overall). Colour scale is absolute
-    conf 0.55–1.00 so gradients are comparable across species views.
+    conf 0.6–1.00 so gradients are comparable across species views.
     """
     lab = [d for d in detections if d.method == "LabIR" and d.azimuth not in ("", None)]
-    # Fixed BirdNET-ish scale for colour (dashboard already filters > 0.55)
-    color_scale = {"min": 0.55, "max": 1.0, "mode": "absolute"}
+    # Fixed BirdNET-ish scale for colour (dashboard already filters > 0.6)
+    color_scale = {"min": 0.6, "max": 1.0, "mode": "absolute"}
 
     if not lab:
         empty = _labir_aggregate_subset([])
@@ -692,8 +691,7 @@ METHOD_COLORS = {
     "Mono": "#eab308",
     "SA": "#22c55e",
     "LabIR": "#3b82f6",
-    "SPIR1": "#8b5cf6",
-    "SPIR2": "#ec4899",
+    "SPIR": "#8b5cf6",
 }
 
 
@@ -765,7 +763,7 @@ header .subtitle{{font-size:0.95rem;color:var(--text-muted);margin-top:0.4rem;li
 .conf-axis-note{{font-size:0.9rem;color:var(--text-muted);margin-bottom:0.35rem;font-weight:500}}
 .conf-boxplot-wrap,.conf-hist-wrap{{width:100%;overflow:visible}}
 .conf-boxplot-wrap svg,.conf-hist-wrap svg{{display:block;width:100%;height:auto}}
-.conf-legend{{display:flex;gap:1rem;flex-wrap:wrap;font-size:0.9rem;color:var(--text-muted);margin-top:0.45rem}}
+.conf-legend{{display:flex;gap:1rem;flex-wrap:wrap;font-size:0.9rem;color:var(--text-muted);margin-top:0.45rem;justify-content:center}}
 .conf-legend span{{display:flex;align-items:center;gap:0.35rem}}
 
 /* ── Heatmap table ─────────────────────────────────────── */
@@ -817,9 +815,9 @@ header .subtitle{{font-size:0.95rem;color:var(--text-muted);margin-top:0.4rem;li
 
 /* ── Source breakdown charts ────────────────────────────── */
 .chart-scroll{{overflow-x:auto;overflow-y:hidden}}
-.chart-scroll svg{{min-width:500px}}
+.chart-scroll svg{{}}
 .chart-bar-group:hover rect{{opacity:1!important}}
-.chart-legend{{display:flex;gap:1rem;margin-bottom:0.55rem;flex-wrap:wrap;font-size:0.95rem}}
+.chart-legend{{display:flex;gap:1rem;margin-bottom:0.55rem;flex-wrap:wrap;font-size:0.95rem;justify-content:center}}
 .chart-legend span{{display:flex;align-items:center;gap:0.35rem}}
 .chart-legend .swatch{{width:12px;height:12px;border-radius:2px;flex-shrink:0}}
 
@@ -868,53 +866,52 @@ footer{{margin-top:1.75rem;font-size:0.9rem;color:var(--text-muted);text-align:c
 <div class="date-selector" id="dateSelector"></div>
 
 <div class="stats-row" id="statsRow">
-    <div class="stat-card"><div class="label">Detections ({conf_label})</div><div class="value" id="statTotal">&mdash;</div></div>
-    <div class="stat-card"><div class="label">Species</div><div class="value" id="statSpecies">&mdash;</div></div>
-    <div class="stat-card"><div class="label">Methods</div><div class="value" id="statMethods">&mdash;</div></div>
-    <div class="stat-card"><div class="label">Hours Active</div><div class="value" id="statHours">&mdash;</div></div>
-    <div class="stat-card"><div class="label">Rows kept / raw</div><div class="value" id="statFilter">&mdash;</div></div>
+    <div class="stat-card" title="Unique acoustic events (species &times; source &times; start time) after conf filter"><div class="label">Detections ({conf_label})</div><div class="value" id="statTotal">&mdash;</div></div>
+    <div class="stat-card" title="Unique species detected"><div class="label">Species</div><div class="value" id="statSpecies">&mdash;</div></div>
+    <div class="stat-card" title="Processing methods with detections above threshold"><div class="label">Methods</div><div class="value" id="statMethods">&mdash;</div></div>
+    <div class="stat-card" title="Distinct clock hours with at least one detection"><div class="label">Hours Active</div><div class="value" id="statHours">&mdash;</div></div>
+    <div class="stat-card" title="Method-rows after conf filter / raw rows from processed.json"><div class="label">shown / total</div><div class="value" id="statFilter">&mdash;</div></div>
 </div>
 
 <div class="card">
     <h2>Confidence Score Distribution by Method</h2>
-    <div class="tooltip">Fixed scale 0.40&ndash;1.00. Box = IQR (q25&ndash;q75), line = median, diamond = mean, whiskers = min&ndash;max. Histogram shows mass per bin (why many methods look similar when scores pile near the threshold).</div>
+    <div class="tooltip">Fixed scale 0.6&ndash;1.00. Left: box plot &mdash; box = IQR (q25&ndash;q75), line = median, diamond = mean, whiskers = min&ndash;max. Right: histogram showing detection count per 0.05 confidence bin (many methods cluster near the 0.6 threshold).</div>
     <div class="conf-dist" id="confRange"></div>
 </div>
 
 <div class="card">
-    <h2>Species &times; Method Confidence Heatmap</h2>
-    <div class="tooltip">Top 15 species ranked by mean confidence (then detection count), after {conf_label}. Cell colour = mean conf on the same fixed scale as LabIR Spatial (0.55&ndash;1.00, blue&rarr;red). Detections = unique (source, time) windows, not summed across methods.</div>
-    <div class="heatmap-wrap" id="heatmapContainer"></div>
-</div>
-
-<div class="card">
-    <h2>LabIR Spatial Directions</h2>
-    <div class="tooltip">Winning LabIR beam after {conf_label}. <strong>Bar length / cell number</strong> = BirdNET detections (unique source &times; start window). <strong>Colour</strong> = mean confidence on a fixed scale 0.55&ndash;1.00 (blue = lower, yellow = mid, red = higher). Pick a species or All.</div>
-    <div id="labirSpatial"></div>
-</div>
-
-<div class="card">
     <h2>Top Species by Confidence</h2>
-    <div class="tooltip">Ranked by mean conf (desc), then detections. Cards wrap left→right, top-aligned, spanning full card width. Donut fill = conf 0.55&ndash;1.00 (same scale as LabIR Spatial). Label = conf · detections after {conf_label}.</div>
+    <div class="tooltip">Ranked by mean confidence (descending), then by detection count. Donut fill uses the fixed 0.6&ndash;1.00 scale. Label = mean conf &middot; detections after {conf_label}.</div>
     <div id="speciesBarList"></div>
 </div>
 
 <div class="card">
+    <h2>Species &times; Method Confidence Heatmap</h2>
+    <div class="tooltip">Top 15 species ranked by mean confidence (then detection count), after {conf_label}. Cell colour = mean conf on the fixed 0.6&ndash;1.00 scale (blue&rarr;red). Empty cell = no detection by that method. Detections are unique (source, time) windows, not summed across methods.</div>
+    <div class="heatmap-wrap" id="heatmapContainer"></div>
+</div>
+
+<div class="card">
     <h2>Hourly Activity</h2>
-    <div class="tooltip">Bar = unique BirdNET detections per hour (source × start window after conf filter). Not multiplied by species or method. Label also shows species richness that hour.</div>
+    <div class="tooltip">Bar = unique BirdNET detections per clock hour (source &times; start window after {conf_label}), not multiplied by species or method. Label shows detection count and species richness for that hour.</div>
     <div class="bar-list" id="hourlyBarList"></div>
 </div>
 
 <div class="card">
-    <h2>Detections by Source Recording (per Method)</h2>
-    <div class="tooltip">Each source = one FLAC recording. Bars = unique BirdNET detection windows (start time) after conf filter — not multiplied by species. Hover for count.</div>
-    <div class="chart-scroll" id="srcCountChart"></div>
+    <h2>LabIR Spatial Directions</h2>
+    <div class="tooltip">Winning LabIR beam direction after {conf_label}. <strong>Bar length / cell count</strong> = BirdNET detections (unique source &times; start window). <strong>Colour</strong> = mean confidence on the fixed 0.6&ndash;1.00 scale (blue = lower, green/yellow = mid, red = higher). Use the species picker to filter or select All.</div>
+    <div id="labirSpatial"></div>
 </div>
 
 <div class="card">
-    <h2>Confidence Score by Source Recording (per Method)</h2>
-    <div class="tooltip">Mean confidence per source and method (after conf filter). Shows whether beamforming improves scores vs mono/SA.</div>
-    <div class="chart-scroll" id="srcConfChart"></div>
+    <h2>Source Recording Overview</h2>
+    <div class="tooltip">Toggle between detection count and mean confidence per source. Each source = one FLAC recording. Bars are grouped by method. In Conf mode each method has a distinct fill pattern for accessibility. Hover for details.</div>
+    <div class="spatial-picker" id="srcToggleRow" style="margin-bottom:0.55rem">
+        <label>View</label>
+        <button type="button" class="sp-btn active" id="srcToggleCount">Count</button>
+        <button type="button" class="sp-btn" id="srcToggleConf">Conf</button>
+    </div>
+    <div class="chart-scroll" id="srcOverviewChart"></div>
 </div>
 
 <footer>
@@ -929,7 +926,8 @@ var METHOD_ORDER = {json.dumps(METHOD_ORDER, separators=(",", ":"))};
 var currentDate = null;
 // Must be assigned before init() runs (var is hoisted as undefined)
 var labirSpatialState = {{ spatial: null, selected: '__all__' }};
-// Fixed conf colour scale 0.55–1.00: blue (low) → red (high)
+var srcViewMode = 'count'; // 'count' | 'conf' toggle for Source Overview
+// Fixed conf colour scale 0.6–1.00: blue (low) → red (high)
 var LABIR_CONF_STOPS = [
     {{ t: 0.00, c: [29, 78, 216] }},
     {{ t: 0.25, c: [6, 182, 212] }},
@@ -952,7 +950,7 @@ function orderedMethods(methods) {{
 function esc(s) {{ return String(s).replace(/&/g,'&amp;').replace(/\\x3c/g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }}
 
 function labirConfColor(conf, scaleMin, scaleMax) {{
-    var lo = (typeof scaleMin === 'number') ? scaleMin : 0.55;
+    var lo = (typeof scaleMin === 'number') ? scaleMin : 0.6;
     var hi = (typeof scaleMax === 'number') ? scaleMax : 1.0;
     var t = (conf - lo) / (hi - lo || 0.001);
     t = Math.max(0, Math.min(1, t));
@@ -968,7 +966,7 @@ function labirConfColor(conf, scaleMin, scaleMax) {{
 
 // Shared Mean conf colour legend (same wording everywhere)
 function confColorLegendHtml(scaleMin, scaleMax) {{
-    var lo = (typeof scaleMin === 'number') ? scaleMin : 0.55;
+    var lo = (typeof scaleMin === 'number') ? scaleMin : 0.6;
     var hi = (typeof scaleMax === 'number') ? scaleMax : 1.0;
     var html = '\\x3cdiv class="color-legend">';
     html += '\\x3cspan style="font-weight:600;color:var(--text)">Mean conf\\x3c/span>';
@@ -1028,12 +1026,11 @@ function renderAll(data) {{
     }}
 
     renderConfRange(data.method_confidence);
-    renderHeatmap(data.species_method_heatmap, data.heatmap_methods);
-    renderLabirSpatial(data.labir_spatial);
     renderSpeciesBars(data.top_species);
+    renderHeatmap(data.species_method_heatmap, data.heatmap_methods);
     renderHourlyBars(data.hourly_activity);
-    renderSrcCountChart(data.source_breakdown_counts);
-    renderSrcConfChart(data.source_breakdown_confs);
+    renderLabirSpatial(data.labir_spatial);
+    renderSrcOverview(data.source_breakdown_counts, data.source_breakdown_confs);
 }}
 
 // ── LabIR spatial (species picker + polar + elev + grid) ─
@@ -1089,7 +1086,7 @@ function _paintLabirSpatial() {{
         return;
     }}
 
-    var scale = spatial.color_scale || {{ min: 0.55, max: 1.0 }};
+    var scale = spatial.color_scale || {{ min: 0.6, max: 1.0 }};
     var scaleMin = scale.min, scaleMax = scale.max;
     var speciesList = spatial.species_list || [];
     var selected = labirSpatialState.selected;
@@ -1141,20 +1138,22 @@ function _paintLabirSpatial() {{
     var rMin = 32;
     html += '\\x3cdiv class="spatial-panel">';
     html += '\\x3ch3>Azimuth rose\\x3c/h3>';
-    html += '\\x3cdiv class="sub">0° top, clockwise. <strong>Length</strong> = detections · <strong>colour</strong> = mean conf (fixed 0.55–1.00). White number inside wedge.\\x3c/div>';
+    html += '\\x3cdiv class="sub">0° top, clockwise. <strong>Length</strong> = detections · <strong>colour</strong> = mean conf (fixed 0.6–1.00). White number inside wedge.\\x3c/div>';
     html += '\\x3cdiv class="spatial-polar-wrap">\\x3csvg width="' + size + '" height="' + size + '" viewBox="0 0 ' + size + ' ' + size + '">';
 
     for (var ring = 1; ring <= 3; ring++) {{
         var rr = rMin + (rMax - rMin) * (ring / 3);
         html += '\\x3ccircle cx="' + cx + '" cy="' + cy + '" r="' + rr + '" fill="none" stroke="var(--border-light)" stroke-width="1"/>';
     }}
-    html += '\\x3ccircle cx="' + cx + '" cy="' + cy + '" r="' + rMin + '" fill="var(--bg-input)" stroke="var(--border)" stroke-width="1"/>';
+    html += '\\x3ccircle cx="' + cx + '" cy="' + cy + '" r="' + rMin + '" fill="none" stroke="var(--border)" stroke-width="1"/>';
 
     for (var azg = 0; azg < 360; azg += 60) {{
         var radG = (azg * Math.PI / 180);
+        var x1 = cx + Math.sin(radG) * rMin;
+        var y1 = cy - Math.cos(radG) * rMin;
         var x2 = cx + Math.sin(radG) * rMax;
         var y2 = cy - Math.cos(radG) * rMax;
-        html += '\\x3cline x1="' + cx + '" y1="' + cy + '" x2="' + x2 + '" y2="' + y2 + '" stroke="var(--border-light)" stroke-width="1"/>';
+        html += '\\x3cline x1="' + x1 + '" y1="' + y1 + '" x2="' + x2 + '" y2="' + y2 + '" stroke="var(--border-light)" stroke-width="1"/>';
         var lx = cx + Math.sin(radG) * (rMax + 20);
         var ly = cy - Math.cos(radG) * (rMax + 20);
         html += '\\x3ctext x="' + lx + '" y="' + (ly + 4) + '" text-anchor="middle" font-size="13" font-weight="600" fill="var(--text-muted)">' +
@@ -1194,25 +1193,61 @@ function _paintLabirSpatial() {{
     html += '\\x3ctext x="' + cx + '" y="' + (cy + 5) + '" text-anchor="middle" font-size="12" font-weight="600" fill="var(--text-muted)">az\\x3c/text>';
     html += '\\x3c/svg>\\x3c/div>\\x3c/div>';
 
-    // ── Elevation ───────────────────────────────────────
+    // ── Elevation half rose (semicircle) ────────────────
+    var elW = 380, elH = 300;
+    var ecx = 175, ecy = 168;
+    var elRMax = 138, elRMin = 30;
+    var elLo = -67.5, elHi = 112.5; // sector bounds: four 45° wedges tile the half circle
+    function elPt(e, r) {{
+        var erad = e * Math.PI / 180;
+        return [ecx + Math.cos(erad) * r, ecy - Math.sin(erad) * r];
+    }}
     html += '\\x3cdiv class="spatial-panel">';
     html += '\\x3ch3>Elevation (LabIR speakers)\\x3c/h3>';
-    html += '\\x3cdiv class="sub">Length = detections · colour = mean conf (same fixed scale). S01 −45° · S05 0° · S09 +45° · S12 +90°.\\x3c/div>';
+    html += '\\x3cdiv class="sub">Half rose: +90° top, +45° top-right, 0° right, −45° bottom-right. <strong>Length</strong> = detections · <strong>colour</strong> = mean conf (same fixed scale). S01 −45° · S05 0° · S09 +45° · S12 +90°.\\x3c/div>';
     if (!byEl.length) {{
         html += '\\x3cdiv style="color:var(--text-muted)">No elevation data.\\x3c/div>';
     }} else {{
-        html += '\\x3cdiv class="bar-list">';
-        byEl.slice().sort(function(a, b) {{ return b.elevation - a.elevation; }}).forEach(function(e) {{
-            var pct = (e.detections / maxDetEl) * 100;
-            var elevLabel = (e.elevation > 0 ? '+' : '') + e.elevation + '°';
-            var col = labirConfColor(e.conf_avg, scaleMin, scaleMax);
-            html += '\\x3cdiv class="bar-row" title="elev ' + elevLabel + '\\ndetections=' + e.detections + '\\nmean conf=' + e.conf_avg.toFixed(3) + '">' +
-                '\\x3cdiv class="bar-label" style="width:72px">' + elevLabel + '\\x3c/div>' +
-                '\\x3cdiv class="bar-track">\\x3cdiv class="bar-fill" style="width:' + pct + '%;background:' + col + '">\\x3c/div>\\x3c/div>' +
-                '\\x3cdiv class="bar-value" style="width:150px">' + e.detections + ' det · ' + e.conf_avg.toFixed(3) + '\\x3c/div>' +
-                '\\x3c/div>';
+        html += '\\x3cdiv class="spatial-polar-wrap">\\x3csvg width="' + elW + '" height="' + elH + '" viewBox="0 0 ' + elW + ' ' + elH + '">';
+        for (var ering = 1; ering <= 3; ering++) {{
+            var err = elRMin + (elRMax - elRMin) * (ering / 3);
+            var es = elPt(elLo, err), ef = elPt(elHi, err);
+            html += '\\x3cpath d="M' + es[0] + ',' + es[1] + ' A' + err + ',' + err + ' 0 0,0 ' + ef[0] + ',' + ef[1] + '" fill="none" stroke="var(--border-light)" stroke-width="1"/>';
+        }}
+        var eis = elPt(elLo, elRMin), eie = elPt(elHi, elRMin);
+        html += '\\x3cpath d="M' + eis[0] + ',' + eis[1] + ' A' + elRMin + ',' + elRMin + ' 0 0,0 ' + eie[0] + ',' + eie[1] + '" fill="none" stroke="var(--border)" stroke-width="1"/>';
+        [-45, 0, 45, 90].forEach(function(eg) {{
+            var eg1 = elPt(eg, elRMin), eg2 = elPt(eg, elRMax);
+            html += '\\x3cline x1="' + eg1[0] + '" y1="' + eg1[1] + '" x2="' + eg2[0] + '" y2="' + eg2[1] + '" stroke="var(--border-light)" stroke-width="1"/>';
+            var egt = elPt(eg, elRMax + 22);
+            html += '\\x3ctext x="' + egt[0] + '" y="' + (egt[1] + 4) + '" text-anchor="middle" font-size="13" font-weight="600" fill="var(--text-muted)">' +
+                (eg > 0 ? '+' : '') + eg + '°\\x3c/text>';
         }});
-        html += '\\x3c/div>';
+        byEl.forEach(function(e) {{
+            var efrac = Math.max(0.12, e.detections / maxDetEl);
+            var rOut = elRMin + (elRMax - elRMin) * efrac;
+            var ehw = 15; // 30° wedge dari spacing 45° → fill ratio 0.67, sama seperti azimuth rose (40° dari 60°)
+            var w0 = elPt(e.elevation - ehw, elRMin), w1 = elPt(e.elevation - ehw, rOut);
+            var w2 = elPt(e.elevation + ehw, rOut), w3 = elPt(e.elevation + ehw, elRMin);
+            var wd = 'M' + w0[0] + ',' + w0[1] +
+                ' L' + w1[0] + ',' + w1[1] +
+                ' A' + rOut + ',' + rOut + ' 0 0,0 ' + w2[0] + ',' + w2[1] +
+                ' L' + w3[0] + ',' + w3[1] +
+                ' A' + elRMin + ',' + elRMin + ' 0 0,1 ' + w0[0] + ',' + w0[1] + ' Z';
+            var wcol = labirConfColor(e.conf_avg, scaleMin, scaleMax);
+            var elab = (e.elevation > 0 ? '+' : '') + e.elevation + '°';
+            html += '\\x3cpath d="' + wd + '" fill="' + wcol + '" opacity="0.95" stroke="rgba(0,0,0,0.25)" stroke-width="1">';
+            html += '\\x3ctitle>elev ' + elab + '\\ndetections=' + e.detections +
+                '\\nmean conf=' + e.conf_avg.toFixed(3) +
+                '\\nmedian conf=' + e.conf_median.toFixed(3) + '\\x3c/title>';
+            html += '\\x3c/path>';
+            var rLab = (elRMin + rOut) / 2;
+            var mid = elPt(e.elevation, rLab);
+            html += '\\x3ctext x="' + mid[0] + '" y="' + (mid[1] + 5) + '" text-anchor="middle" font-size="14" font-weight="700" fill="#ffffff" stroke="rgba(0,0,0,0.35)" stroke-width="0.6" paint-order="stroke">' +
+                e.detections + '\\x3c/text>';
+        }});
+        html += '\\x3ctext x="' + ecx + '" y="' + (ecy + 5) + '" text-anchor="middle" font-size="12" font-weight="600" fill="var(--text-muted)">el\\x3c/text>';
+        html += '\\x3c/svg>\\x3c/div>';
     }}
     html += '\\x3c/div>\\x3c/div>'; // panel + grid
 
@@ -1290,8 +1325,8 @@ function renderConfRange(methods) {{
     }});
     if (!entries.length) {{ container.innerHTML = '\\x3cdiv style="color:var(--text-muted)">No data\\x3c/div>'; return; }}
 
-    // Fixed BirdNET scale so methods are comparable and IQR collapse is visible
-    var scaleMin = 0.40, scaleMax = 1.00;
+    // Fixed dashboard scale matching histogram bins (0.6–1.00)
+    var scaleMin = 0.6, scaleMax = 1.00;
     var scaleRange = scaleMax - scaleMin;
 
     function xOf(v) {{
@@ -1320,10 +1355,6 @@ function renderConfRange(methods) {{
         html += '\\x3cline x1="' + tx + '" y1="' + margin.top + '" x2="' + tx + '" y2="' + (margin.top + plotH) + '" stroke="var(--border-light)" stroke-dasharray="2,3"/>';
         html += '\\x3ctext x="' + tx + '" y="' + (margin.top + plotH + 20) + '" text-anchor="middle" font-size="11" fill="var(--text-muted)">' + tv.toFixed(2) + '\\x3c/text>';
     }}
-    var thrX = margin.left + xOf(0.50) * plotW;
-    html += '\\x3cline x1="' + thrX + '" y1="' + (margin.top - 4) + '" x2="' + thrX + '" y2="' + (margin.top + plotH) + '" stroke="var(--text-muted)" stroke-width="1" stroke-dasharray="4,3" opacity="0.55"/>';
-    html += '\\x3ctext x="' + thrX + '" y="' + (margin.top - 8) + '" text-anchor="middle" font-size="11" fill="var(--text-muted)">0.50\\x3c/text>';
-
     entries.forEach(function(e, i) {{
         var method = e[0], d = e[1];
         var color = METHOD_COLORS[method] || '#6b7280';
@@ -1338,10 +1369,10 @@ function renderConfRange(methods) {{
         var boxH = 16;
 
         html += '\\x3ctext x="' + (margin.left - 8) + '" y="' + (cy + 5) + '" text-anchor="end" font-size="13" font-weight="600" fill="' + color + '">' + esc(method) + '\\x3c/text>';
-        html += '\x3cline x1="' + xMin + '" y1="' + cy + '" x2="' + xMax + '" y2="' + cy + '" stroke="' + color + '" stroke-width="1.5" opacity="0.85"/>';
+        html += '\\x3cline x1="' + xMin + '" y1="' + cy + '" x2="' + xMax + '" y2="' + cy + '" stroke="' + color + '" stroke-width="1.5" opacity="0.55"/>';
         html += '\\x3cline x1="' + xMin + '" y1="' + (cy - 6) + '" x2="' + xMin + '" y2="' + (cy + 6) + '" stroke="' + color + '" stroke-width="1.5"/>';
         html += '\\x3cline x1="' + xMax + '" y1="' + (cy - 6) + '" x2="' + xMax + '" y2="' + (cy + 6) + '" stroke="' + color + '" stroke-width="1.5"/>';
-        html += '\x3crect x="' + xQ25 + '" y="' + (cy - boxH / 2) + '" width="' + boxW + '" height="' + boxH + '" rx="2" fill="' + color + '" opacity="0.85" stroke="' + color + '" stroke-width="1.2"/>';
+        html += '\\x3crect x="' + xQ25 + '" y="' + (cy - boxH / 2) + '" width="' + boxW + '" height="' + boxH + '" rx="2" fill="' + color + '" opacity="0.28" stroke="' + color + '" stroke-width="1.2"/>';
         html += '\\x3cline x1="' + xMed + '" y1="' + (cy - boxH / 2 - 1) + '" x2="' + xMed + '" y2="' + (cy + boxH / 2 + 1) + '" stroke="' + color + '" stroke-width="2.5"/>';
         var ds = 5;
         html += '\\x3cpolygon points="' + xAvg + ',' + (cy - ds) + ' ' + (xAvg + ds) + ',' + cy + ' ' + xAvg + ',' + (cy + ds) + ' ' + (xAvg - ds) + ',' + cy + '" fill="' + color + '" stroke="var(--bg-card)" stroke-width="1"/>';
@@ -1401,7 +1432,7 @@ function renderConfRange(methods) {{
                 var bx = gx + 1.5 + mi * barW;
                 var by = hMargin.top + hPlotH - bh;
                 if (b.count === 0) return;
-                html += '\\x3crect x="' + bx + '" y="' + by + '" width="' + Math.max(1, barW - 0.4) + '" height="' + Math.max(1, bh) + '" fill="' + color + '" opacity="0.85" rx="1">';
+                html += '\\x3crect x="' + bx + '" y="' + by + '" width="' + Math.max(1, barW - 0.4) + '" height="' + Math.max(1, bh) + '" fill="' + color + '" opacity="0.55" rx="1">';
                 html += '\\x3ctitle>' + esc(e[0]) + ' [' + bin.lo.toFixed(2) + '&ndash;' + bin.hi.toFixed(2) + ') = ' + b.count + '\\x3c/title>';
                 html += '\\x3c/rect>';
             }});
@@ -1415,7 +1446,7 @@ function renderConfRange(methods) {{
         html += '\\x3cdiv class="conf-legend">';
         entries.forEach(function(e) {{
             var color = METHOD_COLORS[e[0]] || '#6b7280';
-            html += '\\x3cspan>\\x3cspan style="width:12px;height:12px;border-radius:2px;background:' + color + ';display:inline-block">\\x3c/span>' + esc(e[0]) + '\\x3c/span>';
+            html += '\\x3cspan>\\x3cspan style="width:12px;height:12px;border-radius:2px;background:' + color + ';opacity:0.55;display:inline-block">\\x3c/span>' + esc(e[0]) + '\\x3c/span>';
         }});
         html += '\\x3c/div>';
     }} else {{
@@ -1444,13 +1475,13 @@ function renderConfRange(methods) {{
     container.innerHTML = html;
 }}
 
-// ── Heatmap (colour synced with LabIR Spatial: 0.55–1.00) ─
+// ── Heatmap (colour synced with LabIR Spatial: 0.6–1.00) ─
 function renderHeatmap(rows, methods) {{
     var container = document.getElementById('heatmapContainer');
     if (!rows.length) {{ container.innerHTML = '\\x3cdiv style="color:var(--text-muted)">No data\\x3c/div>'; return; }}
 
     // Same absolute scale as LabIR Spatial Directions
-    var scaleMin = 0.55, scaleMax = 1.0;
+    var scaleMin = 0.6, scaleMax = 1.0;
     var allAvgs = [];
     rows.forEach(function(r) {{
         methods.forEach(function(m) {{
@@ -1495,13 +1526,13 @@ function renderHeatmap(rows, methods) {{
     container.innerHTML = html;
 }}
 
-// ── Top species (column-major rank + conf donut 0.55–1.00) ─
+// ── Top species (column-major rank + conf donut 0.6–1.00) ─
 function renderSpeciesBars(speciesList) {{
     var container = document.getElementById('speciesBarList');
     if (!speciesList.length) {{ container.innerHTML = '\\x3cdiv style="color:var(--text-muted)">No data\\x3c/div>'; return; }}
 
     // Synced with LabIR Spatial / heatmap
-    var scaleMin = 0.55, scaleMax = 1.0;
+    var scaleMin = 0.6, scaleMax = 1.0;
     var scaleSpan = scaleMax - scaleMin;
 
     function confDonutSvg(conf, color) {{
@@ -1531,7 +1562,7 @@ function renderSpeciesBars(speciesList) {{
         var col = labirConfColor(sp.conf_avg, scaleMin, scaleMax);
         var rawNote = (typeof sp.raw_count === 'number') ? ('\\nMethod-rows: ' + sp.raw_count) : '';
         var tip = esc(sp.species) + '\\nmean conf=' + sp.conf_avg.toFixed(3) +
-            ' (donut 0.55–1.00)\\ndetections=' + sp.count + rawNote +
+            ' (donut 0.6–1.00)\\ndetections=' + sp.count + rawNote +
             '\\nmethods=' + sp.method_count + '\\nrank=' + (i + 1);
 
         html += '\\x3cdiv class="sp-rank-item" title="' + tip + '">' +
@@ -1577,137 +1608,156 @@ function renderHourlyBars(hourlyList) {{
     container.innerHTML = html;
 }}
 
-// ── Source Count Chart (grouped bars per source) ─────────
-function renderSrcCountChart(data) {{
-    var container = document.getElementById('srcCountChart');
-    if (!data || !data.length) {{ container.innerHTML = '\\x3cdiv style="color:var(--text-muted)">No data\x3c/div>'; return; }}
+// ── Source Overview (count / conf toggle) ─────────────────
+function renderSrcOverview(counts, confs) {{
+    var container = document.getElementById('srcOverviewChart');
+    if (!counts || !counts.length) {{ container.innerHTML = '\\x3cdiv style="color:var(--text-muted)">No data\\x3c/div>'; return; }}
 
-    var methods = orderedMethods(Object.keys(data[0].methods));
-    var n = data.length;
+    var methods = orderedMethods(Object.keys(counts[0].methods));
+    var n = counts.length;
     var barW = Math.max(6, Math.min(14, Math.floor(600 / n / methods.length)));
     var gap = 2;
     var groupW = methods.length * (barW + gap);
-    var margin = {{ top: 24, right: 20, bottom: 36, left: 36 }};
-
-    // Find max
-    var maxCount = 0;
-    data.forEach(function(r) {{
-        methods.forEach(function(m) {{ maxCount = Math.max(maxCount, r.methods[m]); }});
-    }});
-    var chartW = n * (groupW + 10) + margin.left + margin.right;
+    var chartW = n * (groupW + 10) + 52 + 20;
     var chartH = 220;
+    var confScaleMin = 0.6, confScaleMax = 1.0;
 
-    var html = '\\x3csvg width="' + chartW + '" height="' + chartH + '" viewBox="0 0 ' + chartW + ' ' + chartH + '" style="display:block">';
+    // SVG texture patterns – one per method so bars are distinguishable even in conf-colour mode
+    var _srcPatterns = '\x3cdefs>' +
+        '\x3cpattern id="pat-Mono" width="6" height="6" patternUnits="userSpaceOnUse">' +
+            '\x3cline x1="0" y1="3" x2="6" y2="3" stroke="#000" stroke-width="2" opacity="0.35"/>' +
+        '\x3c/pattern>' +
+        '\x3cpattern id="pat-SA" width="6" height="6" patternUnits="userSpaceOnUse">' +
+            '\x3cline x1="0" y1="6" x2="6" y2="0" stroke="#000" stroke-width="2" opacity="0.35"/>' +
+        '\x3c/pattern>' +
+        '\x3cpattern id="pat-LabIR" width="6" height="6" patternUnits="userSpaceOnUse">' +
+            '\x3cline x1="0" y1="6" x2="6" y2="0" stroke="#000" stroke-width="1.5" opacity="0.3"/>' +
+            '\x3cline x1="0" y1="0" x2="6" y2="6" stroke="#000" stroke-width="1.5" opacity="0.3"/>' +
+        '\x3c/pattern>' +
+        '\x3cpattern id="pat-SPIR" width="5" height="5" patternUnits="userSpaceOnUse">' +
+            '\x3ccircle cx="2.5" cy="2.5" r="1.5" fill="#000" opacity="0.35"/>' +
+        '\x3c/pattern>' +
+    '\x3c/defs>';
 
-    // Y-axis grid
-    for (var g = 0; g <= 4; g++) {{
-        var y = margin.top + (chartH - margin.top - margin.bottom) * (1 - g / 4);
-        html += '\\x3cline x1="' + margin.left + '" y1="' + y + '" x2="' + (chartW - margin.right) + '" y2="' + y + '" stroke="var(--border-light)" stroke-dasharray="3,3"/>';
-        var label = Math.round(maxCount * g / 4);
-        html += '\\x3ctext x="' + (margin.left - 6) + '" y="' + (y + 4) + '" text-anchor="end" font-size="12" fill="var(--text-muted)">' + label + '\\x3c/text>';
+    function _paint() {{
+        var isCount = (srcViewMode === 'count');
+        var margin = isCount ? {{ top: 24, right: 20, bottom: 36, left: 40 }} : {{ top: 24, right: 20, bottom: 36, left: 52 }};
+        var html = '\x3csvg width="' + chartW + '" height="' + chartH + '" viewBox="0 0 ' + chartW + ' ' + chartH + '" style="display:block">' + _srcPatterns;
+
+        if (isCount) {{
+            // ── Count mode ──
+            var maxCount = 0;
+            counts.forEach(function(r) {{ methods.forEach(function(m) {{ maxCount = Math.max(maxCount, r.methods[m]); }}); }});
+            for (var g = 0; g <= 4; g++) {{
+                var gy = margin.top + (chartH - margin.top - margin.bottom) * (1 - g / 4);
+                var gv = Math.round(maxCount * g / 4);
+                html += '\\x3cline x1="' + margin.left + '" y1="' + gy + '" x2="' + (chartW - margin.right) + '" y2="' + gy + '" stroke="var(--border-light)" stroke-dasharray="3,3"/>';
+                html += '\\x3ctext x="' + (margin.left - 6) + '" y="' + (gy + 4) + '" text-anchor="end" font-size="12" fill="var(--text-muted)">' + gv + '\\x3c/text>';
+            }}
+            counts.forEach(function(r, i) {{
+                var gx = margin.left + i * (groupW + 10);
+                methods.forEach(function(m, j) {{
+                    var val = r.methods[m];
+                    if (val === 0) return;
+                    var bh = maxCount > 0 ? (val / maxCount) * (chartH - margin.top - margin.bottom) : 0;
+                    var bx = gx + j * (barW + gap);
+                    var by = chartH - margin.bottom - bh;
+                    var color = METHOD_COLORS[m] || '#6b7280';
+                    var spp = (r.species && typeof r.species[m] === 'number') ? r.species[m] : null;
+                    var tip = esc(m) + ' | ' + esc(r.label) + ' = ' + val + ' detection' + (val === 1 ? '' : 's');
+                    if (spp !== null) tip += ' · ' + spp + ' spp';
+                    html += '\x3cg class="chart-bar-group">\x3crect x="' + bx + '" y="' + by + '" width="' + barW + '" height="' + Math.max(1, bh) + '" fill="' + color + '" rx="1" opacity="0.55"/>' +
+                        '\x3ctitle>' + tip + '\x3c/title>\x3c/g>';
+                }});
+                if (n <= 40 || i % Math.ceil(n / 30) === 0) {{
+                    html += '\\x3ctext x="' + (gx + groupW / 2) + '" y="' + (chartH - 12) + '" text-anchor="middle" font-size="12" fill="var(--text-muted)">' + esc(r.label) + '\\x3c/text>';
+                }}
+            }});
+        }} else {{
+            // ── Conf mode: bar height = mean conf, colour = conf ramp ──
+            var maxConf = 0, minConf = Infinity;
+            confs.forEach(function(r) {{
+                methods.forEach(function(m) {{
+                    var a = r.methods[m].conf_avg;
+                    if (a > 0) {{ maxConf = Math.max(maxConf, a); minConf = Math.min(minConf, a); }}
+                }});
+            }});
+            if (!isFinite(minConf)) {{ minConf = confScaleMin; maxConf = confScaleMax; }}
+            var yMin = Math.floor(minConf * 10) / 10;
+            var yMax = Math.ceil(maxConf * 10) / 10;
+            var yr = yMax - yMin || 0.001;
+            for (var g = 0; g <= 4; g++) {{
+                var gyC = margin.top + (chartH - margin.top - margin.bottom) * (1 - g / 4);
+                var gvC = yMin + yr * g / 4;
+                html += '\\x3cline x1="' + margin.left + '" y1="' + gyC + '" x2="' + (chartW - margin.right) + '" y2="' + gyC + '" stroke="var(--border-light)" stroke-dasharray="3,3"/>';
+                html += '\\x3ctext x="' + (margin.left - 6) + '" y="' + (gyC + 4) + '" text-anchor="end" font-size="12" fill="var(--text-muted)">' + gvC.toFixed(1) + '\\x3c/text>';
+            }}
+            confs.forEach(function(r, i) {{
+                var gx = margin.left + i * (groupW + 10);
+                methods.forEach(function(m, j) {{
+                    var d = r.methods[m];
+                    if (!d || d.conf_avg === 0) return;
+                    var bh = ((d.conf_avg - yMin) / yr) * (chartH - margin.top - margin.bottom);
+                    var bx = gx + j * (barW + gap);
+                    var by = chartH - margin.bottom - bh;
+                    // Colour by conf ramp (blue→red), same scale as LabIR
+                    var color = labirConfColor(d.conf_avg, confScaleMin, confScaleMax);
+                    var patIdCf = 'url(#pat-' + esc(m) + ')';
+                    var tip = esc(m) + ' | ' + esc(r.label) + '\\nmean conf=' + d.conf_avg.toFixed(3) + '\\ncount=' + d.count + ' · ' + d.species_count + ' spp';
+                    html += '\x3cg class="chart-bar-group">' +
+                        '\x3crect x="' + bx + '" y="' + by + '" width="' + barW + '" height="' + Math.max(1, bh) + '" fill="' + color + '" rx="1" opacity="0.72"/>' +
+                        '\x3crect x="' + bx + '" y="' + by + '" width="' + barW + '" height="' + Math.max(1, bh) + '" fill="' + patIdCf + '" rx="1"/>' +
+                        '\\x3ctitle>' + tip + '\\x3c/title>\\x3c/g>';
+                }});
+                if (n <= 40 || i % Math.ceil(n / 30) === 0) {{
+                    html += '\\x3ctext x="' + (gx + groupW / 2) + '" y="' + (chartH - 12) + '" text-anchor="middle" font-size="12" fill="var(--text-muted)">' + esc(r.label) + '\\x3c/text>';
+                }}
+            }});
+        }}
+        html += '\\x3c/svg>';
+
+        // Legend
+        html += '\x3cdiv class="chart-legend">';
+        if (isCount) {{
+            methods.forEach(function(m) {{
+                var swatchColor = METHOD_COLORS[m] || '#6b7280';
+                                html += '\x3cspan>\x3cdiv class="swatch" style="background:' + swatchColor + ';opacity:0.55">\x3c/div>' + esc(m) + '\x3c/span>';
+            }});
+        }} else {{
+            // Conf mode: pattern swatches inline, then conf ramp on new line
+            html += '\x3cspan style="display:flex;gap:1rem;flex-wrap:wrap">';
+            methods.forEach(function(m) {{
+                html += '\x3cspan>\x3csvg width="14" height="14" style="flex-shrink:0;border-radius:2px">' +
+                    '\x3crect width="14" height="14" fill="hsl(0,0%,60%)" rx="2" opacity="0.3"/>' +
+                    '\x3crect width="14" height="14" fill="url(#pat-' + esc(m) + ')" rx="2"/>' +
+                '\x3c/svg> ' + esc(m) + '\x3c/span>';
+            }});
+            html += '\x3c/span>';
+            html += confColorLegendHtml(confScaleMin, confScaleMax).replace('\x3cdiv class="color-legend"', '\x3cdiv class="color-legend" style="margin:0"');
+        }}
+        html += '\x3c/div>';
+        return html;
     }}
 
-    data.forEach(function(r, i) {{
-        var gx = margin.left + i * (groupW + 10);
-        methods.forEach(function(m, j) {{
-            var val = r.methods[m];
-            if (val === 0) return;
-            var h = maxCount > 0 ? (val / maxCount) * (chartH - margin.top - margin.bottom) : 0;
-            var bx = gx + j * (barW + gap);
-            var by = chartH - margin.bottom - h;
-            var color = METHOD_COLORS[m] || '#6b7280';
-            var spp = (r.species && typeof r.species[m] === 'number') ? r.species[m] : null;
-            var tip = esc(m) + ' | ' + esc(r.label) + ' = ' + val + ' detection' + (val === 1 ? '' : 's');
-            if (spp !== null) tip += ' · ' + spp + ' spp';
-            html += '\x3cg class="chart-bar-group">' +
-                '\x3crect x="' + bx + '" y="' + by + '" width="' + barW + '" height="' + Math.max(1, h) + '" fill="' + color + '" rx="1" opacity="0.85"/>' +
-                '\x3ctitle>' + tip + '\x3c/title>\x3c/g>';
-        }});
-        // X-axis label (horizontal HH:MM)
-        if (n <= 40 || i % Math.ceil(n / 30) === 0) {{
-            html += '\\x3ctext x="' + (gx + groupW / 2) + '" y="' + (chartH - 12) + '" text-anchor="middle" font-size="12" fill="var(--text-muted)">' + esc(r.label) + '\\x3c/text>';
-        }}
-    }});
+    container.innerHTML = _paint();
 
-    html += '\\x3c/svg>';
-
-    // Legend
-    html += '\\x3cdiv class="chart-legend">';
-    methods.forEach(function(m) {{
-        html += '\\x3cspan>\x3cdiv class="swatch" style="background:' + (METHOD_COLORS[m] || '#6b7280') + '">\x3c/div>' + esc(m) + '\\x3c/span>';
-    }});
-    html += '\\x3c/div>';
-
-    container.innerHTML = html;
-}}
-
-// ── Source Confidence Chart (mean per method per source) ──
-function renderSrcConfChart(data) {{
-    var container = document.getElementById('srcConfChart');
-    if (!data || !data.length) {{ container.innerHTML = '\\x3cdiv style="color:var(--text-muted)">No data\x3c/div>'; return; }}
-
-    var methods = orderedMethods(Object.keys(data[0].methods));
-    var n = data.length;
-    var barW = Math.max(6, Math.min(14, Math.floor(600 / n / methods.length)));
-    var gap = 2;
-    var groupW = methods.length * (barW + gap);
-    var margin = {{ top: 24, right: 20, bottom: 36, left: 48 }};
-
-    // Find max avg confidence
-    var maxConf = 0;
-    var minConf = Infinity;
-    data.forEach(function(r) {{
-        methods.forEach(function(m) {{
-            var a = r.methods[m].conf_avg;
-            if (a > 0) {{ maxConf = Math.max(maxConf, a); minConf = Math.min(minConf, a); }}
-        }});
-    }});
-    if (!isFinite(minConf)) {{ minConf = 0.4; maxConf = 1.0; }}
-    var yMin = Math.floor(minConf * 10) / 10;
-    var yMax = Math.ceil(maxConf * 10) / 10;
-    var yr = yMax - yMin || 0.001;
-
-    var chartW = n * (groupW + 10) + margin.left + margin.right;
-    var chartH = 220;
-
-    var html = '\\x3csvg width="' + chartW + '" height="' + chartH + '" viewBox="0 0 ' + chartW + ' ' + chartH + '" style="display:block">';
-
-    // Y-axis grid
-    for (var g = 0; g <= 4; g++) {{
-        var y = margin.top + (chartH - margin.top - margin.bottom) * (1 - g / 4);
-        var val = yMin + yr * g / 4;
-        html += '\\x3cline x1="' + margin.left + '" y1="' + y + '" x2="' + (chartW - margin.right) + '" y2="' + y + '" stroke="var(--border-light)" stroke-dasharray="3,3"/>';
-        html += '\\x3ctext x="' + (margin.left - 6) + '" y="' + (y + 4) + '" text-anchor="end" font-size="12" fill="var(--text-muted)">' + val.toFixed(1) + '\\x3c/text>';
+    // Wire toggle buttons
+    var btnCount = document.getElementById('srcToggleCount');
+    var btnConf = document.getElementById('srcToggleConf');
+    if (btnCount && btnConf) {{
+        btnCount.onclick = function() {{
+            srcViewMode = 'count';
+            btnCount.classList.add('active');
+            btnConf.classList.remove('active');
+            container.innerHTML = _paint();
+        }};
+        btnConf.onclick = function() {{
+            srcViewMode = 'conf';
+            btnConf.classList.add('active');
+            btnCount.classList.remove('active');
+            container.innerHTML = _paint();
+        }};
     }}
-
-    data.forEach(function(r, i) {{
-        var gx = margin.left + i * (groupW + 10);
-        methods.forEach(function(m, j) {{
-            var d = r.methods[m];
-            if (!d || d.conf_avg === 0) return;
-            var h = ((d.conf_avg - yMin) / yr) * (chartH - margin.top - margin.bottom);
-            var bx = gx + j * (barW + gap);
-            var by = chartH - margin.bottom - h;
-            var color = METHOD_COLORS[m] || '#6b7280';
-            html += '\x3cg class="chart-bar-group">' +
-                '\x3crect x="' + bx + '" y="' + by + '" width="' + barW + '" height="' + Math.max(1, h) + '" fill="' + color + '" rx="1" opacity="0.85"/>' +
-                '\x3ctitle>' + esc(m) + ' | ' + esc(r.label) + ' = ' + d.conf_avg.toFixed(3) + '\x3c/title>\x3c/g>';
-        }});
-        if (n <= 40 || i % Math.ceil(n / 30) === 0) {{
-            html += '\\x3ctext x="' + (gx + groupW / 2) + '" y="' + (chartH - 12) + '" text-anchor="middle" font-size="12" fill="var(--text-muted)">' + esc(r.label) + '\\x3c/text>';
-        }}
-    }});
-
-    html += '\\x3c/svg>';
-
-    // Legend
-    html += '\\x3cdiv class="chart-legend">';
-    methods.forEach(function(m) {{
-        html += '\\x3cspan>\x3cdiv class="swatch" style="background:' + (METHOD_COLORS[m] || '#6b7280') + '">\x3c/div>' + esc(m) + '\\x3c/span>';
-    }});
-    html += '\\x3c/div>';
-
-    container.innerHTML = html;
 }}
 
 // ── Init (after all function declarations + state vars) ──

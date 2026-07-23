@@ -9,6 +9,7 @@ selection and confidence metrics.
 import os
 import json
 import re
+import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import threading
 
@@ -38,8 +39,6 @@ from birdnetlib.main import Recording
 BIRDNET_WORKERS = int(os.environ.get("BIRDNET_WORKERS", "4"))
 CHUNK_SECONDS = int(os.environ.get("CHUNK_SECONDS", "6"))
 
-# Thread-local Analyzer cache keyed by species_list_path (or "")
-_thread_local = threading.local()
 
 
 # ── Regex helpers ───────────────────────────────────────────
@@ -107,30 +106,40 @@ def slice_wav_to_chunks(
 
 # ── BirdNET analysis ───────────────────────────────────────
 
-def _get_analyzer(species_list_path: Optional[str] = None) -> Analyzer:
-    """Return a thread-local Analyzer.
+# Global cache (not thread-local) so the Analyzer is created once,
+# not once per worker thread.
+_analyzer_cache: Dict[str, Analyzer] = {}
+_analyzer_lock = threading.Lock()
 
-    birdnetlib: custom_species_list_path sets the allow-list. Do not pass
-    lat/lon on Recording when a custom list is active (library raises).
+
+def _get_analyzer(species_list_path: Optional[str] = None) -> Analyzer:
+    """Return a cached Analyzer (global, not per-thread).
+
+    birdnetlib prints the full species list to stdout on construction.
+    We suppress that output.  A lock ensures only one thread builds at a time.
     """
+    import io
+    from contextlib import redirect_stdout
+
     key = species_list_path or ""
-    cache = getattr(_thread_local, "analyzers", None)
-    if cache is None:
-        cache = {}
-        _thread_local.analyzers = cache
-    if key not in cache:
+    if key in _analyzer_cache:
+        return _analyzer_cache[key]
+
+    with _analyzer_lock:
+        if key in _analyzer_cache:  # double-check under lock
+            return _analyzer_cache[key]
+
         if species_list_path:
             if not os.path.isfile(species_list_path):
                 raise FileNotFoundError(
                     f"BirdNET species list not found: {species_list_path}"
                 )
-            cache[key] = Analyzer(custom_species_list_path=species_list_path)
-            n = len(cache[key].custom_species_list)
-            print(f"    Analyzer loaded custom list ({n} species): "
-                  f"{os.path.basename(species_list_path)}")
+            with redirect_stdout(io.StringIO()):
+                _analyzer_cache[key] = Analyzer(custom_species_list_path=species_list_path)
         else:
-            cache[key] = Analyzer()
-    return cache[key]
+            _analyzer_cache[key] = Analyzer()
+
+    return _analyzer_cache[key]
 
 
 def _analyze_one(
@@ -193,14 +202,7 @@ def run_birdnet_on_dir(
         rec_kwargs["lat"] = lat
         rec_kwargs["lon"] = lon
 
-    if use_list:
-        print(f"    Filter: custom list ({os.path.basename(species_list_path)})")
-    elif lat is not None and lon is not None:
-        print(f"    Filter: geo lat={lat}, lon={lon}")
-    else:
-        print("    Filter: none (full model)")
-
-    print(f"    Processing {total} WAV files ({workers} workers) ...")
+    print(f"    BirdNET: {total} files ({workers} workers)")
 
     results_dict: Dict[str, List] = {}
     errors = 0
@@ -208,7 +210,8 @@ def run_birdnet_on_dir(
     files_with_dets = 0
     total_dets = 0
 
-    # Warm one analyzer on this thread so load errors surface before the pool
+    # Warm one analyzer so load errors surface before the pool.
+    # Species-list dump is suppressed inside _get_analyzer.
     _get_analyzer(species_list_path if use_list else None)
 
     with ThreadPoolExecutor(max_workers=workers) as pool:
@@ -226,25 +229,21 @@ def run_birdnet_on_dir(
             completed += 1
             if error:
                 errors += 1
-                if errors <= 5:
-                    print(f"    [{completed:3d}/{total}] {fname}: {error}")
+                if errors <= 3:
+                    print(f"    [{completed:3d}/{total}] err: {error[:80]}")
             else:
                 results_dict[fname] = detections
                 n = len(detections)
                 if n > 0:
                     files_with_dets += 1
                     total_dets += n
-            if completed % 20 == 0 or completed == total:
+            if completed % 50 == 0 or completed == total:
                 pct = completed * 100 // total
                 print(f"    [{completed:3d}/{total}] {pct}%  "
-                      f"({files_with_dets} files with {total_dets} dets, {errors} errors)")
+                      f"({files_with_dets}f/{total_dets}d)")
 
     with open(results_path, "w") as f:
         json.dump(results_dict, f, indent=4)
-
-    print(f"    results.json written "
-          f"({files_with_dets}/{total} files with detections, "
-          f"{total_dets} total, {errors} errors)")
     return results_path
 
 
@@ -355,11 +354,12 @@ def cleanup_losing_chunks(directory: str, keep_files: Set[str],
             deleted += 1
             continue
         if dry_run:
-            print(f"    [DRY RUN] Would delete: {fname}")
+            deleted += 1
         else:
             os.remove(full)
-            print(f"    Deleted: {fname}")
-        deleted += 1
+            deleted += 1
+    if dry_run:
+        print(f"    [DRY RUN] Would delete {deleted} losing chunk(s)")
     return deleted
 
 
@@ -379,8 +379,10 @@ def process_directory_pipeline(
     If *location_name* is given and *species_list_path* / lat / lon are all
     omitted, filter mode is resolved via ``config.resolve_birdnet_filter``.
     """
-    import time
-    print(f"\n  BirdNET: {directory}")
+    # Show just h_XX/m_YY
+    parts = directory.rstrip("/").split("/")
+    short_label = "/".join(parts[-2:]) if len(parts) >= 2 else os.path.basename(directory)
+    print(f"\n  BirdNET [{short_label}]")
     t0 = time.time()
 
     if (
@@ -390,7 +392,6 @@ def process_directory_pipeline(
         and lon is None
     ):
         species_list_path, lat, lon, mode = resolve_birdnet_filter(location_name)
-        print(f"    Filter mode ({location_name}): {mode}")
 
     results_path = run_birdnet_on_dir(
         directory,
@@ -399,12 +400,10 @@ def process_directory_pipeline(
         lon=lon,
         species_list_path=species_list_path,
     )
-    t1 = time.time()
-    print(f"    BirdNET: {t1 - t0:.1f}s")
 
     results = read_results(results_path)
     if not results:
-        print("    No BirdNET results - skipping processed.json & cleanup")
+        print(f"    No detections — skipping processed.json")
         return results_path, "", 0
 
     processed = build_processed(results)
@@ -413,20 +412,18 @@ def process_directory_pipeline(
         json.dump(processed, f, indent=4, ensure_ascii=False)
     n_sources = len(processed)
     n_sp_entries = sum(len(v) for v in processed.values())
-    print(f"    processed.json written "
-          f"({n_sources} sources, {n_sp_entries} species-entries)")
 
     deleted = 0
     if cleanup:
         keep = get_files_to_keep(processed)
-        print(f"    Keeping {len(keep)} best-variant chunk(s)")
         deleted = cleanup_losing_chunks(directory, keep, dry_run=dry_run)
-        print(f"    Cleanup: {deleted} chunk file(s) removed")
         for fname in os.listdir(directory):
             if fname.startswith("._"):
                 full = os.path.join(directory, fname)
                 if os.path.isfile(full):
                     os.remove(full)
 
-    print(f"    Total: {time.time() - t0:.1f}s")
+    elapsed = time.time() - t0
+    print(f"    Done: {n_sources}s/{n_sp_entries}sp  "
+          f"{deleted} cleaned  {elapsed:.1f}s")
     return results_path, processed_path, deleted
