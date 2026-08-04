@@ -22,6 +22,7 @@ Output:
 """
 
 import argparse
+import gc
 import gzip
 import json
 import math
@@ -1799,38 +1800,58 @@ def main():
     processed_files = find_processed_json_files(args.data_dir, args.location, date_filter)
     print(f"Found {len(processed_files)} processed.json file(s)")
 
-    detections = collect_detections(processed_files)
-    print(f"Collected {len(detections)} detection(s) across {len(set(d.species for d in detections))} species")
-    print(f"Dashboard filter: confidence > {dash_min:g} (pipeline BirdNET min_conf unchanged)")
+    # ── Process date-by-date (not all at once) to keep memory low ──
+    # Group processed.json paths by date first
+    by_date_paths: Dict[str, List[Tuple[str, str, str, str]]] = defaultdict(list)
+    for entry in processed_files:
+        by_date_paths[entry[0]].append(entry)
 
-    # ── Build per-date summaries (dashboard-filtered) ───
-    by_date: Dict[str, List[Detection]] = defaultdict(list)
-    for d in detections:
-        by_date[d.date].append(d)
+    summaries: Dict[str, Any] = {}
+    all_species: set = set()
+    grand_total = 0
+    report_data_dir = os.path.join(args.data_dir, args.location, "report_data")
+    os.makedirs(report_data_dir, exist_ok=True)
 
-    summaries = {}
-    for date_str in sorted(by_date.keys()):
-        raw = by_date[date_str]
-        dash = filter_for_dashboard(raw, dash_min)
+    for date_str in sorted(by_date_paths.keys()):
+        # Collect detections for ONE date only
+        date_detections = collect_detections(by_date_paths[date_str])
+        grand_total += len(date_detections)
+        all_species.update(d.species for d in date_detections)
+
+        # Build dashboard-filtered summary
+        dash = filter_for_dashboard(date_detections, dash_min)
         print(
-            f"  {date_str}: {len(dash):,} / {len(raw):,} method-rows after filter "
+            f"  {date_str}: {len(dash):,} / {len(date_detections):,} method-rows after filter "
             f"({len(set(d.species for d in dash))} species)"
         )
         summaries[date_str] = build_date_summary(
             dash,
             dashboard_min_conf=dash_min,
-            raw_row_count=len(raw),
+            raw_row_count=len(date_detections),
         )
 
-    # ── Write external JSON ─────────────────────────────
-    report_data_dir = os.path.join(args.data_dir, args.location, "report_data")
-    write_report_data(
-        detections,
-        report_data_dir,
-        compress=not args.no_compress,
-        dashboard_min_conf=dash_min,
-        summaries=summaries,
-    )
+        # Write per-date JSON now (while we still have raw detections)
+        summary_out = dict(summaries[date_str])
+        summary_out["date"] = date_str
+        summary_path = os.path.join(report_data_dir, f"{date_str}_summary.json")
+        with open(summary_path, "w", encoding="utf-8") as f:
+            json.dump(summary_out, f, indent=2, ensure_ascii=False)
+
+        det_list = [d.to_dict() for d in date_detections]
+        det_fname = f"{date_str}_detections.json"
+        if not args.no_compress:
+            with gzip.open(os.path.join(report_data_dir, det_fname + ".gz"), "wt", encoding="utf-8") as f:
+                json.dump(det_list, f, ensure_ascii=False)
+        else:
+            with open(os.path.join(report_data_dir, det_fname), "w", encoding="utf-8") as f:
+                json.dump(det_list, f, ensure_ascii=False)
+
+        # Release memory for this date before processing the next
+        del date_detections, dash, det_list
+        gc.collect()
+
+    print(f"Collected {grand_total:,} detection(s) across {len(all_species)} species (date-by-date)")
+    print(f"Dashboard filter: confidence > {dash_min:g} (pipeline BirdNET min_conf unchanged)")
     print(f"Report data written to: {report_data_dir}")
 
     # ── Generate HTML ───────────────────────────────────

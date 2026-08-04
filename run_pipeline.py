@@ -1,8 +1,15 @@
 #!/usr/bin/env python3
 """
-Spatial Ecoacoustic Analysis Pipeline — Main Entry Point.
+ARCHIVED — species-ID pipeline (not the active research path).
 
-Orchestrates:
+Active pipeline: pipeline_embeddings.py (beamforming → dense embeddings).
+See README.md and docs/WORKPLAN.md.
+
+Kept for historical runs and optional FP / classifier audits only.
+Do not use species confidence as the primary beamforming metric.
+
+---
+Legacy behaviour:
   1. Beamforming (LabIR / SPIR1 / SPIR2) on FLAC recordings → 6s chunk WAVs
   2. Signal Averaging (6-ch → 1-ch direct sum) → full WAV
   3. Monochannel baseline → full WAV
@@ -291,13 +298,27 @@ def _slice_and_clean(output_dir: str, base_name: str):
 
 # ── Per-date pipeline ──────────────────────────────────────
 
-def _collect_minute_dirs(all_results: List[dict], run_sa: bool) -> List[Tuple[str, str, str]]:
+def _collect_minute_dirs(all_results: List[dict], run_sa: bool,
+                         location_name: str = "", date_str: str = "",
+                         ) -> List[Tuple[str, str, str]]:
     """Collect all (directory, label, step_name) tuples for BirdNET pass.
 
     Uses PREFILTER_GROUPS from config — BirdNET runs on the post-pre-filter
     target directories, not the raw beamforming per-IR-type directories.
+
+    Also scans the on-disk output tree for orphan directories (e.g. from
+    previous partial runs where beamforming succeeded but BirdNET crashed)
+    and adds them with a warning so no minute is ever silently skipped.
     """
     tasks: List[Tuple[str, str, str]] = []
+
+    # Derive location / date from results if not explicitly passed
+    loc = location_name
+    dt = date_str
+    if not loc and all_results:
+        loc = all_results[0].get("location", "")
+    if not dt and all_results:
+        dt = all_results[0].get("date", "")
 
     # BF directories: one per PREFILTER_GROUP
     for group_name, group_cfg in PREFILTER_GROUPS.items():
@@ -337,6 +358,77 @@ def _collect_minute_dirs(all_results: List[dict], run_sa: bool) -> List[Tuple[st
         if os.path.isdir(path):
             tasks.append((path, "mono", STEP_BIRNET_MONO))
 
+    # ── Safety net: scan on-disk tree for orphan directories ──
+    if loc and dt:
+        existing = set(d for d, _, _ in tasks)
+
+        # BF groups
+        for group_name, group_cfg in PREFILTER_GROUPS.items():
+            prefix = group_cfg["target_dir_prefix"]
+            base = os.path.join(ANALYSIS_OUTPUT, loc, dt, prefix)
+            if not os.path.isdir(base):
+                continue
+            for h_dir in sorted(os.listdir(base)):
+                if not h_dir.startswith("h_"):
+                    continue
+                h_path = os.path.join(base, h_dir)
+                if not os.path.isdir(h_path):
+                    continue
+                for m_dir in sorted(os.listdir(h_path)):
+                    if not m_dir.startswith("m_"):
+                        continue
+                    m_path = os.path.join(h_path, m_dir)
+                    if not os.path.isdir(m_path):
+                        continue
+                    if m_path not in existing:
+                        print(f"  ⚠️  Dir on disk not in FLAC list: {m_path}"
+                              f" — will run BirdNET anyway")
+                        tasks.append((m_path, prefix,
+                                      f"{STEP_BIRNET_PREFIX}{group_name}"))
+                        existing.add(m_path)
+
+        # sa
+        sa_base = os.path.join(ANALYSIS_OUTPUT, loc, dt, "sa")
+        if os.path.isdir(sa_base):
+            for h_dir in sorted(os.listdir(sa_base)):
+                if not h_dir.startswith("h_"):
+                    continue
+                h_path = os.path.join(sa_base, h_dir)
+                if not os.path.isdir(h_path):
+                    continue
+                for m_dir in sorted(os.listdir(h_path)):
+                    if not m_dir.startswith("m_"):
+                        continue
+                    m_path = os.path.join(h_path, m_dir)
+                    if not os.path.isdir(m_path):
+                        continue
+                    if m_path not in existing:
+                        print(f"  ⚠️  Dir on disk not in FLAC list: {m_path}"
+                              f" — will run BirdNET anyway")
+                        tasks.append((m_path, "sa", STEP_BIRNET_SA))
+                        existing.add(m_path)
+
+        # mono
+        mono_base = os.path.join(ANALYSIS_OUTPUT, loc, dt, "mono")
+        if os.path.isdir(mono_base):
+            for h_dir in sorted(os.listdir(mono_base)):
+                if not h_dir.startswith("h_"):
+                    continue
+                h_path = os.path.join(mono_base, h_dir)
+                if not os.path.isdir(h_path):
+                    continue
+                for m_dir in sorted(os.listdir(h_path)):
+                    if not m_dir.startswith("m_"):
+                        continue
+                    m_path = os.path.join(h_path, m_dir)
+                    if not os.path.isdir(m_path):
+                        continue
+                    if m_path not in existing:
+                        print(f"  ⚠️  Dir on disk not in FLAC list: {m_path}"
+                              f" — will run BirdNET anyway")
+                        tasks.append((m_path, "mono", STEP_BIRNET_MONO))
+                        existing.add(m_path)
+
     return tasks
 
 
@@ -347,6 +439,7 @@ def process_date(
     cleanup: bool = False, dry_run: bool = False,
     use_prototype_subsets: bool = False, force_bf: bool = False,
     force_birdnet: bool = False,
+    birdnet_only: bool = False,
     state: Optional["PipelineState"] = None,
 ) -> dict:
     """Process all FLACs for one date end-to-end.
@@ -365,104 +458,126 @@ def process_date(
     t_start = time.time()
 
     # ── Fase 1 ──────────────────────────────────────────────
-    print(f"\n── Fase 1: Beamforming + SA + Mono ({n_flacs} FLACs) ──\n")
-    all_results = []
-    for i, flac_path in enumerate(flac_paths, 1):
-        print(f"\n[{i}/{n_flacs}]")
-        result = process_one_flac(
-            flac_path=flac_path, location_name=location_name, date_str=date_str,
-            ir_types=ir_types, run_sa=run_sa,
-            use_prototype_subsets=use_prototype_subsets, force_bf=force_bf,
-            state=state,
-        )
-        # Attach location/date for reuse in BirdNET phase
-        result["location"] = location_name
-        result["date"] = date_str
-        all_results.append(result)
+    if birdnet_only:
+        print(f"\n── Skip Fase 1 (--birdnet-only): building metadata from {n_flacs} FLACs ──\n")
+        all_results = []
+        for flac_path in flac_paths:
+            base_name = os.path.splitext(os.path.basename(flac_path))[0]
+            hour_str, minute_str = _extract_hour_minute(flac_path)
+            all_results.append({
+                "flac": flac_path,
+                "base_name": base_name,
+                "hour": hour_str,
+                "minute": minute_str,
+                "beamforming_dirs": [],
+                "sa_dir": "",
+                "mono_dir": "",
+                "elapsed": 0,
+                "location": location_name,
+                "date": date_str,
+            })
+    else:
+        print(f"\n── Fase 1: Beamforming + SA + Mono ({n_flacs} FLACs) ──\n")
+        all_results = []
+        for i, flac_path in enumerate(flac_paths, 1):
+            print(f"\n[{i}/{n_flacs}]")
+            result = process_one_flac(
+                flac_path=flac_path, location_name=location_name, date_str=date_str,
+                ir_types=ir_types, run_sa=run_sa,
+                use_prototype_subsets=use_prototype_subsets, force_bf=force_bf,
+                state=state,
+            )
+            # Attach location/date for reuse in BirdNET phase
+            result["location"] = location_name
+            result["date"] = date_str
+            all_results.append(result)
 
     # ── Fase 1.5: Pre-filtering by RMS energy ──────────────
-    # Pool chunks across IR types within each prefilter group,
-    # keep only those with RMS >= threshold of max RMS in the group × minute.
-    # This drastically reduces the number of files sent to BirdNET.
-    print(f"\n── Pre-filter (RMS energy threshold: {int(PREFILTER_RMS_THRESHOLD * 100)}% of max) ──")
-    pf_start = time.time()
-    pf_kept_total = 0
-    pf_del_total = 0
+    if birdnet_only:
+        print(f"\n── Skip pre-filter (--birdnet-only) ──")
+    else:
+        # Pool chunks across IR types within each prefilter group,
+        # keep only those with RMS >= threshold of max RMS in the group × minute.
+        # This drastically reduces the number of files sent to BirdNET.
+        print(f"\n── Pre-filter (RMS energy threshold: {int(PREFILTER_RMS_THRESHOLD * 100)}% of max) ──")
+        pf_start = time.time()
+        pf_kept_total = 0
+        pf_del_total = 0
 
-    # Gather unique (hour, minute, location, date) combos
-    minute_keys: List[Tuple[str, str, str, str]] = []
-    seen_mk = set()
-    for r in all_results:
-        mk = (r["hour"], r["minute"], r.get("location", ""), r.get("date", ""))
-        if mk not in seen_mk:
-            seen_mk.add(mk)
-            minute_keys.append(mk)
+        # Gather unique (hour, minute, location, date) combos
+        minute_keys: List[Tuple[str, str, str, str]] = []
+        seen_mk = set()
+        for r in all_results:
+            mk = (r["hour"], r["minute"], r.get("location", ""), r.get("date", ""))
+            if mk not in seen_mk:
+                seen_mk.add(mk)
+                minute_keys.append(mk)
 
-    for group_name, group_cfg in PREFILTER_GROUPS.items():
-        prefix = group_cfg["target_dir_prefix"]
-        source_ir_names = group_cfg["sources"]
+        for group_name, group_cfg in PREFILTER_GROUPS.items():
+            prefix = group_cfg["target_dir_prefix"]
+            source_ir_names = group_cfg["sources"]
 
-        for hour_str, minute_str, loc, dt in minute_keys:
-            source_dirs = [
-                build_output_path(loc, dt, f"bf_{irn}", hour_str, minute_str)
-                for irn in source_ir_names
-            ]
-            target_dir = build_output_path(loc, dt, prefix, hour_str, minute_str)
+            for hour_str, minute_str, loc, dt in minute_keys:
+                source_dirs = [
+                    build_output_path(loc, dt, f"bf_{irn}", hour_str, minute_str)
+                    for irn in source_ir_names
+                ]
+                target_dir = build_output_path(loc, dt, prefix, hour_str, minute_str)
 
-            # Force re-run: delete results.json, processed.json.
-            # Also clean old chunk WAVs from target dir UNLESS target is also
-            # a source dir (in-place case → chunks were already cleaned by force_bf).
-            results_json = os.path.join(target_dir, "results.json")
-            processed_json = os.path.join(target_dir, "processed.json")
-            if force_birdnet:
-                for f in [results_json, processed_json]:
-                    if os.path.isfile(f):
-                        os.remove(f)
-                        print(f"  \U0001f5d1  Deleted {os.path.basename(f)} [{group_name}]")
-                # Only clean chunks if target != any source dir (merge case)
-                target_abs = os.path.abspath(target_dir)
-                is_in_place = any(os.path.abspath(sd) == target_abs for sd in source_dirs if os.path.isdir(sd))
-                if not is_in_place and os.path.isdir(target_dir):
-                    removed = 0
-                    for fname in list(os.listdir(target_dir)):
-                        if fname.lower().endswith(".wav") and not fname.startswith("._"):
-                            try:
-                                os.remove(os.path.join(target_dir, fname))
-                                removed += 1
-                            except OSError:
-                                pass
-                    if removed > 0:
-                        print(f"  \U0001f5d1  Cleaned {removed} old chunk WAV(s) from {prefix}")
-            elif os.path.isfile(results_json) and os.path.isfile(processed_json):
-                print(f"  \u2713 Pre-filter [{group_name}] h_{hour_str}/m_{minute_str} already fully processed — skipping")
-                continue
+                # Force re-run: delete results.json, processed.json.
+                # Also clean old chunk WAVs from target dir UNLESS target is also
+                # a source dir (in-place case → chunks were already cleaned by force_bf).
+                results_json = os.path.join(target_dir, "results.json")
+                processed_json = os.path.join(target_dir, "processed.json")
+                if force_birdnet:
+                    for f in [results_json, processed_json]:
+                        if os.path.isfile(f):
+                            os.remove(f)
+                            print(f"  \U0001f5d1  Deleted {os.path.basename(f)} [{group_name}]")
+                    # Only clean chunks if target != any source dir (merge case)
+                    target_abs = os.path.abspath(target_dir)
+                    is_in_place = any(os.path.abspath(sd) == target_abs for sd in source_dirs if os.path.isdir(sd))
+                    if not is_in_place and os.path.isdir(target_dir):
+                        removed = 0
+                        for fname in list(os.listdir(target_dir)):
+                            if fname.lower().endswith(".wav") and not fname.startswith("._"):
+                                try:
+                                    os.remove(os.path.join(target_dir, fname))
+                                    removed += 1
+                                except OSError:
+                                    pass
+                        if removed > 0:
+                            print(f"  \U0001f5d1  Cleaned {removed} old chunk WAV(s) from {prefix}")
+                elif os.path.isfile(results_json) and os.path.isfile(processed_json):
+                    print(f"  \u2713 Pre-filter [{group_name}] h_{hour_str}/m_{minute_str} already fully processed — skipping")
+                    continue
 
-            # If only one source and same as target → in-place
-            if len(source_dirs) == 1 and source_dirs[0] == target_dir:
-                if os.path.isdir(target_dir):
-                    k, d = prefilter_directory(target_dir, threshold_ratio=PREFILTER_RMS_THRESHOLD, dry_run=dry_run)
+                # If only one source and same as target → in-place
+                if len(source_dirs) == 1 and source_dirs[0] == target_dir:
+                    if os.path.isdir(target_dir):
+                        k, d = prefilter_directory(target_dir, threshold_ratio=PREFILTER_RMS_THRESHOLD, dry_run=dry_run)
+                        pf_kept_total += k
+                        pf_del_total += d
+                else:
+                    k, d = prefilter_merged(
+                        source_dirs, target_dir,
+                        threshold_ratio=PREFILTER_RMS_THRESHOLD, dry_run=dry_run,
+                    )
                     pf_kept_total += k
                     pf_del_total += d
-            else:
-                k, d = prefilter_merged(
-                    source_dirs, target_dir,
-                    threshold_ratio=PREFILTER_RMS_THRESHOLD, dry_run=dry_run,
-                )
-                pf_kept_total += k
-                pf_del_total += d
 
-            # Mark prefilter step complete in state
-            if state and not dry_run:
-                for r in all_results:
-                    if r["hour"] == hour_str and r["minute"] == minute_str:
-                        state.mark_complete(
-                            state.make_key(loc, dt, f"h_{hour_str}", r["base_name"]),
-                            f"{STEP_PREFILTER_PREFIX}{group_name}",
-                        )
-                        break
+                # Mark prefilter step complete in state
+                if state and not dry_run:
+                    for r in all_results:
+                        if r["hour"] == hour_str and r["minute"] == minute_str:
+                            state.mark_complete(
+                                state.make_key(loc, dt, f"h_{hour_str}", r["base_name"]),
+                                f"{STEP_PREFILTER_PREFIX}{group_name}",
+                            )
+                            break
 
-    print(f"  \u23f1  Pre-filter: {time.time() - pf_start:.1f}s "
-          f"({pf_kept_total} kept, {pf_del_total} deleted across all groups)")
+        print(f"  \u23f1  Pre-filter: {time.time() - pf_start:.1f}s "
+              f"({pf_kept_total} kept, {pf_del_total} deleted across all groups)")
 
     # ── Fase 2 + 3: BirdNET + processed.json ──────────────
     if run_birdnet:
@@ -476,7 +591,8 @@ def process_date(
         if lat is not None and lon is not None:
             print(f"     geo: lat={lat}, lon={lon}")
 
-        tasks = _collect_minute_dirs(all_results, run_sa)
+        tasks = _collect_minute_dirs(all_results, run_sa,
+                                       location_name=location_name, date_str=date_str)
 
         # Filter: skip if results.json + processed.json already exist (unless forced)
         pending = []
@@ -484,7 +600,8 @@ def process_date(
             results_json = os.path.join(directory, "results.json")
             processed_json = os.path.join(directory, "processed.json")
             if force_birdnet:
-                for f in [results_json, processed_json]:
+                for f in [results_json, processed_json,
+                          os.path.join(directory, "timing.json")]:
                     if os.path.isfile(f):
                         os.remove(f)
                         print(f"  \U0001f5d1  Deleted {os.path.basename(f)} [{label}]")
@@ -499,6 +616,8 @@ def process_date(
 
             t0 = time.time()
             n_workers = min(BIRDNET_PARALLEL_DIRS, len(pending))
+            outer_done = 0
+            outer_total = len(pending)
             with ThreadPoolExecutor(max_workers=n_workers) as pool:
                 futures = {}
                 for directory, label, step_name in pending:
@@ -510,17 +629,21 @@ def process_date(
                         dry_run=dry_run,
                         lat=lat, lon=lon,
                         species_list_path=species_list_path,
+                        location_name=location_name,
                     )
                     futures[fut] = (label, step_name)
 
                 for future in as_completed(futures):
                     label, step_name = futures[future]
+                    outer_done += 1
                     try:
                         results_path, processed_path, deleted = future.result()
-                        print(f"    \u2705 BirdNET [{label}] done"
-                              + (f" ({deleted} chunks deleted)" if deleted else ""))
+                        print(f"    [{outer_done}/{outer_total}] ✅ BirdNET [{label}] done"
+                              + (f" ({deleted} chunks deleted)" if deleted else ""),
+                              flush=True)
                     except Exception as e:
-                        print(f"    \u274c BirdNET [{label}] failed: {e}")
+                        print(f"    [{outer_done}/{outer_total}] ❌ BirdNET [{label}] failed: {e}",
+                              flush=True)
 
             print(f"    \u23f1  BirdNET: {time.time() - t0:.1f}s")
 
@@ -558,6 +681,8 @@ def main():
     parser.add_argument("--full", action="store_true")
     parser.add_argument("--force-bf", action="store_true")
     parser.add_argument("--force-birdnet", action="store_true")
+    parser.add_argument("--birdnet-only", action="store_true",
+                        help="Skip beamforming/SA/mono/pre-filter, force BirdNET re-analysis")
     parser.add_argument("--reset-state", action="store_true")
     args = parser.parse_args()
 
@@ -630,11 +755,12 @@ def main():
         result = process_date(
             flac_paths=flac_paths,
             location_name=location_name, date_str=date_str,
-            ir_types=ir_types, run_sa=not args.no_sa,
-            run_birdnet=not args.no_birdnet,
+            ir_types=ir_types, run_sa=not args.no_sa and not args.birdnet_only,
+            run_birdnet=not args.no_birdnet or args.birdnet_only,
             cleanup=args.cleanup, dry_run=args.dry_run,
             use_prototype_subsets=use_prototype, force_bf=args.force_bf,
-            force_birdnet=args.force_birdnet,
+            force_birdnet=args.force_birdnet or args.birdnet_only,
+            birdnet_only=args.birdnet_only,
             state=state,
         )
         print(f"\n  \u2705 {result['n_flacs']} FLAC(s) for {date_str}"

@@ -132,14 +132,47 @@ PRODUCTION_IR_SUBSETS = {
     ),
 }
 
-# Alias for backward compatibility
-PROTOTYPE_IR_SUBSETS = PRODUCTION_IR_SUBSETS
+# Prototype subset: minimal LabIR for quick PoC runs (19 combos total).
+# S01 (-45°) × 6 azimuths + S05 (0°) × 6 azimuths + S09 (+45°) × 6 azimuths + S12 (zenith) × 1 = 19.
+# Speaker-to-elevation mapping:
+#   S01 → elevation -45° (below horizontal)
+#   S05 → elevation 0° (horizontal)
+#   S09 → elevation +45° (above horizontal)
+#   S12 → elevation +90° (zenith, straight up)
+# Usage: python pipeline_embeddings.py --prototype ...
+
+# Speaker number → elevation angle (degrees) for LabIR array
+LABIR_SPEAKER_ELEVATION = {
+    1: -45,    # Below horizontal
+    5: 0,      # Horizontal
+    9: 45,     # Above horizontal
+    12: 90,    # Zenith (straight up)
+}
+PROTOTYPE_IR_SUBSETS = {
+    "LabIR": IRType(
+        name="LabIR", folder="Lab_IR", use_dual_filter=True,
+        fc_high=1000, fc_low=4000, param_label="speaker",
+        param_values=[1, 5, 9, 12], degree_values=[0, 60, 120, 180, 240, 300],
+        zenith_speakers={12},  # S12 is zenith (90° elevation)
+        ir_filename_pattern="Lab_IR_S{speaker:02d}_{degrees:03d}.wav",
+        output_suffix_pattern="LabIR(S{speaker:02d}_{degrees:03d})",
+    ),
+    "SPIR1": SP_IR1,
+    "SPIR2": IRType(
+        name="SPIR2", folder="SP_IR2", use_dual_filter=False,
+        fc_high=1000, param_label="distance",
+        param_values=[1, 2, 4, 8, 16, 32, 64], degree_values=[180],
+        rep_values=[2],  # Only repetition 2 (user requested)
+        ir_filename_pattern="{distance:02d}m_180_{rep}.wav",
+        output_suffix_pattern="SPIR2({distance:02d}m_180_r{rep})",
+    ),
+}
 
 # ============================================================
 # BIRDNET CONFIG
 # ============================================================
 
-BIRDNET_FP16_MODEL = True
+BIRDNET_FP16_MODEL = False
 
 LOCATION_COORDS = {
     "waycanguk": {"lat": -5.6585004, "lon": 104.4046997},
