@@ -1,4 +1,9 @@
 """
+ARCHIVED (species-ID path) — used by run_pipeline.py only.
+
+Active research path uses pipeline_embeddings.py for dense embeddings,
+not species labels. Kept for historical analysis and optional FP audits.
+
 BirdNET analysis and confidence-level comparison.
 
 Runs BirdNET on beamforming / signal-processing output directories,
@@ -24,6 +29,14 @@ from config import (
     BIRDNET_FP16_MODEL,
     resolve_birdnet_filter,
 )
+
+# Suppress TFLite C++ logging (XNNPACK INFO, etc.) — must be set BEFORE
+# any TFLite import, otherwise the env var has no effect.
+# - TF_CPP_MIN_LOG_LEVEL  → TensorFlow proper
+# - TFLITE_MIN_LOG_LEVEL  → tflite_runtime (pip package used by birdnetlib)
+os.environ.setdefault("TF_CPP_MIN_LOG_LEVEL", "3")
+os.environ.setdefault("TFLITE_MIN_LOG_LEVEL", "3")
+os.environ.setdefault("TFLITE_MIN_LOG_LEVEL", "3")
 
 # FP16 model monkey-patch (27% faster inference, 4x faster cold start)
 if BIRDNET_FP16_MODEL:
@@ -106,40 +119,92 @@ def slice_wav_to_chunks(
 
 # ── BirdNET analysis ───────────────────────────────────────
 
-# Global cache (not thread-local) so the Analyzer is created once,
-# not once per worker thread.
-_analyzer_cache: Dict[str, Analyzer] = {}
-_analyzer_lock = threading.Lock()
+# Thread-local cache so each worker thread gets its own TFLite
+# interpreter (TFLite is NOT thread-safe, sharing one across
+# threads causes "reference to internal data" errors).
+_thread_local = threading.local()
+
+# ── fd-level output suppression (fd 1, fd 2 → /dev/null) ──
+#
+# tflite_runtime (used by birdnetlib) ignores environment variables
+# for certain log messages; its XNNPACK INFO and "Labels loaded" go
+# to raw stdout/stderr via C++ std::cout/std::cerr.  Python-level
+# redirect_stdout/stderr cannot catch those — we must suppress at
+# the process-wide fd level.  The strategy: suppress once before any
+# TFLite call and restore once after all analysis is done.  Because
+# multiple threads may enter _analyze_one concurrently, suppress is
+# always paired with a lock — but the suppression itself persists
+# across threads (which is fine: we want ALL output gone).
+_fd_lock = threading.Lock()
+_fd_suppressed = False
+_fd_saved_out: Optional[int] = None
+_fd_saved_err: Optional[int] = None
+
+
+def _fd_maybe_suppress() -> None:
+    """Suppress C-level stdout/stderr if not already suppressed."""
+    import os as _os, sys as _sys
+    global _fd_suppressed, _fd_saved_out, _fd_saved_err
+    with _fd_lock:
+        if not _fd_suppressed:
+            _sys.stdout.flush()
+            _sys.stderr.flush()
+            null_fd = _os.open(_os.devnull, _os.O_WRONLY)
+            _fd_saved_out = _os.dup(1)
+            _fd_saved_err = _os.dup(2)
+            _os.dup2(null_fd, 1)
+            _os.dup2(null_fd, 2)
+            _os.close(null_fd)
+            _fd_suppressed = True
+
+
+def _fd_restore_once() -> None:
+    """Restore C-level stdout/stderr if they were suppressed."""
+    import os as _os, sys as _sys
+    global _fd_suppressed, _fd_saved_out, _fd_saved_err
+    with _fd_lock:
+        if _fd_suppressed and _fd_saved_out is not None:
+            _sys.stdout.flush()
+            _sys.stderr.flush()
+            _os.dup2(_fd_saved_out, 1)
+            _os.dup2(_fd_saved_err, 2)
+            _os.close(_fd_saved_out)
+            _os.close(_fd_saved_err)
+            _fd_suppressed = False
+            _fd_saved_out = None
+            _fd_saved_err = None
 
 
 def _get_analyzer(species_list_path: Optional[str] = None) -> Analyzer:
-    """Return a cached Analyzer (global, not per-thread).
+    """Return a thread-local Analyzer.
 
-    birdnetlib prints the full species list to stdout on construction.
-    We suppress that output.  A lock ensures only one thread builds at a time.
+    birdnetlib + TFLite dump species list / delegate info to both
+    stdout and stderr on construction. We suppress both.
     """
     import io
-    from contextlib import redirect_stdout
+    from contextlib import redirect_stdout, redirect_stderr
+
+    cache = getattr(_thread_local, "cache", None)
+    if cache is None:
+        cache = {}
+        _thread_local.cache = cache
 
     key = species_list_path or ""
-    if key in _analyzer_cache:
-        return _analyzer_cache[key]
+    if key in cache:
+        return cache[key]
 
-    with _analyzer_lock:
-        if key in _analyzer_cache:  # double-check under lock
-            return _analyzer_cache[key]
+    if species_list_path:
+        if not os.path.isfile(species_list_path):
+            raise FileNotFoundError(
+                f"BirdNET species list not found: {species_list_path}"
+            )
+        with redirect_stdout(io.StringIO()), redirect_stderr(io.StringIO()):
+            cache[key] = Analyzer(custom_species_list_path=species_list_path)
+    else:
+        with redirect_stdout(io.StringIO()), redirect_stderr(io.StringIO()):
+            cache[key] = Analyzer()
 
-        if species_list_path:
-            if not os.path.isfile(species_list_path):
-                raise FileNotFoundError(
-                    f"BirdNET species list not found: {species_list_path}"
-                )
-            with redirect_stdout(io.StringIO()):
-                _analyzer_cache[key] = Analyzer(custom_species_list_path=species_list_path)
-        else:
-            _analyzer_cache[key] = Analyzer()
-
-    return _analyzer_cache[key]
+    return cache[key]
 
 
 def _analyze_one(
@@ -148,10 +213,20 @@ def _analyze_one(
     species_list_path: Optional[str] = None,
 ) -> Tuple[str, List[Dict], str]:
     fname = os.path.basename(wav_path)
+    # fd suppression is already active from run_birdnet_on_dir.
+    # _fd_maybe_suppress() is a no-op here (already suppressed),
+    # but it's safe to call in case this function is ever called
+    # outside the normal pipeline context.
+    _fd_maybe_suppress()
     try:
+        import io as _io
+        from contextlib import redirect_stdout as _rso, redirect_stderr as _rse
         analyzer = _get_analyzer(species_list_path)
         rec = Recording(analyzer, wav_path, **rec_kwargs)
-        rec.analyze()
+        # Python-level redirect catches birdnetlib species-list dump;
+        # fd-level suppression catches tflite C++ output.
+        with _rso(_io.StringIO()), _rse(_io.StringIO()):
+            rec.analyze()
         return fname, rec.detections, ""
     except Exception as e:
         return fname, [], str(e)
@@ -202,7 +277,9 @@ def run_birdnet_on_dir(
         rec_kwargs["lat"] = lat
         rec_kwargs["lon"] = lon
 
-    print(f"    BirdNET: {total} files ({workers} workers)")
+    t_start = time.time()
+    start_iso = datetime.now().isoformat(timespec="seconds")
+    print(f"    BirdNET: {total} files ({workers} workers)  start={start_iso}", flush=True)
 
     results_dict: Dict[str, List] = {}
     errors = 0
@@ -210,40 +287,99 @@ def run_birdnet_on_dir(
     files_with_dets = 0
     total_dets = 0
 
-    # Warm one analyzer so load errors surface before the pool.
-    # Species-list dump is suppressed inside _get_analyzer.
-    _get_analyzer(species_list_path if use_list else None)
+    # Suppress C-level output (TFLite XNNPACK INFO, Labels loaded, etc.)
+    # for the entire BirdNET run.  Restore when done, even on crash.
+    _fd_maybe_suppress()
+    try:
+        # Warm one analyzer so load errors surface before the pool.
+        _get_analyzer(species_list_path if use_list else None)
 
-    with ThreadPoolExecutor(max_workers=workers) as pool:
-        futures = {
-            pool.submit(
-                _analyze_one,
-                wav,
-                rec_kwargs,
-                species_list_path if use_list else None,
-            ): wav
-            for wav in wav_files
-        }
-        for future in as_completed(futures):
-            fname, detections, error = future.result()
-            completed += 1
-            if error:
-                errors += 1
-                if errors <= 3:
-                    print(f"    [{completed:3d}/{total}] err: {error[:80]}")
-            else:
-                results_dict[fname] = detections
-                n = len(detections)
-                if n > 0:
-                    files_with_dets += 1
-                    total_dets += n
-            if completed % 50 == 0 or completed == total:
+        with ThreadPoolExecutor(max_workers=workers) as pool:
+            futures = {
+                pool.submit(
+                    _analyze_one,
+                    wav,
+                    rec_kwargs,
+                    species_list_path if use_list else None,
+                ): wav
+                for wav in wav_files
+            }
+            for future in as_completed(futures):
+                fname, detections, error = future.result()
+                completed += 1
+                if error:
+                    errors += 1
+                    if errors <= 3:
+                        print(f"    [{completed:3d}/{total}] err: {error[:80]}")
+                else:
+                    results_dict[fname] = detections
+                    n = len(detections)
+                    if n > 0:
+                        files_with_dets += 1
+                        total_dets += n
+                elapsed = time.time() - t_start
                 pct = completed * 100 // total
                 print(f"    [{completed:3d}/{total}] {pct}%  "
-                      f"({files_with_dets}f/{total_dets}d)")
+                      f"({files_with_dets}f/{total_dets}d)  {elapsed:.0f}s", flush=True)
+    except BaseException as e:
+        # Crash-proof: write partial results + error before re-raising.
+        # Without this, the directory is left without results.json and
+        # the pipeline has no record it ever attempted this directory.
+        elapsed = time.time() - t_start
+        end_iso = datetime.now().isoformat(timespec="seconds")
+        timing = {
+            "directory": directory,
+            "start": start_iso,
+            "end": end_iso,
+            "elapsed_s": round(elapsed, 1),
+            "n_files_total": total,
+            "n_files_with_detections": files_with_dets,
+            "n_total_detections": total_dets,
+            "n_errors": errors,
+            "workers": workers,
+            "fatal_error": str(e),
+            "status": "crashed",
+        }
+        try:
+            timing_path = os.path.join(directory, "timing.json")
+            with open(timing_path, "w") as f:
+                json.dump(timing, f, indent=4, ensure_ascii=False)
+        except Exception:
+            pass
+        try:
+            results_dict["__fatal_error__"] = str(e)
+            with open(results_path, "w") as f:
+                json.dump(results_dict, f, indent=4)
+        except Exception:
+            pass
+        print(f"    ❌ CRASHED after {completed}/{total} files: {e}", flush=True)
+        raise
+    finally:
+        _fd_restore_once()
+
+    elapsed = time.time() - t_start
+    end_iso = datetime.now().isoformat(timespec="seconds")
+
+    timing = {
+        "directory": directory,
+        "start": start_iso,
+        "end": end_iso,
+        "elapsed_s": round(elapsed, 1),
+        "n_files_total": total,
+        "n_files_with_detections": files_with_dets,
+        "n_total_detections": total_dets,
+        "n_errors": errors,
+        "workers": workers,
+    }
+    timing_path = os.path.join(directory, "timing.json")
+    with open(timing_path, "w") as f:
+        json.dump(timing, f, indent=4, ensure_ascii=False)
 
     with open(results_path, "w") as f:
         json.dump(results_dict, f, indent=4)
+
+    print(f"    ✅ done: {total}f/{files_with_dets}dets/{errors}err  {elapsed:.1f}s  "
+          f"→ results.json + timing.json", flush=True)
     return results_path
 
 
@@ -382,7 +518,7 @@ def process_directory_pipeline(
     # Show just h_XX/m_YY
     parts = directory.rstrip("/").split("/")
     short_label = "/".join(parts[-2:]) if len(parts) >= 2 else os.path.basename(directory)
-    print(f"\n  BirdNET [{short_label}]")
+    print(f"\n  BirdNET [{short_label}]", flush=True)
     t0 = time.time()
 
     if (
@@ -403,8 +539,29 @@ def process_directory_pipeline(
 
     results = read_results(results_path)
     if not results:
-        print(f"    No detections — skipping processed.json")
-        return results_path, "", 0
+        elapsed = time.time() - t0
+        end_iso = datetime.now().isoformat(timespec="seconds")
+        print(f"    No detections — skipping processed.json  {elapsed:.1f}s")
+        timing_path = os.path.join(directory, "timing.json")
+        timing = {
+            "directory": directory,
+            "phase": "pipeline",
+            "elapsed_s": round(elapsed, 1),
+            "end": end_iso,
+            "n_sources": 0,
+            "n_species_entries": 0,
+            "n_chunks_deleted": 0,
+        }
+        if os.path.isfile(timing_path):
+            try:
+                with open(timing_path, "r") as f:
+                    existing = json.load(f)
+                timing.update(existing)
+            except Exception:
+                pass
+        with open(timing_path, "w") as f:
+            json.dump(timing, f, indent=4, ensure_ascii=False)
+        return results_path, timing_path, 0
 
     processed = build_processed(results)
     processed_path = os.path.join(directory, "processed.json")
@@ -424,6 +581,30 @@ def process_directory_pipeline(
                     os.remove(full)
 
     elapsed = time.time() - t0
+    end_iso = datetime.now().isoformat(timespec="seconds")
     print(f"    Done: {n_sources}s/{n_sp_entries}sp  "
           f"{deleted} cleaned  {elapsed:.1f}s")
+
+    # Save/update timing.json with full pipeline stats (BirdNET + processing)
+    timing_path = os.path.join(directory, "timing.json")
+    timing = {
+        "directory": directory,
+        "phase": "pipeline",
+        "elapsed_s": round(elapsed, 1),
+        "end": end_iso,
+        "n_sources": n_sources,
+        "n_species_entries": n_sp_entries,
+        "n_chunks_deleted": deleted,
+    }
+    # Merge with BirdNET-level timing if it already exists
+    if os.path.isfile(timing_path):
+        try:
+            with open(timing_path, "r") as f:
+                existing = json.load(f)
+            timing.update(existing)
+        except Exception:
+            pass
+    with open(timing_path, "w") as f:
+        json.dump(timing, f, indent=4, ensure_ascii=False)
+
     return results_path, processed_path, deleted
