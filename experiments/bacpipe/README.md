@@ -53,5 +53,6 @@ Outputs:
 ## Notes
 
 - Windowing follows each bacpipe model’s native segment length (not always 3 s). Meta records `window_sec` / `slide_sec` from the embedder when available; otherwise `model_native`.
-- For scientific comparison of methods (LabIR vs SA vs mono), compare **within the same model**, then optionally rank models.
+- The main purpose of this pilot is to compare model representations and acoustic fingerprints across the same processing methods. Species labels or classifier confidence are not assumed to be reliable for tropical forest recordings and are not required for the core comparison.
+- For scientific comparison of methods (LabIR vs SA vs mono), compare **within the same model**, then optionally compare patterns across models.
 - Native BirdNET dense embeddings remain the baseline under `embeddings/birdnet/`.
