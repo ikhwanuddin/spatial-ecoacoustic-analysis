@@ -1,7 +1,7 @@
 """
 ARCHIVED (species-ID path) — used by run_pipeline.py only.
 
-Active research path uses pipeline_embeddings.py for dense embeddings,
+Active signal path uses pipeline_signal_processing.py; downstream embeddings are separate,
 not species labels. Kept for historical analysis and optional FP audits.
 
 BirdNET analysis and confidence-level comparison.

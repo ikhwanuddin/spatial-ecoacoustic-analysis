@@ -10,14 +10,16 @@ Writes schema-aligned arrays under:
 
 Usage:
   python experiments/bacpipe/run_pilot.py \\
-    --location 2A400 --date 2026-04-22 --models birdnet,perch_bird --dry-run
+    --location 2A400 --date 2026-04-26 --models all --methods mono,sa,bf_LabIR,bf_SPIR --dry-run
 """
 
 from __future__ import annotations
 
 import argparse
+import importlib
 import json
 import os
+import re
 import sys
 import time
 from pathlib import Path
@@ -47,6 +49,147 @@ from direction_meta import parse_direction_metadata as _parse_direction_metadata
 def _resolve_location(location: str) -> str:
     rpiid = LOCATION_MAP.get(location, location)
     return RPIID_TO_LOCATION.get(rpiid, rpiid)
+
+
+def _model_name_candidates(value: Any) -> List[str]:
+    """Extract plausible model names from a bacpipe registry value."""
+    if isinstance(value, dict):
+        value = list(value.keys())
+    if isinstance(value, (set, frozenset)):
+        value = list(value)
+    if isinstance(value, str):
+        value = re.split(r"[,\s]+", value)
+    if not isinstance(value, (list, tuple)):
+        return []
+    names = []
+    for item in value:
+        if isinstance(item, str) and re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.-]*", item):
+            names.append(item)
+    return names
+
+
+def discover_models() -> List[str]:
+    """Return model names exposed by the installed bacpipe package.
+
+    bacpipe releases have used more than one registry name. Inspect the public
+    registry/settings modules instead of making Perch a special case. The
+    documented models remain a conservative fallback for older releases.
+    """
+    try:
+        import bacpipe
+    except ImportError:
+        return []
+
+    modules = [bacpipe]
+    for module_name in ("settings", "models", "model_registry", "constants"):
+        try:
+            modules.append(importlib.import_module(f"bacpipe.{module_name}"))
+        except (ImportError, ModuleNotFoundError):
+            continue
+
+    names: List[str] = []
+    registry_words = ("model", "embed", "checkpoint", "available", "registry")
+    registry_callables = ("list_models", "available_models", "get_available_models", "get_model_names")
+    for module in modules:
+        for function_name in registry_callables:
+            function = getattr(module, function_name, None)
+            if callable(function):
+                try:
+                    names.extend(_model_name_candidates(function()))
+                except Exception:
+                    pass
+        for attr_name in dir(module):
+            if not any(word in attr_name.lower() for word in registry_words):
+                continue
+            try:
+                value = getattr(module, attr_name)
+            except Exception:
+                continue
+            names.extend(_model_name_candidates(value))
+
+    # Older bacpipe versions document these names but do not expose a registry.
+    if not names:
+        names = ["birdnet", "perch_bird"]
+    return list(dict.fromkeys(names))
+
+
+def _resolve_models(models: List[str]) -> List[str]:
+    if any(model.lower() == "all" for model in models):
+        discovered = discover_models()
+        if not discovered:
+            raise RuntimeError("No bacpipe models were discovered")
+        return discovered
+    return list(dict.fromkeys(models))
+
+
+def find_noise_wavs(
+    data_dir: str,
+    location: str,
+    noise_dir: Optional[str] = None,
+) -> List[Tuple[str, str, str]]:
+    """Return (wav_path, wav_name, noise_group) from noise_references."""
+    root = Path(noise_dir) if noise_dir else Path(data_dir) / location / "noise_references"
+    if not root.is_dir():
+        return []
+    found: List[Tuple[str, str, str]] = []
+    for path in sorted(root.rglob("*.wav")):
+        if path.name.startswith("._"):
+            continue
+        rel = path.relative_to(root)
+        group = rel.parts[0] if len(rel.parts) > 1 else "unknown"
+        group = {"LabIR": "LabIR", "SPIR": "SPIR", "sa": "sa", "mono": "mono"}.get(
+            group, group
+        )
+        found.append((str(path), path.name, group))
+    return found
+
+
+def _noise_group_for_method(method: str) -> str:
+    return method.replace("bf_", "", 1)
+
+
+def _l2_normalize_rows(X: np.ndarray) -> np.ndarray:
+    norms = np.linalg.norm(X.astype(np.float32), axis=1, keepdims=True)
+    return X.astype(np.float32) / np.maximum(norms, 1e-9)
+
+
+def _score_noise_distance(
+    by_method_emb: Dict[str, List[np.ndarray]],
+    noise_embeddings: Dict[str, np.ndarray],
+) -> Dict[str, Any]:
+    """Score each method against its own model-space noise reference.
+
+    The report is centred on mono: each available comparator includes a delta
+    from mono, where positive means farther from noise.
+    """
+    distances: Dict[str, Dict[str, Any]] = {}
+    for method, chunks in sorted(by_method_emb.items()):
+        group = _noise_group_for_method(method)
+        noise = noise_embeddings.get(group)
+        if noise is None or not chunks:
+            distances[method] = {"noise_group": group, "status": "missing_noise_reference"}
+            continue
+        X = np.concatenate(chunks, axis=0).astype(np.float32)
+        noise_mean = _l2_normalize_rows(noise).mean(axis=0)
+        noise_mean /= max(float(np.linalg.norm(noise_mean)), 1e-9)
+        cosine = _l2_normalize_rows(X) @ noise_mean
+        distances[method] = {
+            "noise_group": group,
+            "status": "ok",
+            "n": int(len(X)),
+            "mean_cosine_to_noise": float(np.mean(cosine)),
+            "mean_noise_distance": float(1.0 - np.mean(cosine)),
+            "std_noise_distance": float(np.std(1.0 - cosine)),
+        }
+
+    mono = distances.get("mono", {})
+    mono_distance = mono.get("mean_noise_distance") if mono.get("status") == "ok" else None
+    for method, result in distances.items():
+        if result.get("status") == "ok" and mono_distance is not None:
+            result["delta_vs_mono"] = float(result["mean_noise_distance"] - mono_distance)
+        elif method != "mono":
+            result["delta_vs_mono"] = None
+    return distances
 
 
 def find_method_wavs(
@@ -263,8 +406,11 @@ def run_pilot(
     dry_run: bool,
     checkpoint_dir: Optional[str] = None,
     max_wavs_per_method: int = 0,
+    noise_dir: Optional[str] = None,
 ) -> Dict[str, Any]:
     location = _resolve_location(location)
+    requested_models = list(models)
+    noise_wavs = find_noise_wavs(data_dir, location, noise_dir=noise_dir)
     wavs = find_method_wavs(
         data_dir,
         location,
@@ -280,16 +426,23 @@ def run_pilot(
         "date": date_str,
         "n_wavs": len(wavs),
         "models": {},
+        "models_requested": requested_models,
         "methods": methods,
+        "baseline_method": "mono",
+        "comparator_methods": [m for m in methods if m != "mono"],
         "data_dir": data_dir,
+        "noise_dir": str(noise_dir or Path(data_dir) / location / "noise_references"),
+        "n_noise_wavs": len(noise_wavs),
         "checkpoint_dir": str(ckpt),
     }
 
     print(f"Location: {location}")
     print(f"Date:     {date_str}")
     print(f"WAVs:     {len(wavs)}  (methods={methods})")
-    print(f"Models:   {models}")
+    print(f"Models:   {requested_models}")
+    print("Baseline: mono")
     print(f"Device:   {device}")
+    print(f"Noise WAVs: {len(noise_wavs)}")
     if dry_run:
         for p, name, m in wavs[:20]:
             print(f"  [{m}] {name}")
@@ -299,7 +452,7 @@ def run_pilot(
         return report
 
     if not wavs:
-        print("No WAVs found — run pipeline_embeddings.py Phase 1 first.")
+        print("No WAVs found — run pipeline_signal_processing.py first.")
         return report
 
     try:
@@ -314,10 +467,19 @@ def run_pilot(
         sys.exit(2)
 
     try:
-        _ensure_checkpoints(models, ckpt)
+        models = _resolve_models(requested_models)
     except Exception as e:
-        print(f"Checkpoint ensure failed: {e}", file=sys.stderr)
-        print("Will still try Embedder (may auto-download).", file=sys.stderr)
+        print(f"Model discovery failed: {e}", file=sys.stderr)
+        return report
+    report["models_discovered"] = models
+    print(f"Resolved models: {models}")
+
+    for model in models:
+        try:
+            _ensure_checkpoints([model], ckpt)
+        except Exception as e:
+            print(f"Checkpoint ensure failed for {model}: {e}", file=sys.stderr)
+            print("Will still try Embedder (may auto-download).", file=sys.stderr)
 
     embedder_cache: Dict[str, Any] = {}
 
@@ -328,8 +490,11 @@ def run_pilot(
 
         by_method_emb: Dict[str, List[np.ndarray]] = {}
         by_method_meta: Dict[str, List[dict]] = {}
+        noise_embeddings: Dict[str, np.ndarray] = {}
+        noise_meta: Dict[str, List[dict]] = {}
         t0 = time.time()
         errors = 0
+        noise_errors = 0
 
         for i, (wav_path, wav_name, method) in enumerate(wavs, 1):
             print(f"  [{i}/{len(wavs)}] {method} / {wav_name}", flush=True)
@@ -352,10 +517,39 @@ def run_pilot(
             by_method_emb.setdefault(method, []).append(emb)
             by_method_meta.setdefault(method, []).extend(meta)
 
+        # Re-embed the same noise WAVs in this model's space. Noise vectors
+        # from another backend are never reused.
+        for noise_path, noise_name, noise_group in noise_wavs:
+            print(f"  [noise/{noise_group}] {noise_name}", flush=True)
+            try:
+                emb, meta = _embed_with_bacpipe(
+                    model,
+                    noise_path,
+                    noise_name,
+                    f"noise_{noise_group}",
+                    device,
+                    embedder_cache=embedder_cache,
+                    checkpoint_dir=ckpt,
+                )
+            except Exception as e:
+                noise_errors += 1
+                print(f"    ⚠️  noise failed: {e}", file=sys.stderr)
+                continue
+            if emb.size == 0:
+                continue
+            noise_embeddings.setdefault(noise_group, np.zeros((0, emb.shape[1]), dtype=np.float32))
+            noise_embeddings[noise_group] = np.concatenate(
+                [noise_embeddings[noise_group], emb.astype(np.float32)], axis=0
+            )
+            noise_meta.setdefault(noise_group, []).extend(meta)
+
         model_summary: Dict[str, Any] = {
             "out_dir": out_dir,
             "errors": errors,
+            "noise_errors": noise_errors,
             "methods": {},
+            "noise_references": {},
+            "noise_distance": {},
             "elapsed_sec": round(time.time() - t0, 1),
         }
 
@@ -378,6 +572,31 @@ def run_pilot(
                 f"{all_emb.shape[1] if all_emb.ndim == 2 else '?'} → {emb_path}"
             )
 
+        for group, emb in sorted(noise_embeddings.items()):
+            noise_path = os.path.join(out_dir, f"noise_{group}_embeddings.npy")
+            noise_meta_path = os.path.join(out_dir, f"noise_{group}_meta.json")
+            np.save(noise_path, emb.astype(np.float32))
+            with open(noise_meta_path, "w") as f:
+                json.dump(noise_meta.get(group, []), f, indent=2, ensure_ascii=False)
+            model_summary["noise_references"][group] = {
+                "n_embeddings": int(len(emb)),
+                "embedding_dim": int(emb.shape[1]),
+                "embeddings_file": os.path.basename(noise_path),
+                "metadata_file": os.path.basename(noise_meta_path),
+            }
+
+        model_summary["noise_distance"] = _score_noise_distance(
+            by_method_emb, noise_embeddings
+        )
+        for method, result in model_summary["noise_distance"].items():
+            if result.get("status") == "ok":
+                delta = result.get("delta_vs_mono")
+                delta_text = f", Δmono={delta:+.4f}" if delta is not None else ""
+                print(
+                    f"  noise-distance {method}: "
+                    f"{result['mean_noise_distance']:.4f}{delta_text}"
+                )
+
         sum_path = os.path.join(out_dir, summary_basename(date_str))
         with open(sum_path, "w") as f:
             json.dump(model_summary, f, indent=2, ensure_ascii=False)
@@ -385,6 +604,53 @@ def run_pilot(
         print(f"  Summary: {sum_path}  ({model_summary['elapsed_sec']}s)")
 
     return report
+
+
+def write_comparison_report(report: Dict[str, Any], output_dir: str) -> Tuple[str, str]:
+    """Write a compact model × method report centred on mono."""
+    os.makedirs(output_dir, exist_ok=True)
+    stem = f"{report['date']}_bacpipe_comparison"
+    json_path = os.path.join(output_dir, f"{stem}.json")
+    md_path = os.path.join(output_dir, f"{stem}.md")
+    with open(json_path, "w") as f:
+        json.dump(report, f, indent=2, ensure_ascii=False)
+
+    lines = [
+        f"# bacpipe comparison — {report['location']} / {report['date']}",
+        "",
+        "- Baseline: **mono**",
+        f"- Comparators: {', '.join(report['comparator_methods'])}",
+        f"- Method WAVs: {report['n_wavs']}",
+        f"- Noise WAVs: {report['n_noise_wavs']}",
+        "",
+        "Positive Δmono means farther from the model-specific noise reference than mono.",
+        "",
+        "| Model | Method | N embeddings | Noise distance | Δ vs mono | Status |",
+        "|---|---|---:|---:|---:|---|",
+    ]
+    for model, summary in report.get("models", {}).items():
+        scores = summary.get("noise_distance", {})
+        for method in report.get("methods", []):
+            score = scores.get(method, {})
+            if score.get("status") == "ok":
+                delta = score.get("delta_vs_mono")
+                lines.append(
+                    f"| `{model}` | `{method}` | {score.get('n', '')} | "
+                    f"{score.get('mean_noise_distance', float('nan')):.6f} | "
+                    f"{delta:.6f} | ok |"
+                    if delta is not None
+                    else
+                    f"| `{model}` | `{method}` | {score.get('n', '')} | "
+                    f"{score.get('mean_noise_distance', float('nan')):.6f} | — | ok |"
+                )
+            else:
+                lines.append(
+                    f"| `{model}` | `{method}` | — | — | — | "
+                    f"{score.get('status', 'not_processed')} |"
+                )
+    with open(md_path, "w") as f:
+        f.write("\\n".join(lines) + "\\n")
+    return json_path, md_path
 
 
 def main() -> None:
@@ -395,8 +661,8 @@ def main() -> None:
     p.add_argument("--date", required=True, help="Single date YYYY-MM-DD")
     p.add_argument(
         "--models",
-        default="birdnet,perch_bird",
-        help="Comma-separated bacpipe model names",
+        default="all",
+        help="Comma-separated bacpipe model names, or 'all' to discover the installed registry",
     )
     p.add_argument(
         "--methods",
@@ -427,9 +693,14 @@ def main() -> None:
         help="List WAVs only; do not import bacpipe or embed",
     )
     p.add_argument(
+        "--noise-dir",
+        default=None,
+        help="Noise reference root (default: {data_dir}/{location}/noise_references)",
+    )
+    p.add_argument(
         "--report-json",
         default=None,
-        help="Optional path to write full run report JSON",
+        help="Optional additional path to write the full run report JSON",
     )
     p.add_argument(
         "--checkpoint-dir",
@@ -452,7 +723,14 @@ def main() -> None:
         dry_run=args.dry_run,
         checkpoint_dir=args.checkpoint_dir,
         max_wavs_per_method=args.max_wavs_per_method,
+        noise_dir=args.noise_dir,
     )
+
+    if not args.dry_run:
+        default_audit_dir = os.path.join(args.data_dir, args.location, "embeddings", "audits")
+        comparison_json, comparison_md = write_comparison_report(report, default_audit_dir)
+        print(f"Comparison report written: {comparison_json}")
+        print(f"Comparison table written:  {comparison_md}")
 
     if args.report_json:
         os.makedirs(os.path.dirname(os.path.abspath(args.report_json)) or ".", exist_ok=True)

@@ -76,7 +76,7 @@ Current Git state at inspection:
 
 Active pipeline entry points:
 
-- `pipeline_embeddings.py`: beamforming + signal averaging + mono + dense BirdNET embeddings;
+- `pipeline_signal_processing.py`: FLAC → beamforming + signal averaging + mono signal methods;
 - `cluster_poc.py`: clustering/dashboard and related diagnostics;
 - `process_noise_reference.py`: noise-reference embeddings;
 - `extract_embeddings.py`: embedding-only extraction from existing WAVs;

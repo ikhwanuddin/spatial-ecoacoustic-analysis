@@ -37,7 +37,7 @@ BACKEND_BACPIPE = "bacpipe"
 
 DEFAULT_METHODS = ("bf_LabIR", "bf_SPIR", "sa", "mono")
 
-# Native BirdNET dense scan (pipeline_embeddings / extract_embeddings)
+# Native BirdNET dense scan (extract_embeddings; signal processing is separate)
 BIRDNET_WINDOW_SEC = 3.0
 BIRDNET_SLIDE_SEC = 1.5
 BIRDNET_EMBEDDING_DIM = 1024

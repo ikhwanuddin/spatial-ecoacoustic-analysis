@@ -6,7 +6,7 @@ Spatial (array) ecoacoustic pipeline for MAARU monitoring data: beamforming and 
 
 | Status | Script | Role |
 |--------|--------|------|
-| **Active** | `pipeline_embeddings.py` | BF → SA → mono → dense BirdNET embeddings |
+| **Active** | `pipeline_signal_processing.py` | FLAC → BF + SA + mono signal methods
 | **Active** | `cluster_poc.py` | UMAP / HDBSCAN / noise-distance on embeddings |
 | **Active** | `process_noise_reference.py` | Noise-reference embeddings for distance metrics |
 | **Active** | `extract_embeddings.py` | Embeddings only (WAVs already on disk) |
@@ -21,9 +21,15 @@ Domain lists (not the main metric): `species_lists/`.
 ## Active usage
 
 ```bash
-# Full active pipeline (signal processing + BirdNET embeddings)
-python pipeline_embeddings.py --location 2A400 \
-  --date 2026-04-22 --ir-types LabIR,SPIR1,SPIR2 --max-files 0
+# Signal processing only, always regenerate (BF + SA + mono)
+# LabIR: S01/S05/S09 at 0,60,120,180,240,300; S12 at 0 automatically
+python pipeline_signal_processing.py --location 2A400 \
+  --date 2026-04-26 --ir-types LabIR,SPIR1,SPIR2 \
+  --labir-speakers S01,S05,S09,S12 \
+  --labir-degrees 0,60,120,180,240,300 \
+  --max-files 0 --force-signal
+
+# BirdNET/bacpipe are separate downstream workflows on the resulting WAVs.
 
 # Cluster / visualise (legacy flat embeddings still default on disk)
 python cluster_poc.py \
@@ -43,11 +49,12 @@ python cluster_poc.py --location 2A400 --backends bacpipe --bacpipe-models birdn
 # Embedding method / direction metrics
 python embedding_metrics.py --location 2A400 --date 2026-04-21 --backends legacy
 
-# Multi-method bacpipe pilot (balanced per method)
+# All-model bacpipe comparison (mono is the fixed baseline)
 # source experiments/bacpipe/.venv && export PYTHONPATH=$PWD:$PYTHONPATH
-# python experiments/bacpipe/run_pilot.py --location 2A400 --date 2026-04-21 \
-#   --models birdnet,perch_bird --methods mono,sa,bf_LabIR --max-wavs-per-method 2
-# Comparison write-up: sea-data/.../embeddings/audits/2026-04-21_multi_model_comparison.md
+# python experiments/bacpipe/run_pilot.py --location 2A400 --date 2026-04-26 \
+#   --models all --methods mono,sa,bf_LabIR,bf_SPIR \
+#   --noise-dir /Volumes/WD2TB/sea-data/2A400/noise_references
+# Reports: sea-data/.../embeddings/audits/2026-04-26_bacpipe_comparison.{json,md}
 ```
 
 ## Output layout
@@ -77,7 +84,7 @@ See `docs/WORKPLAN.md`. Short version:
 3. Compare model embeddings / acoustic fingerprints on matched methods and scopes
 4. Evaluate embedding-based evidence for beamforming comparisons (extend `cluster_poc` / metrics as justified)
 5. Optional: pluggable backend in main pipeline
-6. Later and only if needed: linear probing / small classifier for species-related analysis
+6. Species-ID and species probing are outside the current research scope
 
 ## Environment
 
