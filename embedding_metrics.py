@@ -282,7 +282,7 @@ def noise_distance_by_method(
 
     if not os.path.isdir(emb_dir):
         return {}
-    out = {}
+    noise_vectors: Dict[str, np.ndarray] = {}
     for fname in os.listdir(emb_dir):
         if not (fname.startswith("noise_") and fname.endswith("_embeddings.npy")):
             continue
@@ -290,21 +290,36 @@ def noise_distance_by_method(
         noise = np.load(os.path.join(emb_dir, fname)).astype(np.float32)
         if noise.ndim == 1:
             noise = noise.reshape(1, -1)
-        nmean = noise.mean(axis=0)
-        nmean = nmean / (np.linalg.norm(nmean) + 1e-9)
-        for i, name in enumerate(method_names):
-            mask = y_method == i
-            if not np.any(mask):
-                continue
-            Xm = _l2_normalize(X[mask])
-            # cosine distance = 1 - cos sim to noise mean
-            sims = Xm @ nmean
-            key = f"{name}__vs_noise_{group}"
-            out[key] = {
-                "n": int(mask.sum()),
-                "mean_cosine_to_noise": float(np.mean(sims)),
-                "mean_cosine_distance": float(1.0 - np.mean(sims)),
-            }
+        nmean = _l2_normalize(noise).mean(axis=0)
+        noise_vectors[group] = nmean / (np.linalg.norm(nmean) + 1e-9)
+
+    # Each method is scored against its own noise group. This is essential
+    # for mono/SA versus directional BF and also works for bacpipe outputs.
+    out: Dict[str, Any] = {}
+    for i, name in enumerate(method_names):
+        group = name.replace("bf_", "", 1)
+        nmean = noise_vectors.get(group)
+        mask = y_method == i
+        if nmean is None or not np.any(mask):
+            continue
+        Xm = _l2_normalize(X[mask])
+        sims = Xm @ nmean
+        key = f"{name}__vs_noise_{group}"
+        out[key] = {
+            "method": name,
+            "noise_group": group,
+            "n": int(mask.sum()),
+            "mean_cosine_to_noise": float(np.mean(sims)),
+            "mean_cosine_distance": float(1.0 - np.mean(sims)),
+        }
+
+    mono = out.get("mono__vs_noise_mono")
+    if mono:
+        mono_distance = mono["mean_cosine_distance"]
+        for result in out.values():
+            result["delta_vs_mono"] = float(
+                result["mean_cosine_distance"] - mono_distance
+            )
     return out
 
 

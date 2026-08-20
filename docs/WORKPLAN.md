@@ -19,7 +19,7 @@
 
 ### Goal 1 — Primary (PhD core)
 
-**Show that beamforming (BF) improves signal quality for passive acoustic monitoring vs monochannel and signal averaging**, on multi-mic MAARU recordings from **Way Canguk, Lampung, Indonesia**.
+**Test whether signal averaging and beamforming improve usable signal quality relative to the fixed monochannel baseline**, on multi-mic MAARU recordings from **Way Canguk, Lampung, Indonesia**.
 
 Operational meaning of “BF better”:
 
@@ -27,7 +27,7 @@ Operational meaning of “BF better”:
 |-----|----------------|--------|
 | Earlier | BirdNET species conf / “more trusted species IDs” under BF | **Abandoned as primary metric** — Indonesian soundscape poorly matched to BirdNET species head |
 | Current (pre–Grok session) | **Noise reference embeddings + noise distance** on dense BirdNET embeddings (clusters / per-method stats) | **Main success path so far** — user already sees promising results on limited hours of data: BF better than mono/SA |
-| Next (early check) | Same *kind* of claim, tested across **multiple embedding models via bacpipe** (esp. **Perch**, plus other models as needed) | Does “BF farther from noise / cleaner structure than mono/SA” hold **beyond BirdNET**? |
+| Next (early check) | Same *kind* of claim, tested across **all feasible embedding models exposed by bacpipe** | Do `sa`, `bf_LabIR`, and `bf_SPIR` remain better than the fixed `mono` baseline across model spaces? |
 
 **Why this matters:** Mic-array + beamforming is only scientifically defensible for PAM if the gain is not an artefact of one classifier’s species head.
 
@@ -37,13 +37,9 @@ Operational meaning of “BF better”:
 - Not “maximise separability gap of method labels” as the main story (that was an agent-side exploratory metric; secondary only)
 - Not abandoning noise-distance work in favour of a new metric zoo
 
-### Goal 2 — Secondary (species ID)
+### Species identification — outside current scope
 
-Eventually link processing → **species-level** ecology.
-
-- Expected to need **heavy separate work**: annotation, labelling, local experts / community knowledge at Way Canguk.
-- **Do not block Goal 1** on Goal 2.
-- Tools (bacpipe probing, small classifiers, 249-species list) stay on the shelf until Goal 1 multi-model story is clearer.
+Species annotation, local-expert labelling, species probing, and classifier development are not current goals of this workstream. BirdNET species-ID remains archived context for the pivot to embeddings, not an experiment to develop now.
 
 ### Claim clarification (email / BirdNET hallucination)
 
@@ -63,15 +59,15 @@ FLAC (array)
   → sa            (signal average)
   → bf_LabIR      (lab IR beamforming)
   → bf_SPIR       (field SPIR beamforming)
-  → dense BirdNET embeddings (sliding windows)
-  → cluster_poc / noise references / noise distance
+  → signal-method WAVs only (bf_LabIR, bf_SPIR, sa, mono)
+  → separate BirdNET/bacpipe workflows on those WAVs
 ```
 
 Entry points (active):
 
 | Script | Role |
 |--------|------|
-| `pipeline_embeddings.py` | BF + SA + mono + native BirdNET dense embeddings |
+| `pipeline_signal_processing.py` | FLAC → BF + SA + mono signal-method WAVs |
 | `process_noise_reference.py` | Noise reference embeddings |
 | `cluster_poc.py` | UMAP / HDBSCAN / dashboard; noise-distance hooks |
 | `extract_embeddings.py` | Embed-only if WAVs already exist |
@@ -86,7 +82,7 @@ Data roots (`config.py`):
 | Role | Default |
 |------|---------|
 | Analysis | `/Volumes/WD2TB/sea-data` |
-| Raw FLACs | `/Volumes/HD Data/monitoring_data` (env `MONITORING_DATA`) |
+| Raw FLACs | `/Volumes/WD2TB/monitoring_data` (env `MONITORING_DATA`) |
 
 ---
 
@@ -98,7 +94,7 @@ Data roots (`config.py`):
 |------|-----|
 | Keep one repo; bacpipe as adapter not rewrite | Good |
 | Archive species-ID as primary BF score | Good |
-| bacpipe pilot mono/SA/BF + Perch | Good *as early multi-model check* |
+| bacpipe pilot across available models; mono baseline with SA/BF comparators | Good *as early multi-model check* |
 | Preserve native BirdNET embedding path | Good |
 
 ### What drifted or needs re-centering
@@ -124,9 +120,9 @@ On limited hours of data, with **BirdNET embeddings + noise references + noise d
 
 ## 4. Goal 1 — planned workstreams (order)
 
-### 4.1 Freeze and document the “happy path” (BirdNET + noise)
+### 4.1 Freeze and document the “happy path” (mono baseline + method comparators)
 
-Priority: so Zed work always has a baseline you already believe.
+Priority: so every model comparison has the same fixed `mono` baseline.
 
 1. Commands to regenerate/load embeddings for mono, sa, bf_LabIR, bf_SPIR on a chosen date set.  
 2. How noise references were built (`process_noise_reference.py`).  
@@ -137,13 +133,17 @@ Priority: so Zed work always has a baseline you already believe.
 
 **Reference run (fill in when frozen):**
 
-- Location: `2A400` (default site in session)  
-- Dates: _TBD by you_  
-- Metrics: noise distance by method; optional cluster structure  
+- Location: `2A400`  
+- First sample: `2026-04-26` (3 FLACs, 3 times, 240 seconds each)  
+- Raw input: `/Volumes/WD2TB/monitoring_data/RPiID-0000000091668b26/2026-04-26`  
+- Analysis output: `/Volumes/WD2TB/sea-data/2A400`  
+- Baseline: `mono`  
+- Comparators: `sa`, `bf_LabIR`, `bf_SPIR`  
+- Metrics: model-specific noise distance and delta versus `mono`  
 
-### 4.2 Early multi-model check via bacpipe (your “selanjutnya”)
+### 4.2 All-model check via bacpipe (your “selanjutnya”)
 
-**Question:** On the **same WAVs** (mono / sa / bf_*), do **other embedding models** (especially **Perch**, then others) still show BF “better” under the **same noise-distance (or agreed SNR-proxy) logic**?
+**Question:** On the **same WAVs** (`mono` / `sa` / `bf_*`), do all feasible bacpipe embedding models show the comparators as better than the fixed `mono` baseline under the same noise-distance logic?
 
 Implementation already partly scaffolded (session):
 
@@ -159,14 +159,15 @@ Implementation already partly scaffolded (session):
 1. **Do not re-run beamforming** unless audio missing — reuse method WAVs.  
 2. **Primary comparison metric = noise distance** (or the same definition you used pre-session), applied **per model**.  
 3. Separability gap / UMAP = supporting diagnostics only.  
-4. Start models: `perch_bird` (and/or `perch_v2` if available), keep `birdnet` via bacpipe only as control vs native.  
-5. Expand model list only if it answers: “how model-agnostic is the BF gain?”  
-6. Species heads / probing = Goal 2, not here.
+4. Use `--models all` to discover and try every model exposed by the installed bacpipe version.  
+5. Record unavailable, incompatible, or failed models rather than silently dropping them.  
+6. Compare every model internally; do not reuse noise vectors across models. Species heads and probing are outside scope.
 
 **Success criterion (early check):**
 
-- For ≥1 non-BirdNET model (ideally Perch): BF shows **higher distance from noise** (or your agreed “cleaner” direction) than mono and preferably than SA, on a matched subset.  
-- Or document **failure**: BF gain is BirdNET-specific → important negative result for Goal 1 generality.
+- For each feasible model, report `mono` as the fixed baseline and `sa`, `bf_LabIR`, `bf_SPIR` as comparators.  
+- Report both absolute model-space noise distance and `Δ versus mono`; positive delta means farther from noise.  
+- If the pattern differs by model, record the result as model-dependent or inconclusive rather than selecting a preferred model prematurely.
 
 ### 4.3 Scale (only after 4.2 metric protocol is agreed)
 
@@ -177,23 +178,14 @@ Implementation already partly scaffolded (session):
 ### 4.4 Optional later (not Goal 1 blockers)
 
 - bacpipe official Panel dashboard wired to our layout  
-- `--backend bacpipe` inside `pipeline_embeddings.py`  
+- bacpipe integration remains separate in `experiments/bacpipe/run_pilot.py`  
 - Folder cleanup of archive scripts  
 
 ---
 
-## 5. Goal 2 — species ID (deferred)
+## 5. Species-ID work — out of scope
 
-**When to start:** after Goal 1 multi-model noise-distance story is clear enough for a paper section / thesis chapter outline.
-
-**Hard requirements (expected):**
-
-- Annotation protocol  
-- Local expertise (Way Canguk / birders)  
-- Subset of common species first, not 249 at once  
-- Possibly bacpipe linear probing / Burooj-style small classifiers on embeddings that survived Goal 1  
-
-**Do not** spend agent cycles on full taxonomy now.
+Do not spend current agent cycles on annotation, taxonomy, local-expert labelling, species probing, or species classifiers. Species-ID remains historical context for why the research moved to embedding-based method comparison.
 
 ---
 
@@ -212,10 +204,11 @@ In code (`embedding_metrics.py` / `cluster_poc` noise hooks):
 **Reading (qualitative):**
 
 - **Higher distance to noise** (lower cos to noise mean) ≈ less noise-like in that model’s space.  
-- Compare **bf_* vs mono vs sa** on matched data.  
+- Treat **mono as the fixed baseline**; compare `sa`, `bf_LabIR`, and `bf_SPIR` against it on matched data.
+- Report both absolute distance and **Δ versus mono**; positive Δ means farther from noise.
 - Always state **which noise group** (noise_mono vs noise_LabIR, etc.).
 
-**Gap:** Pilot bacpipe folders under `embeddings/bacpipe/*` did **not** automatically include noise files — when scoring Perch/BirdNET bacpipe runs, **reuse legacy noise refs or recompute noise embeddings in that model’s space**. Prefer **noise embeddings from the same model** when comparing models; cross-model noise vectors are not interchangeable.
+**Implemented bacpipe rule:** `run_pilot.py --models all` re-embeds the same noise WAVs separately for every discovered model and writes model-specific noise files. Cross-model noise vectors are not interchangeable.
 
 ### 6.2 Separability gap (SECONDARY diagnostic)
 
@@ -262,7 +255,7 @@ export PYTHONPATH="$(pwd):$PYTHONPATH"
 
 | File | Use for Goal 1? |
 |------|------------------|
-| `pipeline_embeddings.py` | Yes — native pipeline |
+| `pipeline_signal_processing.py` | Yes — signal-method producer |
 | `process_noise_reference.py` | Yes — noise refs |
 | `cluster_poc.py` | Yes — visual + noise hooks |
 | `embedding_metrics.py` | Yes — but **prioritize noise distance reports** |
@@ -287,30 +280,28 @@ export PYTHONPATH="$(pwd):$PYTHONPATH"
 
 ## 10. Checklist (re-centered)
 
-### Goal 1A — BirdNET + noise (baseline you trust)
+### Goal 1A — Fixed mono baseline + BirdNET reference
 
 - [x] Pipeline FLAC → mono / sa / bf_* → BirdNET embeddings (pre-session)  
 - [x] Noise references + noise distance in cluster workflow (pre-session; user satisfied on limited data)  
-- [ ] Freeze “reference run” dates + document exact plots/numbers in this file  
-- [ ] Ensure SPIR included whenever LabIR is claimed for “array BF” generally  
+- [ ] Freeze `2026-04-26` reference run and document exact plots/numbers  
+- [ ] Report `sa`, `bf_LabIR`, and `bf_SPIR` relative to fixed `mono`  
+- [ ] Ensure SPIR included whenever array BF is reported
 
-### Goal 1B — Multi-model early check (bacpipe)
+### Goal 1B — All-model bacpipe comparison
 
-- [x] Scaffold bacpipe pilot + Perch smoke  
-- [ ] **Define protocol:** same WAVs, noise embeddings **per model**, distance mono vs sa vs bf  
-- [ ] Run protocol on Perch (and BirdNET-via-bacpipe as control)  
-- [ ] Decide: BF gain model-agnostic / model-specific / inconclusive  
-- [ ] Optionally add 1–2 other bacpipe models if story needs breadth  
-- [ ] Scale data only after protocol is locked  
+- [x] Scaffold bacpipe multi-model pilot  
+- [ ] Discover all models exposed by installed bacpipe version  
+- [ ] Re-embed the same noise WAVs separately for every model  
+- [ ] Run all feasible models on matched `mono`, `sa`, `bf_LabIR`, `bf_SPIR` WAVs  
+- [ ] Produce model × method noise distance and delta-versus-mono table  
+- [ ] Decide whether results are consistent, model-dependent, or inconclusive  
+- [ ] Scale data only after this protocol is locked
 
 ### Goal 1C — Communication
 
-- [ ] Thesis/paper language: BF improves **embedding-space distance from noise / SNR-proxy**, not species conf  
-- [ ] Email updates (Vincent et al.): multi-model check as next step; species ID later  
-
-### Goal 2 — Species
-
-- [ ] Deferred: annotation + local experts + probing  
+- [ ] Use language about embedding-space noise distance / SNR proxies, not species confidence  
+- [ ] Record model failures and protocol limitations alongside successful results  
 
 ### Explicitly cancelled / deprioritized
 
@@ -322,13 +313,11 @@ export PYTHONPATH="$(pwd):$PYTHONPATH"
 
 ## 11. Next session in Zed (concrete, small)
 
-1. Re-open **your** best pre-session noise-distance result (HTML/cache/plots) and write 5 lines into §4.1 “reference run”.  
-2. Specify noise protocol for multi-model:  
-   - Option A: recompute noise embeddings with each bacpipe model on the same noise WAVs  
-   - Option B: only compare models that can share a defined noise set (document limitation)  
-3. Run bacpipe pilot on a **matched** mono/sa/bf set large enough for noise distance (not only 2 files if you want a real check).  
-4. Table: `model × method × mean noise distance`.  
-5. Only then expand Perch / other models or more dates.
+1. Use the `2A400 / 2026-04-26` sample as the first reference run.  
+2. Run bacpipe with `--models all` and methods `mono,sa,bf_LabIR,bf_SPIR`.  
+3. Recompute noise embeddings per model from the same noise WAV set.  
+4. Produce `model × method × mean noise distance × Δ versus mono`.  
+5. Record unavailable/failed models and only then decide whether more dates are needed.
 
 ---
 
@@ -336,7 +325,7 @@ export PYTHONPATH="$(pwd):$PYTHONPATH"
 
 If a suggestion does not serve this sentence, reject it:
 
-> **Beamforming on the MAARU array improves usable signal quality vs mono/SA for Indonesian PAM recordings; we measure that primarily via embedding-space noise distance (and related SNR proxies), first with BirdNET embeddings we already trust, then by checking generality across models (especially Perch) with bacpipe. Species ID is a later, separate investment.**
+> **Using mono as the fixed baseline, we test whether SA, LabIR beamforming, and SPIR beamforming improve usable signal representations for Indonesian PAM recordings. We measure this primarily with model-specific embedding-space noise distance, first with the existing BirdNET result and then across all feasible models available through bacpipe. Species annotation and probing are outside this workstream.**
 
 ---
 
@@ -347,3 +336,4 @@ If a suggestion does not serve this sentence, reject it:
 | 2026-07-30 | Agent scaffolding checklist (bacpipe, schema, FP tools) |
 | 2026-07-31 a | Long session log + separability-focused pilot notes |
 | 2026-07-31 b | **Realigned to user goals:** Goal 1 = BF SNR/noise-distance story; multi-model bacpipe as early generality check; Goal 2 species deferred; separability demoted; FP-on-BF cancelled; preserve pre-session pipeline success |
+| 2026-08-20 | Mono fixed as baseline; SA/LabIR/SPIR are comparators; bacpipe runs all feasible models; raw sample moved to WD2TB; annotation/species probing removed from scope |

@@ -1,6 +1,6 @@
 # bacpipe pilot
 
-Run **multi-model embeddings** on WAVs already produced by `pipeline_embeddings.py` (or legacy BF outputs). Does not re-run beamforming.
+Run **multi-model embeddings** on WAVs already produced by `pipeline_signal_processing.py` (or legacy BF outputs). Does not re-run beamforming.
 
 ## Why a separate env
 
@@ -27,12 +27,13 @@ via HuggingFace `vskode/bacpipe_models`. First run is large (BirdNET tar, etc.).
 python experiments/bacpipe/run_pilot.py \
   --location 2A400 --date 2026-04-22 --dry-run
 
-# Embed with birdnet + perch_bird (downloads checkpoints on first run)
+# Run every model exposed by the installed bacpipe registry
+# mono is the fixed baseline; sa and BF are comparators.
 python experiments/bacpipe/run_pilot.py \
-  --location 2A400 --date 2026-04-22 \
-  --models birdnet,perch_bird \
-  --methods bf_LabIR,bf_SPIR,sa,mono \
-  --max-wavs 8
+  --location 2A400 --date 2026-04-26 \
+  --models all \
+  --methods mono,sa,bf_LabIR,bf_SPIR \
+  --noise-dir /Volumes/WD2TB/sea-data/2A400/noise_references
 
 # Single model, explicit data root
 python experiments/bacpipe/run_pilot.py \
@@ -47,12 +48,18 @@ Outputs:
 {data_dir}/{location}/embeddings/bacpipe/{model}/
   {date}_{method}_embeddings.npy
   {date}_{method}_meta.json
-  {date}_summary.json
+  noise_{group}_embeddings.npy       # same model space as method embeddings
+  noise_{group}_meta.json
+  {date}_summary.json                # noise distance + Δ versus mono
+{data_dir}/{location}/embeddings/audits/
+  {date}_bacpipe_comparison.json
+  {date}_bacpipe_comparison.md
 ```
 
 ## Notes
 
 - Windowing follows each bacpipe model’s native segment length (not always 3 s). Meta records `window_sec` / `slide_sec` from the embedder when available; otherwise `model_native`.
-- The main purpose of this pilot is to compare model representations and acoustic fingerprints across the same processing methods. Species labels or classifier confidence are not assumed to be reliable for tropical forest recordings and are not required for the core comparison.
-- For scientific comparison of methods (LabIR vs SA vs mono), compare **within the same model**, then optionally compare patterns across models.
-- Native BirdNET dense embeddings remain the baseline under `embeddings/birdnet/`.
+- The main purpose of this pilot is to compare model representations and acoustic fingerprints across the same processing methods. Species labels or classifier confidence are not used for this experiment.
+- `mono` is the fixed baseline. `sa`, `bf_LabIR`, and `bf_SPIR` are comparators; reports include absolute noise distance and Δ versus mono.
+- Noise references are re-embedded separately for every model. Cross-model noise vectors are never reused.
+- Native BirdNET dense embeddings remain available under `embeddings/birdnet/`, but bacpipe is evaluated as a general multi-model backend.

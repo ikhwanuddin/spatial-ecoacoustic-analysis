@@ -18,12 +18,13 @@ from typing import List, Dict, Optional, Tuple
 
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 
-# External data volume (HDD) — Mac Mini default
-HD_DATA = "/Volumes/HD Data"
+# External data volume — Mac Mini default
+# Raw monitoring data now lives on the WD2TB volume alongside analysis output.
+MONITORING_DATA_DEFAULT = "/Volumes/WD2TB/monitoring_data"
 
 # Raw monitoring data (FLAC recordings)
-# Set MONITORING_DATA env var for GDrive: /drive/MyDrive/monitoring_data
-MONITORING_DATA = os.environ.get("MONITORING_DATA", os.path.join(HD_DATA, "monitoring_data"))
+# Set MONITORING_DATA env var for GDrive or another mounted volume.
+MONITORING_DATA = os.environ.get("MONITORING_DATA", MONITORING_DATA_DEFAULT)
 
 # SSD volume — Mac Mini default
 SSD_DATA = "/Volumes/WD2TB"
@@ -139,7 +140,7 @@ PRODUCTION_IR_SUBSETS = {
 #   S05 → elevation 0° (horizontal)
 #   S09 → elevation +45° (above horizontal)
 #   S12 → elevation +90° (zenith, straight up)
-# Usage: python pipeline_embeddings.py --prototype ...
+# Usage: python pipeline_signal_processing.py --labir-speakers S01,S05,S09,S12 ...
 
 # Speaker number → elevation angle (degrees) for LabIR array
 LABIR_SPEAKER_ELEVATION = {

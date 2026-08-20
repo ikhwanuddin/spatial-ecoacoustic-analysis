@@ -2,8 +2,8 @@
 """
 ARCHIVED — species-ID pipeline (not the active research path).
 
-Active pipeline: pipeline_embeddings.py (beamforming → dense embeddings).
-See README.md and docs/WORKPLAN.md.
+Active signal producer: pipeline_signal_processing.py (beamforming → SA → mono).
+BirdNET/bacpipe are separate downstream workflows; see README.md and docs/WORKPLAN.md.
 
 Kept for historical runs and optional FP / classifier audits only.
 Do not use species confidence as the primary beamforming metric.
