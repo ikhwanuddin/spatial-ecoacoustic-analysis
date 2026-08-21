@@ -559,7 +559,7 @@ def run_pilot(
             emb_path = os.path.join(out_dir, embedding_basename(date_str, method))
             meta_path = os.path.join(out_dir, meta_basename(date_str, method))
             np.save(emb_path, all_emb)
-            with open(meta_path, "w") as f:
+            with open(meta_path, "w", encoding="utf-8") as f:
                 json.dump(meta, f, indent=2, ensure_ascii=False)
             model_summary["methods"][method] = {
                 "n_embeddings": int(len(all_emb)),
@@ -576,7 +576,7 @@ def run_pilot(
             noise_path = os.path.join(out_dir, f"noise_{group}_embeddings.npy")
             noise_meta_path = os.path.join(out_dir, f"noise_{group}_meta.json")
             np.save(noise_path, emb.astype(np.float32))
-            with open(noise_meta_path, "w") as f:
+            with open(noise_meta_path, "w", encoding="utf-8") as f:
                 json.dump(noise_meta.get(group, []), f, indent=2, ensure_ascii=False)
             model_summary["noise_references"][group] = {
                 "n_embeddings": int(len(emb)),
@@ -598,7 +598,7 @@ def run_pilot(
                 )
 
         sum_path = os.path.join(out_dir, summary_basename(date_str))
-        with open(sum_path, "w") as f:
+        with open(sum_path, "w", encoding="utf-8") as f:
             json.dump(model_summary, f, indent=2, ensure_ascii=False)
         report["models"][model] = model_summary
         print(f"  Summary: {sum_path}  ({model_summary['elapsed_sec']}s)")
@@ -612,7 +612,7 @@ def write_comparison_report(report: Dict[str, Any], output_dir: str) -> Tuple[st
     stem = f"{report['date']}_bacpipe_comparison"
     json_path = os.path.join(output_dir, f"{stem}.json")
     md_path = os.path.join(output_dir, f"{stem}.md")
-    with open(json_path, "w") as f:
+    with open(json_path, "w", encoding="utf-8") as f:
         json.dump(report, f, indent=2, ensure_ascii=False)
 
     lines = [
@@ -648,7 +648,7 @@ def write_comparison_report(report: Dict[str, Any], output_dir: str) -> Tuple[st
                     f"| `{model}` | `{method}` | — | — | — | "
                     f"{score.get('status', 'not_processed')} |"
                 )
-    with open(md_path, "w") as f:
+    with open(md_path, "w", encoding="utf-8") as f:
         f.write("\\n".join(lines) + "\\n")
     return json_path, md_path
 
@@ -734,7 +734,7 @@ def main() -> None:
 
     if args.report_json:
         os.makedirs(os.path.dirname(os.path.abspath(args.report_json)) or ".", exist_ok=True)
-        with open(args.report_json, "w") as f:
+        with open(args.report_json, "w", encoding="utf-8") as f:
             json.dump(report, f, indent=2)
         print(f"Report written: {args.report_json}")
 

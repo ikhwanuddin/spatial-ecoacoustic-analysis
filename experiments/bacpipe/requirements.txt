@@ -4,3 +4,7 @@ bacpipe>=0.1.0
 numpy>=1.26
 soundfile>=0.12
 scipy>=1.13
+# Offline visualisation dependencies used by visualize_bacpipe.py.
+umap-learn>=0.5
+hdbscan>=0.8.33
+plotly>=5.0
