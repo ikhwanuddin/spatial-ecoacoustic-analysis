@@ -39,6 +39,15 @@ python cluster_poc.py \
 python cluster_poc.py --location 2A400 --backends legacy
 python cluster_poc.py --location 2A400 --backends bacpipe --bacpipe-models birdnet
 
+# Offline HTML visualisations from existing bacpipe embeddings.
+# Produces one HTML per model, one shared plotly.min.js, index.html,
+# manifest.json, and a ZIP ready to download from HPC.
+python visualize_bacpipe.py \
+  --data-dir /rds/general/user/ri322/home/sea-data \
+  --location 2A400 --date 2026-04-26 --models all
+# Output: sea-data/2A400/embedding_visuals/2026-04-26/
+# ZIP:    sea-data/2A400/embedding_visuals/2A400_embedding_visuals_2026-04-26.zip
+
 # bacpipe multi-model pilot (separate venv)
 # Compare embeddings from multiple bioacoustic models on the same existing method WAVs.
 # Models may also support species classification, but this workstream first evaluates

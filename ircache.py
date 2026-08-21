@@ -162,8 +162,10 @@ class IRCache:
 
         start = time.time()
 
+        zenith = self.ir_type.zenith_speakers or set()
         for param in self.ir_type.param_values:
-            for deg in self.ir_type.degree_values:
+            degrees = [0] if param in zenith else self.ir_type.degree_values
+            for deg in degrees:
                 reps = self.ir_type.rep_values or [None]
                 for rep in reps:
                     combo_count += 1
