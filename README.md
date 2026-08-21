@@ -45,8 +45,11 @@ python cluster_poc.py --location 2A400 --backends bacpipe --bacpipe-models birdn
 python visualize_bacpipe.py \
   --data-dir /rds/general/user/ri322/home/sea-data \
   --location 2A400 --date 2026-04-26 --models all
+# Model directories are discovered automatically under embeddings/bacpipe/.
+# Summary-only/incomplete directories (for example a failed model run) are skipped.
 # Output: sea-data/2A400/embedding_visuals/2026-04-26/
 # ZIP:    sea-data/2A400/embedding_visuals/2A400_embedding_visuals_2026-04-26.zip
+# After unzip, index.html is at the extracted archive root.
 
 # bacpipe multi-model pilot (separate venv)
 # Compare embeddings from multiple bioacoustic models on the same existing method WAVs.
