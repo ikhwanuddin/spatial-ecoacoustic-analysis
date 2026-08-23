@@ -2,6 +2,7 @@
 """
 bacpipe multi-model embedding pilot on existing method WAVs.
 
+Optimized for HPC execution (CUDA GPU acceleration for PyTorch, CPU fallback for TF, VRAM GC).
 Does not run beamforming. Reads full WAVs under:
   {data_dir}/{location}/{date}/{method}/h_*/m_*/*.wav
 
@@ -9,18 +10,47 @@ Writes schema-aligned arrays under:
   {data_dir}/{location}/embeddings/bacpipe/{model}/
 
 Usage:
-  python experiments/bacpipe/run_pilot.py \\
-    --location 2A400 --date 2026-04-26 --models all --methods mono,sa,bf_LabIR,bf_SPIR --dry-run
+  python experiments/bacpipe/run_pilot.py \
+    --location 2A400 --date 2026-04-21 --models all --methods mono,sa,bf_LabIR,bf_SPIR --device auto
 """
 
 from __future__ import annotations
 
+# Fast local caches on HPC compute nodes to prevent GPFS lock stalls
+import os
+import sys
+
+_TMP_USER = f"/tmp/{os.environ.get('USER', 'hpc_user')}"
+os.environ.setdefault("NUMBA_CACHE_DIR", f"{_TMP_USER}/numba")
+os.environ.setdefault("TORCH_EXTENSIONS_DIR", f"{_TMP_USER}/torch_ext")
+os.environ.setdefault("TF_CPP_MIN_LOG_LEVEL", "2")
+os.environ.setdefault("TF_ENABLE_ONEDNN_OPTS", "0")
+os.environ.setdefault("TF_XLA_FLAGS", "--tf_xla_auto_jit=0")
+os.environ.setdefault("CUDA_MODULE_LOADING", "LAZY")
+os.environ.setdefault("ORT_DISABLE_THREAD_AFFINITY", "1")
+os.environ.setdefault("OMP_NUM_THREADS", "4")
+os.environ.setdefault("ORT_NUM_THREADS", "4")
+
+# Auto-detect CX3 HPC cluster environment vs Mac Mini default
+if "ANALYSIS_OUTPUT" not in os.environ:
+    _u = os.environ.get("USER", "ri322")
+    if os.path.exists(f"/rds/general/user/{_u}/home/sea-data"):
+        os.environ["ANALYSIS_OUTPUT"] = f"/rds/general/user/{_u}/home/sea-data"
+    elif os.path.exists(os.path.expanduser("~/sea-data")):
+        os.environ["ANALYSIS_OUTPUT"] = os.path.expanduser("~/sea-data")
+
+if "MONITORING_DATA" not in os.environ:
+    _u = os.environ.get("USER", "ri322")
+    if os.path.exists(f"/rds/general/user/{_u}/ephemeral/monitoring_data"):
+        os.environ["MONITORING_DATA"] = f"/rds/general/user/{_u}/ephemeral/monitoring_data"
+
 import argparse
+import gc
 import importlib
 import json
-import os
+import pickle
 import re
-import sys
+import shutil
 import time
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
@@ -44,6 +74,74 @@ from embedding_schema import (  # noqa: E402
 )
 
 from direction_meta import parse_direction_metadata as _parse_direction_metadata
+
+# Core curated avian and bioacoustic foundation models in bacpipe
+CURATED_BIRD_MODELS = [
+    "birdnet",
+    "birdnet_v3",
+    "avesecho_passt",
+    "perch_bird",
+    "perch_v2",
+    "biolingual",
+    "birdaves_especies",
+    "birdmae",
+    "audioprotopnet",
+    "protoclr",
+    "vggish",
+]
+
+KNOWN_TF_MODELS = {
+    "birdnet",
+    "perch_bird",
+    "surfperch",
+    "google_whale",
+    "vggish",
+}
+
+
+def _model_target_device(model: str, requested_device: str) -> str:
+    """Route PyTorch models to CUDA and TF-based models to CPU on modern GPU nodes."""
+    if requested_device != "cuda":
+        return requested_device
+
+    tf_set = set(KNOWN_TF_MODELS)
+    try:
+        import bacpipe
+        if hasattr(bacpipe, "TF_MODELS"):
+            tf_set.update(bacpipe.TF_MODELS)
+    except Exception:
+        pass
+
+    if model.lower() in tf_set:
+        print(f"  [Device Router] Model '{model}' is TensorFlow-based -> routing to CPU (prevents L40S TF JIT crash)")
+        return "cpu"
+    else:
+        print(f"  [Device Router] Model '{model}' is PyTorch-based -> accelerating on CUDA GPU")
+        return "cuda"
+
+
+def _configure_frameworks(device: str) -> None:
+    """Configure TensorFlow & PyTorch for safe, performant execution."""
+    try:
+        import tensorflow as tf
+        try:
+            tf.config.optimizer.set_jit(False)
+        except Exception:
+            pass
+        if device == "cuda":
+            gpus = tf.config.list_physical_devices("GPU")
+            if gpus:
+                for gpu in gpus:
+                    try:
+                        tf.config.experimental.set_memory_growth(gpu, True)
+                    except RuntimeError:
+                        pass
+                try:
+                    tf.config.set_soft_device_placement(True)
+                except Exception:
+                    pass
+    except Exception:
+        pass
 
 
 def _resolve_location(location: str) -> str:
@@ -69,12 +167,7 @@ def _model_name_candidates(value: Any) -> List[str]:
 
 
 def discover_models() -> List[str]:
-    """Return model names exposed by the installed bacpipe package.
-
-    bacpipe releases have used more than one registry name. Inspect the public
-    registry/settings modules instead of making Perch a special case. The
-    documented models remain a conservative fallback for older releases.
-    """
+    """Return model names exposed by the installed bacpipe package."""
     try:
         import bacpipe
     except ImportError:
@@ -107,19 +200,40 @@ def discover_models() -> List[str]:
                 continue
             names.extend(_model_name_candidates(value))
 
-    # Older bacpipe versions document these names but do not expose a registry.
-    if not names:
-        names = ["birdnet", "perch_bird"]
-    return list(dict.fromkeys(names))
+    curated_present = [m for m in CURATED_BIRD_MODELS if m in names]
+    other_models = [m for m in names if m not in CURATED_BIRD_MODELS]
+    resolved = curated_present + other_models
+
+    if not resolved:
+        resolved = CURATED_BIRD_MODELS
+    return list(dict.fromkeys(resolved))
 
 
 def _resolve_models(models: List[str]) -> List[str]:
-    if any(model.lower() == "all" for model in models):
+    if any(model.lower() in ("all", "curated", "bird_models") for model in models):
+        return list(dict.fromkeys(CURATED_BIRD_MODELS))
+    if any(model.lower() in ("full_zoo", "everything") for model in models):
         discovered = discover_models()
-        if not discovered:
-            raise RuntimeError("No bacpipe models were discovered")
-        return discovered
+        return discovered if discovered else CURATED_BIRD_MODELS
     return list(dict.fromkeys(models))
+
+
+def _resolve_device(device_arg: str) -> str:
+    """Resolve compute device with auto-CUDA detection."""
+    if device_arg and device_arg.lower() != "auto":
+        return device_arg.lower()
+
+    try:
+        import torch
+        if torch.cuda.is_available():
+            dev_name = torch.cuda.get_device_name(0)
+            mem_gb = torch.cuda.get_device_properties(0).total_memory / (1024**3)
+            print(f"[Device Auto-Detect] CUDA Active: {dev_name} ({mem_gb:.1f} GB VRAM)")
+            return "cuda"
+    except Exception:
+        pass
+    print("[Device Auto-Detect] Falling back to CPU")
+    return "cpu"
 
 
 def find_noise_wavs(
@@ -157,11 +271,7 @@ def _score_noise_distance(
     by_method_emb: Dict[str, List[np.ndarray]],
     noise_embeddings: Dict[str, np.ndarray],
 ) -> Dict[str, Any]:
-    """Score each method against its own model-space noise reference.
-
-    The report is centred on mono: each available comparator includes a delta
-    from mono, where positive means farther from noise.
-    """
+    """Score each method against its own model-space noise reference."""
     distances: Dict[str, Dict[str, Any]] = {}
     for method, chunks in sorted(by_method_emb.items()):
         group = _noise_group_for_method(method)
@@ -179,7 +289,7 @@ def _score_noise_distance(
             "n": int(len(X)),
             "mean_cosine_to_noise": float(np.mean(cosine)),
             "mean_noise_distance": float(1.0 - np.mean(cosine)),
-            "std_noise_distance": float(np.std(1.0 - cosine)),
+            "std_noise_distance": float(1.0 - cosine).std(),
         }
 
     mono = distances.get("mono", {})
@@ -200,12 +310,7 @@ def find_method_wavs(
     max_wavs: int = 0,
     max_wavs_per_method: int = 0,
 ) -> List[Tuple[str, str, str]]:
-    """Return list of (wav_path, wav_name, method).
-
-    Caps:
-      max_wavs_per_method — applied per method first (balanced multi-method pilots)
-      max_wavs — global cap after merging
-    """
+    """Return list of (wav_path, wav_name, method)."""
     date_dir = os.path.join(data_dir, location, date_str)
     found: List[Tuple[str, str, str]] = []
     for method in methods:
@@ -272,13 +377,12 @@ def _model_window_sec(em: Any) -> Tuple[Any, Any]:
                     break
             except (TypeError, ValueError):
                 pass
-    # samples + sr
     try:
         sr = getattr(model, "sr", None) or getattr(model, "sample_rate", None)
         seg = getattr(model, "segment_length", None) or getattr(
             model, "num_samples", None
         )
-        if sr and seg and float(sr) > 100:  # likely samples not seconds
+        if sr and seg and float(sr) > 100:
             window_sec = float(seg) / float(sr)
     except Exception:
         pass
@@ -293,12 +397,10 @@ def _model_window_sec(em: Any) -> Tuple[Any, Any]:
             except (TypeError, ValueError):
                 pass
     if isinstance(window_sec, (int, float)) and not isinstance(slide_sec, (int, float)):
-        # default non-overlapping if hop unknown
         slide_sec = float(window_sec)
     return window_sec, slide_sec
 
 
-# Default checkpoint dir under experiments/bacpipe/ (stable absolute path)
 _DEFAULT_CKPT = Path(__file__).resolve().parent / "checkpoints"
 
 
@@ -328,17 +430,82 @@ def _get_embedder(
         return cache[model]
     import bacpipe
 
+    target_dev = _model_target_device(model, device)
     ckpt = Path(checkpoint_dir) if checkpoint_dir else _DEFAULT_CKPT
     try:
-        bacpipe.settings.device = device
+        bacpipe.settings.device = target_dev
         bacpipe.settings.model_base_path = str(ckpt)
     except Exception:
         pass
-    # CWD-relative paths in bacpipe resolve better if we chdir temporarily
-    # is fragile; prefer absolute model_base_path already set.
     em = bacpipe.Embedder(model)
     cache[model] = em
     return em
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# CHECKPOINT HELPERS
+# ─────────────────────────────────────────────────────────────────────────────
+
+_CKPT_EVERY = 5  # Save progress shard every N WAVs (Layer 2)
+
+
+def _model_already_done(out_dir: str, date_str: str, methods: List[str]) -> bool:
+    """Layer 1: True if all outputs for this model are already complete on disk."""
+    summary_path = os.path.join(out_dir, summary_basename(date_str))
+    if not os.path.exists(summary_path):
+        return False
+    try:
+        with open(summary_path, encoding="utf-8") as f:
+            summary = json.load(f)
+        done_methods = set(summary.get("methods", {}).keys())
+        if not set(methods).issubset(done_methods):
+            print(f"  [Ckpt-L1] Summary exists but methods are incomplete: "
+                  f"{set(methods) - done_methods}")
+            return False
+        for method in methods:
+            emb_path = os.path.join(out_dir, embedding_basename(date_str, method))
+            if not os.path.exists(emb_path):
+                return False
+        return True
+    except (json.JSONDecodeError, OSError):
+        return False
+
+
+def _save_wav_ckpt(
+    out_dir: str,
+    date_str: str,
+    by_method_emb: Dict[str, List[np.ndarray]],
+    by_method_meta: Dict[str, List[dict]],
+    n: int,
+) -> None:
+    """Layer 2: Save intermediate progress shard after processing n WAVs."""
+    ckpt_dir = os.path.join(out_dir, ".ckpt")
+    os.makedirs(ckpt_dir, exist_ok=True)
+    path = os.path.join(ckpt_dir, f"{date_str}_w{n}.pkl")
+    with open(path, "wb") as f:
+        pickle.dump({"emb": by_method_emb, "meta": by_method_meta, "n": n}, f)
+    print(f"  [Ckpt-L2] Progress saved: {n} WAVs → {os.path.basename(path)}")
+
+
+def _load_wav_ckpt(out_dir: str, date_str: str) -> Optional[dict]:
+    """Layer 2: Load latest progress shard if available."""
+    ckpt_dir = os.path.join(out_dir, ".ckpt")
+    if not os.path.isdir(ckpt_dir):
+        return None
+    shards = sorted(Path(ckpt_dir).glob(f"{date_str}_w*.pkl"))
+    if not shards:
+        return None
+    try:
+        with open(shards[-1], "rb") as f:
+            data = pickle.load(f)
+        print(f"  [Ckpt-L2] Resuming from WAV #{data['n'] + 1} ({shards[-1].name})")
+        return data
+    except Exception as e:
+        print(f"  [Ckpt-L2] Failed to read shard {shards[-1].name}: {e} — restarting from beginning")
+        return None
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 
 
 def _embed_with_bacpipe(
@@ -350,17 +517,36 @@ def _embed_with_bacpipe(
     embedder_cache: Optional[Dict[str, Any]] = None,
     checkpoint_dir: Optional[Path] = None,
 ) -> Tuple[np.ndarray, List[dict]]:
-    """Run one bacpipe Embedder on a single WAV; return (N, D), meta list."""
+    """Run one bacpipe Embedder on a single WAV with inference acceleration."""
     cache = embedder_cache if embedder_cache is not None else {}
     em = _get_embedder(model, device, cache, checkpoint_dir=checkpoint_dir)
-    embeddings = em.get_embeddings_from_model(wav_path)
+
+    # Accelerate inference: run on GPU with inference mode; gracefully fallback if needed
+    is_tf = model.lower() in KNOWN_TF_MODELS
+    if is_tf:
+        try:
+            embeddings = em.get_embeddings_from_model(wav_path)
+        except Exception:
+            try:
+                import tensorflow as tf
+                with tf.device("/CPU:0"):
+                    embeddings = em.get_embeddings_from_model(wav_path)
+            except Exception:
+                embeddings = None
+    else:
+        try:
+            import torch
+            with torch.inference_mode():
+                embeddings = em.get_embeddings_from_model(wav_path)
+        except Exception:
+            embeddings = em.get_embeddings_from_model(wav_path)
+
     emb = _normalize_embeddings(embeddings)
     if emb.size == 0:
         return emb, []
 
     n, dim = emb.shape
     window_sec, slide_sec = _model_window_sec(em)
-
     azimuth, elevation = _parse_direction_metadata(wav_name)
     meta: List[dict] = []
     hop = slide_sec if isinstance(slide_sec, (int, float)) else (
@@ -400,148 +586,147 @@ def run_pilot(
     date_str: str,
     models: List[str],
     methods: List[str],
-    data_dir: str,
-    device: str,
-    max_wavs: int,
-    dry_run: bool,
-    checkpoint_dir: Optional[str] = None,
+    data_dir: str = ANALYSIS_OUTPUT,
+    device: str = "auto",
+    max_wavs: int = 0,
     max_wavs_per_method: int = 0,
+    dry_run: bool = False,
+    checkpoint_dir: Optional[Path | str] = None,
     noise_dir: Optional[str] = None,
 ) -> Dict[str, Any]:
-    location = _resolve_location(location)
-    requested_models = list(models)
-    noise_wavs = find_noise_wavs(data_dir, location, noise_dir=noise_dir)
-    wavs = find_method_wavs(
-        data_dir,
-        location,
-        date_str,
-        methods,
+    resolved_loc = _resolve_location(location)
+    resolved_models = _resolve_models(models)
+    resolved_device = _resolve_device(device)
+    ckpt_path = Path(checkpoint_dir) if checkpoint_dir else _DEFAULT_CKPT
+
+    _configure_frameworks(resolved_device)
+
+    method_wavs = find_method_wavs(
+        data_dir=data_dir,
+        location=resolved_loc,
+        date_str=date_str,
+        methods=methods,
         max_wavs=max_wavs,
         max_wavs_per_method=max_wavs_per_method,
     )
-    ckpt = Path(checkpoint_dir) if checkpoint_dir else _DEFAULT_CKPT
+    noise_wavs = find_noise_wavs(
+        data_dir=data_dir, location=resolved_loc, noise_dir=noise_dir
+    )
 
     report: Dict[str, Any] = {
-        "location": location,
+        "location": resolved_loc,
         "date": date_str,
-        "n_wavs": len(wavs),
-        "models": {},
-        "models_requested": requested_models,
+        "device": resolved_device,
         "methods": methods,
-        "baseline_method": "mono",
         "comparator_methods": [m for m in methods if m != "mono"],
-        "data_dir": data_dir,
-        "noise_dir": str(noise_dir or Path(data_dir) / location / "noise_references"),
+        "n_wavs": len(method_wavs),
         "n_noise_wavs": len(noise_wavs),
-        "checkpoint_dir": str(ckpt),
+        "models": {},
     }
 
-    print(f"Location: {location}")
-    print(f"Date:     {date_str}")
-    print(f"WAVs:     {len(wavs)}  (methods={methods})")
-    print(f"Models:   {requested_models}")
-    print("Baseline: mono")
-    print(f"Device:   {device}")
-    print(f"Noise WAVs: {len(noise_wavs)}")
+    print(
+        f"bacpipe pilot: {resolved_loc} / {date_str} (Requested Device: {resolved_device.upper()}) — "
+        f"{len(method_wavs)} method WAVs across {methods}, "
+        f"{len(noise_wavs)} noise WAVs, {len(resolved_models)} models: {resolved_models}"
+    )
+
     if dry_run:
-        for p, name, m in wavs[:20]:
-            print(f"  [{m}] {name}")
-        if len(wavs) > 20:
-            print(f"  … {len(wavs) - 20} more")
-        report["dry_run"] = True
+        print("Dry run requested. Discovery complete.")
         return report
 
-    if not wavs:
-        print("No WAVs found — run pipeline_signal_processing.py first.")
+    if not method_wavs:
+        print(f"Warning: No WAVs found in {data_dir}/{resolved_loc}/{date_str} for {methods}")
         return report
 
-    try:
-        import bacpipe  # noqa: F401
-    except ImportError:
-        print(
-            "bacpipe is not installed in this environment.\n"
-            "  pip install -r experiments/bacpipe/requirements.txt\n"
-            "or use experiments/bacpipe/.venv (see experiments/bacpipe/README.md).",
-            file=sys.stderr,
-        )
-        sys.exit(2)
+    _ensure_checkpoints(resolved_models, ckpt_path)
 
-    try:
-        models = _resolve_models(requested_models)
-    except Exception as e:
-        print(f"Model discovery failed: {e}", file=sys.stderr)
-        return report
-    report["models_discovered"] = models
-    print(f"Resolved models: {models}")
-
-    for model in models:
-        try:
-            _ensure_checkpoints([model], ckpt)
-        except Exception as e:
-            print(f"Checkpoint ensure failed for {model}: {e}", file=sys.stderr)
-            print("Will still try Embedder (may auto-download).", file=sys.stderr)
-
-    embedder_cache: Dict[str, Any] = {}
-
-    for model in models:
-        print(f"\n══ Model: {model} ══")
-        out_dir = bacpipe_embeddings_dir(data_dir, location, model)
+    for model_idx, model in enumerate(resolved_models, 1):
+        target_dev = _model_target_device(model, resolved_device)
+        out_dir = bacpipe_embeddings_dir(data_dir, resolved_loc, model)
         os.makedirs(out_dir, exist_ok=True)
 
+        # ── LAYER 1: Skip already completed models ──────────────────────────
+        if _model_already_done(out_dir, date_str, methods):
+            print(f"\n[{model_idx}/{len(resolved_models)}] ✅ SKIP {model} "
+                  f"— output already complete in {out_dir}")
+            sum_path = os.path.join(out_dir, summary_basename(date_str))
+            try:
+                with open(sum_path, encoding="utf-8") as f:
+                    report["models"][model] = json.load(f)
+            except Exception:
+                pass
+            continue
+        # ────────────────────────────────────────────────────────────────────
+
+        print(f"\n[{model_idx}/{len(resolved_models)}] Model: {model} (Target Device: {target_dev.upper()})")
+        t0 = time.time()
+
+        embedder_cache: Dict[str, Any] = {}
         by_method_emb: Dict[str, List[np.ndarray]] = {}
         by_method_meta: Dict[str, List[dict]] = {}
+        errors: List[dict] = []
+
+        # ── LAYER 2: Load previous progress shard (if available) ────────────
+        ckpt_data = _load_wav_ckpt(out_dir, date_str)
+        start_idx = 0
+        if ckpt_data:
+            by_method_emb = ckpt_data["emb"]
+            by_method_meta = ckpt_data["meta"]
+            start_idx = ckpt_data["n"]
+        # ────────────────────────────────────────────────────────────────────
+
+        for i, (wav_path, wav_name, method) in enumerate(method_wavs[start_idx:], start_idx + 1):
+            try:
+                emb, meta = _embed_with_bacpipe(
+                    model=model,
+                    wav_path=wav_path,
+                    wav_name=wav_name,
+                    method=method,
+                    device=resolved_device,
+                    embedder_cache=embedder_cache,
+                    checkpoint_dir=ckpt_path,
+                )
+                by_method_emb.setdefault(method, []).append(emb)
+                by_method_meta.setdefault(method, []).extend(meta)
+
+                # ── Save shard every N WAVs (Layer 2) ───────────────────────
+                if i % _CKPT_EVERY == 0:
+                    _save_wav_ckpt(out_dir, date_str, by_method_emb, by_method_meta, i)
+                # ────────────────────────────────────────────────────────────
+
+                if i % 25 == 0 or i == len(method_wavs):
+                    print(f"  Processed {i}/{len(method_wavs)} WAVs ... ({time.time()-t0:.1f}s)")
+            except Exception as e:
+                errors.append({"file": wav_name, "method": method, "error": str(e)})
+                print(f"  [ERROR] {model} on {wav_name}: {e}")
+
+
+        # Process noise references
         noise_embeddings: Dict[str, np.ndarray] = {}
         noise_meta: Dict[str, List[dict]] = {}
-        t0 = time.time()
-        errors = 0
-        noise_errors = 0
-
-        for i, (wav_path, wav_name, method) in enumerate(wavs, 1):
-            print(f"  [{i}/{len(wavs)}] {method} / {wav_name}", flush=True)
+        noise_errors: List[dict] = []
+        for wav_path, wav_name, noise_group in noise_wavs:
             try:
                 emb, meta = _embed_with_bacpipe(
-                    model,
-                    wav_path,
-                    wav_name,
-                    method,
-                    device,
+                    model=model,
+                    wav_path=wav_path,
+                    wav_name=wav_name,
+                    method=f"noise_{noise_group}",
+                    device=resolved_device,
                     embedder_cache=embedder_cache,
-                    checkpoint_dir=ckpt,
+                    checkpoint_dir=ckpt_path,
                 )
+                if emb.size == 0:
+                    continue
+                if noise_group not in noise_embeddings:
+                    noise_embeddings[noise_group] = emb.astype(np.float32)
+                else:
+                    noise_embeddings[noise_group] = np.concatenate(
+                        [noise_embeddings[noise_group], emb.astype(np.float32)], axis=0
+                    )
+                noise_meta.setdefault(noise_group, []).extend(meta)
             except Exception as e:
-                errors += 1
-                print(f"    ⚠️  failed: {e}", file=sys.stderr)
-                continue
-            if emb.size == 0:
-                continue
-            by_method_emb.setdefault(method, []).append(emb)
-            by_method_meta.setdefault(method, []).extend(meta)
-
-        # Re-embed the same noise WAVs in this model's space. Noise vectors
-        # from another backend are never reused.
-        for noise_path, noise_name, noise_group in noise_wavs:
-            print(f"  [noise/{noise_group}] {noise_name}", flush=True)
-            try:
-                emb, meta = _embed_with_bacpipe(
-                    model,
-                    noise_path,
-                    noise_name,
-                    f"noise_{noise_group}",
-                    device,
-                    embedder_cache=embedder_cache,
-                    checkpoint_dir=ckpt,
-                )
-            except Exception as e:
-                noise_errors += 1
-                print(f"    ⚠️  noise failed: {e}", file=sys.stderr)
-                continue
-            if emb.size == 0:
-                continue
-            noise_embeddings.setdefault(noise_group, np.zeros((0, emb.shape[1]), dtype=np.float32))
-            noise_embeddings[noise_group] = np.concatenate(
-                [noise_embeddings[noise_group], emb.astype(np.float32)], axis=0
-            )
-            noise_meta.setdefault(noise_group, []).extend(meta)
+                noise_errors.append({"file": wav_name, "group": noise_group, "error": str(e)})
 
         model_summary: Dict[str, Any] = {
             "out_dir": out_dir,
@@ -603,6 +788,24 @@ def run_pilot(
         report["models"][model] = model_summary
         print(f"  Summary: {sum_path}  ({model_summary['elapsed_sec']}s)")
 
+        # ── Clean up intermediate shards (model completed, Layer 2) ──────────
+        _ckpt_dir = os.path.join(out_dir, ".ckpt")
+        if os.path.isdir(_ckpt_dir):
+            shutil.rmtree(_ckpt_dir)
+            print(f"  [Ckpt-L2] Intermediate shards cleaned up")
+        # ────────────────────────────────────────────────────────────────────
+
+        # Explicit VRAM & RAM cleanup between models
+        embedder_cache.clear()
+        gc.collect()
+        try:
+            import torch
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
+        except Exception:
+            pass
+
+
     return report
 
 
@@ -622,6 +825,7 @@ def write_comparison_report(report: Dict[str, Any], output_dir: str) -> Tuple[st
         f"- Comparators: {', '.join(report['comparator_methods'])}",
         f"- Method WAVs: {report['n_wavs']}",
         f"- Noise WAVs: {report['n_noise_wavs']}",
+        f"- Device: {report.get('device', 'cpu')}",
         "",
         "Positive Δmono means farther from the model-specific noise reference than mono.",
         "",
@@ -649,7 +853,7 @@ def write_comparison_report(report: Dict[str, Any], output_dir: str) -> Tuple[st
                     f"{score.get('status', 'not_processed')} |"
                 )
     with open(md_path, "w", encoding="utf-8") as f:
-        f.write("\\n".join(lines) + "\\n")
+        f.write("\n".join(lines) + "\n")
     return json_path, md_path
 
 
@@ -662,7 +866,7 @@ def main() -> None:
     p.add_argument(
         "--models",
         default="all",
-        help="Comma-separated bacpipe model names, or 'all' to discover the installed registry",
+        help="Comma-separated bacpipe model names, or 'all'/'bird_models' to run curated bioacoustic models",
     )
     p.add_argument(
         "--methods",
@@ -672,8 +876,8 @@ def main() -> None:
     p.add_argument("--data-dir", default=ANALYSIS_OUTPUT)
     p.add_argument(
         "--device",
-        default=os.environ.get("BACPIPE_DEVICE", "cpu"),
-        help="cpu | mps | cuda",
+        default=os.environ.get("BACPIPE_DEVICE", "auto"),
+        help="auto | cuda | cpu | mps",
     )
     p.add_argument(
         "--max-wavs",
