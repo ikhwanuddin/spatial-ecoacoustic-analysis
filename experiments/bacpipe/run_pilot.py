@@ -113,11 +113,11 @@ TF_GPU_MODELS = {
     "perch_bird",
     "surfperch",
     "vggish",
+    "birdnet",
 }
 
 # Small / fragile TF graphs kept on CPU (XLA/JIT crash risk, little GPU gain).
 TF_CPU_ONLY_MODELS = {
-    "birdnet",
     "google_whale",
 }
 
