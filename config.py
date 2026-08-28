@@ -18,20 +18,31 @@ from typing import List, Dict, Optional, Tuple
 
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 
-# External data volume — Mac Mini default
-# Raw monitoring data now lives on the WD2TB volume alongside analysis output.
-MONITORING_DATA_DEFAULT = "/Volumes/WD2TB/monitoring_data"
+# Base data paths auto-resolution (CX3 HPC Ephemeral vs Mac Mini default)
+_user = os.environ.get("USER", "ri322")
+_ephem_work = f"/rds/general/user/{_user}/ephemeral/sea-work"
+_ephem_data = f"/rds/general/user/{_user}/ephemeral/sea-data"
+_ephem_monitoring = f"/rds/general/user/{_user}/ephemeral/monitoring_data"
+
+if os.path.exists(_ephem_work):
+    _DEFAULT_ANALYSIS = _ephem_work
+elif os.path.exists(_ephem_data):
+    _DEFAULT_ANALYSIS = _ephem_data
+elif os.path.exists("/Volumes/WD2TB/sea-data"):
+    _DEFAULT_ANALYSIS = "/Volumes/WD2TB/sea-data"
+else:
+    _DEFAULT_ANALYSIS = os.path.expanduser("~/sea-data")
+
+if os.path.exists(_ephem_monitoring):
+    _DEFAULT_MONITORING = _ephem_monitoring
+else:
+    _DEFAULT_MONITORING = "/Volumes/WD2TB/monitoring_data"
 
 # Raw monitoring data (FLAC recordings)
-# Set MONITORING_DATA env var for GDrive or another mounted volume.
-MONITORING_DATA = os.environ.get("MONITORING_DATA", MONITORING_DATA_DEFAULT)
+MONITORING_DATA = os.environ.get("MONITORING_DATA", _DEFAULT_MONITORING)
 
-# SSD volume — Mac Mini default
-SSD_DATA = "/Volumes/WD2TB"
-
-# Analysis output
-# Set ANALYSIS_OUTPUT env var for GDrive: /drive/MyDrive/sea-data
-ANALYSIS_OUTPUT = os.environ.get("ANALYSIS_OUTPUT", os.path.join(SSD_DATA, "sea-data"))
+# Analysis output (all processed WAVs, embeddings, visualisations)
+ANALYSIS_OUTPUT = os.environ.get("ANALYSIS_OUTPUT", _DEFAULT_ANALYSIS)
 
 # Impulse Response files
 # Set IR_BASE_PATH env var for GDrive: /drive/MyDrive/MAARU-Impulse-Response

@@ -20,9 +20,25 @@ from __future__ import annotations
 import os
 import sys
 
-_TMP_USER = f"/tmp/{os.environ.get('USER', 'hpc_user')}"
-os.environ.setdefault("NUMBA_CACHE_DIR", f"{_TMP_USER}/numba")
-os.environ.setdefault("TORCH_EXTENSIONS_DIR", f"{_TMP_USER}/torch_ext")
+_USER = os.environ.get("USER", "ri322")
+_EPHEM_BASE = f"/rds/general/user/{_USER}/ephemeral"
+_EPHEM_TMP = f"{_EPHEM_BASE}/tmp"
+_TMP_DIR = _EPHEM_TMP if os.path.isdir(_EPHEM_BASE) else f"/tmp/{_USER}"
+try:
+    os.makedirs(_TMP_DIR, exist_ok=True)
+except Exception:
+    pass
+
+os.environ.setdefault("TMPDIR", _TMP_DIR)
+os.environ.setdefault("TEMP", _TMP_DIR)
+os.environ.setdefault("TMP", _TMP_DIR)
+if os.path.isdir(_EPHEM_BASE):
+    os.environ.setdefault("HF_HOME", f"{_EPHEM_BASE}/.cache/huggingface")
+    os.environ.setdefault("HUGGINGFACE_HUB_CACHE", f"{_EPHEM_BASE}/.cache/huggingface/hub")
+    os.environ.setdefault("TRANSFORMERS_CACHE", f"{_EPHEM_BASE}/.cache/huggingface/hub")
+    os.environ.setdefault("TORCH_HOME", f"{_EPHEM_BASE}/.cache/torch")
+os.environ.setdefault("NUMBA_CACHE_DIR", f"{_TMP_DIR}/numba")
+os.environ.setdefault("TORCH_EXTENSIONS_DIR", f"{_TMP_DIR}/torch_ext")
 os.environ.setdefault("TF_CPP_MIN_LOG_LEVEL", "2")
 os.environ.setdefault("TF_ENABLE_ONEDNN_OPTS", "0")
 os.environ.setdefault("TF_XLA_FLAGS", "--tf_xla_auto_jit=0")
@@ -31,21 +47,25 @@ os.environ.setdefault("ORT_DISABLE_THREAD_AFFINITY", "1")
 os.environ.setdefault("OMP_NUM_THREADS", "4")
 os.environ.setdefault("ORT_NUM_THREADS", "4")
 
-# Auto-detect CX3 HPC cluster environment vs Mac Mini default
-if "ANALYSIS_OUTPUT" not in os.environ:
-    _u = os.environ.get("USER", "ri322")
-    if os.path.exists(f"/rds/general/user/{_u}/home/sea-data"):
-        os.environ["ANALYSIS_OUTPUT"] = f"/rds/general/user/{_u}/home/sea-data"
-    elif os.path.exists(os.path.expanduser("~/sea-data")):
-        os.environ["ANALYSIS_OUTPUT"] = os.path.expanduser("~/sea-data")
+# NVIDIA CUDA 12.6 NVVM / ptxas for TensorFlow XLA
+_CUDA_HOME = os.environ.get("CUDA_HOME", "/rds/easybuild/noarch/apps/software/CUDA/12.6.0")
+if os.path.isdir(f"{_CUDA_HOME}/bin"):
+    os.environ["PATH"] = f"{_CUDA_HOME}/bin" + os.pathsep + os.environ.get("PATH", "")
+if os.path.isfile(f"{_CUDA_HOME}/nvvm/libdevice/libdevice.10.bc"):
+    _cur_xla = os.environ.get("XLA_FLAGS", "")
+    if "--xla_gpu_cuda_data_dir" not in _cur_xla:
+        os.environ["XLA_FLAGS"] = f"{_cur_xla} --xla_gpu_cuda_data_dir={_CUDA_HOME}".strip()
 
+# Canonical Ephemeral Storage
+_USER = os.environ.get("USER", "ri322")
+if "ANALYSIS_OUTPUT" not in os.environ:
+    os.environ["ANALYSIS_OUTPUT"] = f"/rds/general/user/{_USER}/ephemeral/sea-work"
 if "MONITORING_DATA" not in os.environ:
-    _u = os.environ.get("USER", "ri322")
-    if os.path.exists(f"/rds/general/user/{_u}/ephemeral/monitoring_data"):
-        os.environ["MONITORING_DATA"] = f"/rds/general/user/{_u}/ephemeral/monitoring_data"
+    os.environ["MONITORING_DATA"] = f"/rds/general/user/{_USER}/ephemeral/monitoring_data"
 
 import argparse
 import gc
+import gzip
 import importlib
 import json
 import pickle
@@ -75,49 +95,57 @@ from embedding_schema import (  # noqa: E402
 
 from direction_meta import parse_direction_metadata as _parse_direction_metadata
 
-# Core curated avian and bioacoustic foundation models in bacpipe
-CURATED_BIRD_MODELS = [
-    "birdnet",
-    "birdnet_v3",
-    "avesecho_passt",
-    "perch_bird",
-    "perch_v2",
-    "biolingual",
-    "birdaves_especies",
-    "birdmae",
-    "audioprotopnet",
-    "protoclr",
-    "vggish",
-]
+
+# ─────────────────────────────────────────────────────────────────────────────
+# DEVICE & FRAMEWORK UTILITIES
+# ─────────────────────────────────────────────────────────────────────────────
 
 KNOWN_TF_MODELS = {
-    "birdnet",
     "perch_bird",
     "surfperch",
     "google_whale",
     "vggish",
+    "birdnet",
+}
+
+# TF SavedModels that compile and run on CUDA once ptxas is available.
+TF_GPU_MODELS = {
+    "perch_bird",
+    "surfperch",
+}
+
+# Small / fragile TF graphs kept on CPU (XLA/JIT crash risk, little GPU gain).
+TF_CPU_ONLY_MODELS = {
+    "birdnet",
+    "vggish",
+    "google_whale",
 }
 
 
 def _model_target_device(model: str, requested_device: str) -> str:
-    """Route PyTorch models to CUDA and TF-based models to CPU on modern GPU nodes."""
+    """Route each model to CUDA when it can actually use the GPU."""
     if requested_device != "cuda":
         return requested_device
 
-    tf_set = set(KNOWN_TF_MODELS)
+    name = model.lower()
+    if name in TF_GPU_MODELS:
+        print(f"  [Device Router] Model '{model}' is TensorFlow SavedModel -> CUDA")
+        return "cuda"
+
+    cpu_set = set(TF_CPU_ONLY_MODELS)
     try:
         import bacpipe
         if hasattr(bacpipe, "TF_MODELS"):
-            tf_set.update(bacpipe.TF_MODELS)
+            cpu_set.update(name for name in bacpipe.TF_MODELS if name not in TF_GPU_MODELS)
     except Exception:
         pass
 
-    if model.lower() in tf_set:
-        print(f"  [Device Router] Model '{model}' is TensorFlow-based -> routing to CPU (prevents L40S TF JIT crash)")
+    if name in cpu_set:
+        print(f"  [Device Router] Model '{model}' is TensorFlow-based -> CPU")
         return "cpu"
-    else:
-        print(f"  [Device Router] Model '{model}' is PyTorch-based -> accelerating on CUDA GPU")
-        return "cuda"
+
+    print(f"  [Device Router] Model '{model}' is PyTorch/ONNX-based -> CUDA")
+    return "cuda"
 
 
 def _configure_frameworks(device: str) -> None:
@@ -140,6 +168,11 @@ def _configure_frameworks(device: str) -> None:
                     tf.config.set_soft_device_placement(True)
                 except Exception:
                     pass
+        elif device == "cpu":
+            try:
+                tf.config.set_visible_devices([], "GPU")
+            except Exception:
+                pass
     except Exception:
         pass
 
@@ -166,73 +199,84 @@ def _model_name_candidates(value: Any) -> List[str]:
     return names
 
 
+# Core curated avian and bioacoustic foundation models in bacpipe
+CURATED_BIRD_MODELS = [
+    "birdnet",
+    "birdnet_v3",
+    "avesecho_passt",
+    "perch_bird",
+    "perch_v2",
+    "biolingual",
+    "birdaves_especies",
+    "birdmae",
+    "audioprotopnet",
+    "protoclr",
+    "vggish",
+]
+
+
 def discover_models() -> List[str]:
     """Return model names exposed by the installed bacpipe package."""
     try:
         import bacpipe
     except ImportError:
-        return []
+        return list(CURATED_BIRD_MODELS)
 
     modules = [bacpipe]
-    for module_name in ("settings", "models", "model_registry", "constants"):
+    for sub in ("feature_extractors", "models", "registry"):
         try:
-            modules.append(importlib.import_module(f"bacpipe.{module_name}"))
-        except (ImportError, ModuleNotFoundError):
-            continue
+            modules.append(importlib.import_module(f"bacpipe.{sub}"))
+        except ImportError:
+            pass
 
-    names: List[str] = []
-    registry_words = ("model", "embed", "checkpoint", "available", "registry")
-    registry_callables = ("list_models", "available_models", "get_available_models", "get_model_names")
-    for module in modules:
-        for function_name in registry_callables:
-            function = getattr(module, function_name, None)
-            if callable(function):
-                try:
-                    names.extend(_model_name_candidates(function()))
-                except Exception:
-                    pass
-        for attr_name in dir(module):
-            if not any(word in attr_name.lower() for word in registry_words):
+    found: List[str] = []
+    for mod in modules:
+        for attr in ("MODELS", "FEATURE_EXTRACTORS", "AVAILABLE_MODELS", "MODEL_REGISTRY"):
+            if hasattr(mod, attr):
+                for name in _model_name_candidates(getattr(mod, attr)):
+                    if name not in found:
+                        found.append(name)
+
+    # Fallback to curated list if discovery returns nothing
+    if not found:
+        return list(CURATED_BIRD_MODELS)
+    return found
+
+
+def _resolve_models(models_arg: List[str]) -> List[str]:
+    """Resolve comma-separated strings and the 'all' keyword."""
+    expanded: List[str] = []
+    for item in models_arg:
+        for name in item.split(","):
+            name = name.strip()
+            if not name:
                 continue
-            try:
-                value = getattr(module, attr_name)
-            except Exception:
-                continue
-            names.extend(_model_name_candidates(value))
-
-    curated_present = [m for m in CURATED_BIRD_MODELS if m in names]
-    other_models = [m for m in names if m not in CURATED_BIRD_MODELS]
-    resolved = curated_present + other_models
-
-    if not resolved:
-        resolved = CURATED_BIRD_MODELS
-    return list(dict.fromkeys(resolved))
+            if name.lower() in ("all", "curated", "bird_models"):
+                for discovered in discover_models():
+                    if discovered not in expanded:
+                        expanded.append(discovered)
+            elif name not in expanded:
+                expanded.append(name)
+    return expanded
 
 
-def _resolve_models(models: List[str]) -> List[str]:
-    if any(model.lower() in ("all", "curated", "bird_models") for model in models):
-        return list(dict.fromkeys(CURATED_BIRD_MODELS))
-    if any(model.lower() in ("full_zoo", "everything") for model in models):
-        discovered = discover_models()
-        return discovered if discovered else CURATED_BIRD_MODELS
-    return list(dict.fromkeys(models))
-
-
-def _resolve_device(device_arg: str) -> str:
-    """Resolve compute device with auto-CUDA detection."""
-    if device_arg and device_arg.lower() != "auto":
-        return device_arg.lower()
-
+def _resolve_device(requested: str) -> str:
+    if requested in ("cuda", "mps", "cpu"):
+        return requested
     try:
         import torch
+
         if torch.cuda.is_available():
-            dev_name = torch.cuda.get_device_name(0)
-            mem_gb = torch.cuda.get_device_properties(0).total_memory / (1024**3)
-            print(f"[Device Auto-Detect] CUDA Active: {dev_name} ({mem_gb:.1f} GB VRAM)")
+            gpu_name = torch.cuda.get_device_name(0)
+            vram_gb = torch.cuda.get_device_properties(0).total_memory / (1024**3)
+            print(f"[Device Auto-Detect] CUDA Active: {gpu_name} ({vram_gb:.1f} GB VRAM)")
             return "cuda"
-    except Exception:
+        if hasattr(torch.backends, "mps") and torch.backends.mps.is_available():
+            print("[Device Auto-Detect] Apple Silicon Metal (MPS) Active")
+            return "mps"
+    except ImportError:
         pass
-    print("[Device Auto-Detect] Falling back to CPU")
+    print("[Device Auto-Detect] CPU Active")
     return "cpu"
 
 
@@ -268,7 +312,7 @@ def _l2_normalize_rows(X: np.ndarray) -> np.ndarray:
 
 
 def _score_noise_distance(
-    by_method_emb: Dict[str, List[np.ndarray]],
+    by_method_emb: Dict[str, Any],
     noise_embeddings: Dict[str, np.ndarray],
 ) -> Dict[str, Any]:
     """Score each method against its own model-space noise reference."""
@@ -276,10 +320,13 @@ def _score_noise_distance(
     for method, chunks in sorted(by_method_emb.items()):
         group = _noise_group_for_method(method)
         noise = noise_embeddings.get(group)
-        if noise is None or not chunks:
+        if noise is None or (not chunks if isinstance(chunks, list) else chunks.size == 0):
             distances[method] = {"noise_group": group, "status": "missing_noise_reference"}
             continue
-        X = np.concatenate(chunks, axis=0).astype(np.float32)
+        if isinstance(chunks, np.ndarray):
+            X = chunks.astype(np.float32)
+        else:
+            X = np.concatenate(chunks, axis=0).astype(np.float32)
         noise_mean = _l2_normalize_rows(noise).mean(axis=0)
         noise_mean /= max(float(np.linalg.norm(noise_mean)), 1e-9)
         cosine = _l2_normalize_rows(X) @ noise_mean
@@ -431,22 +478,37 @@ def _get_embedder(
     import bacpipe
 
     target_dev = _model_target_device(model, device)
+    if target_dev == "cpu" and model.lower() in TF_CPU_ONLY_MODELS:
+        try:
+            import tensorflow as tf
+            tf.config.set_visible_devices([], "GPU")
+        except Exception:
+            pass
     ckpt = Path(checkpoint_dir) if checkpoint_dir else _DEFAULT_CKPT
     try:
         bacpipe.settings.device = target_dev
         bacpipe.settings.model_base_path = str(ckpt)
+        bacpipe.settings.run_pretrained_classifier = False
     except Exception:
         pass
-    em = bacpipe.Embedder(model)
+    try:
+        em = bacpipe.Embedder(model, run_pretrained_classifier=False)
+    except TypeError:
+        em = bacpipe.Embedder(model)
+    if hasattr(em, "model"):
+        if hasattr(em.model, "bool_classifier"):
+            em.model.bool_classifier = False
+        if hasattr(em.model, "run_pretrained_classifier"):
+            em.model.run_pretrained_classifier = False
     cache[model] = em
     return em
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# CHECKPOINT HELPERS
+# CHUNK STREAMING & CHECKPOINT HELPERS (LAYER 2)
 # ─────────────────────────────────────────────────────────────────────────────
 
-_CKPT_EVERY = 5  # Save progress shard every N WAVs (Layer 2)
+_CHUNK_SIZE = 50  # Process and stream to disk in chunks of N WAVs (keeps RAM < 350MB)
 
 
 def _model_already_done(out_dir: str, date_str: str, methods: List[str]) -> bool:
@@ -471,38 +533,140 @@ def _model_already_done(out_dir: str, date_str: str, methods: List[str]) -> bool
         return False
 
 
-def _save_wav_ckpt(
+def _expand_window_meta(
+    record: dict,
+    model: str,
+) -> List[dict]:
+    """Deterministically expand one compact WAV-level record into N window metadata dicts."""
+    wav = record["wav"]
+    method = record["method"]
+    n_win = record["n_win"]
+    win = record["win"]
+    hop = record["hop"]
+    azimuth = record.get("az")
+    elevation = record.get("el")
+    dim = record.get("dim", 0)
+    meta = []
+    for i in range(n_win):
+        start = float(i * hop)
+        end = float(start + win)
+        meta.append(
+            make_window_meta(
+                wav=wav,
+                method=method,
+                start_sec=start,
+                end_sec=end,
+                model=model,
+                backend=BACKEND_BACPIPE,
+                window_sec=float(win),
+                slide_sec=float(hop),
+                embedding_dim=int(dim),
+                azimuth=azimuth,
+                elevation=elevation,
+                extra={"wav_path": record.get("path")},
+            )
+        )
+    return meta
+
+
+def _save_chunk(
+    ckpt_dir: str,
+    date_str: str,
+    chunk_idx: int,
+    buffer_emb: Dict[str, List[np.ndarray]],
+    buffer_meta: List[dict],
+    processed_count: int,
+) -> str:
+    """Save one compact compressed FP16 chunk file and update state."""
+    if not buffer_meta or not any(buffer_emb.values()):
+        print(f"  [Ckpt-L2] Buffer is empty, skipping chunk #{chunk_idx}")
+        return ""
+
+    os.makedirs(ckpt_dir, exist_ok=True)
+    chunk_filename = f"{date_str}_chunk_{chunk_idx:04d}.npz"
+    chunk_path = os.path.join(ckpt_dir, chunk_filename)
+    tmp_path = os.path.join(ckpt_dir, f".tmp_{chunk_filename}")
+
+    emb_fp16 = {}
+    for m, arr_list in buffer_emb.items():
+        if arr_list:
+            emb_fp16[m] = np.concatenate(arr_list, axis=0).astype(np.float16)
+
+    meta_json_gz = gzip.compress(json.dumps(buffer_meta).encode("utf-8"))
+    np.savez_compressed(
+        tmp_path,
+        meta_gz=np.frombuffer(meta_json_gz, dtype=np.uint8),
+        **emb_fp16,
+    )
+    os.replace(tmp_path, chunk_path)
+
+    # Update state.json
+    state_path = os.path.join(ckpt_dir, f"{date_str}_state.json")
+    state = {
+        "date": date_str,
+        "last_n": processed_count,
+        "last_chunk_idx": chunk_idx,
+        "methods": list(buffer_emb.keys()),
+    }
+    with open(state_path, "w", encoding="utf-8") as f:
+        json.dump(state, f, indent=2)
+
+    sz_mb = os.path.getsize(chunk_path) / (1024**2)
+    print(f"  [Ckpt-L2] Chunk #{chunk_idx} saved ({processed_count} WAVs total, {sz_mb:.1f} MB) — memory cleared")
+    return chunk_path
+
+
+def _load_progress(
     out_dir: str,
     date_str: str,
-    by_method_emb: Dict[str, List[np.ndarray]],
-    by_method_meta: Dict[str, List[dict]],
-    n: int,
-) -> None:
-    """Layer 2: Save intermediate progress shard after processing n WAVs."""
-    ckpt_dir = os.path.join(out_dir, ".ckpt")
-    os.makedirs(ckpt_dir, exist_ok=True)
-    path = os.path.join(ckpt_dir, f"{date_str}_w{n}.pkl")
-    with open(path, "wb") as f:
-        pickle.dump({"emb": by_method_emb, "meta": by_method_meta, "n": n}, f)
-    print(f"  [Ckpt-L2] Progress saved: {n} WAVs → {os.path.basename(path)}")
-
-
-def _load_wav_ckpt(out_dir: str, date_str: str) -> Optional[dict]:
-    """Layer 2: Load latest progress shard if available."""
+    model: str,
+) -> Tuple[int, int]:
+    """Layer 2: Check for existing progress. Returns (start_wav_idx, next_chunk_idx).
+    Validates chunk files and cleans up any corrupt/empty shards automatically."""
     ckpt_dir = os.path.join(out_dir, ".ckpt")
     if not os.path.isdir(ckpt_dir):
-        return None
-    shards = sorted(Path(ckpt_dir).glob(f"{date_str}_w*.pkl"))
-    if not shards:
-        return None
-    try:
-        with open(shards[-1], "rb") as f:
-            data = pickle.load(f)
-        print(f"  [Ckpt-L2] Resuming from WAV #{data['n'] + 1} ({shards[-1].name})")
-        return data
-    except Exception as e:
-        print(f"  [Ckpt-L2] Failed to read shard {shards[-1].name}: {e} — restarting from beginning")
-        return None
+        return 0, 0
+
+    chunk_files = sorted(Path(ckpt_dir).glob(f"{date_str}_chunk_*.npz"))
+    valid_chunks = []
+    total_wavs = 0
+    for cp in chunk_files:
+        if cp.stat().st_size < 1024:  # Corrupt / empty stub
+            print(f"  [Ckpt-L2] Removing invalid/empty chunk shard: {cp.name}")
+            try:
+                cp.unlink()
+            except OSError:
+                pass
+            continue
+        try:
+            with np.load(cp) as l:
+                if "meta_gz" in l:
+                    meta = json.loads(gzip.decompress(l["meta_gz"].tobytes()).decode("utf-8"))
+                    if len(meta) > 0:
+                        valid_chunks.append(cp)
+                        unique_wavs = len(set(r["wav"] for r in meta if "wav" in r))
+                        total_wavs += unique_wavs
+        except Exception as e:
+            print(f"  [Ckpt-L2] Removing unreadable chunk shard {cp.name}: {e}")
+            try:
+                cp.unlink()
+            except OSError:
+                pass
+
+    if valid_chunks:
+        next_chunk_idx = len(valid_chunks)
+        state_path = os.path.join(ckpt_dir, f"{date_str}_state.json")
+        state = {
+            "date": date_str,
+            "last_n": total_wavs,
+            "last_chunk_idx": next_chunk_idx - 1,
+        }
+        with open(state_path, "w", encoding="utf-8") as f:
+            json.dump(state, f, indent=2)
+        print(f"  [Ckpt-L2] Resuming from WAV #{total_wavs + 1} ({len(valid_chunks)} valid chunks on disk)")
+        return total_wavs, next_chunk_idx
+
+    return 0, 0
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -516,23 +680,14 @@ def _embed_with_bacpipe(
     device: str,
     embedder_cache: Optional[Dict[str, Any]] = None,
     checkpoint_dir: Optional[Path] = None,
-) -> Tuple[np.ndarray, List[dict]]:
-    """Run one bacpipe Embedder on a single WAV with inference acceleration."""
+) -> Tuple[np.ndarray, Optional[dict]]:
+    """Run one bacpipe Embedder on a single WAV. Returns (embeddings, compact_meta_record)."""
     cache = embedder_cache if embedder_cache is not None else {}
     em = _get_embedder(model, device, cache, checkpoint_dir=checkpoint_dir)
 
-    # Accelerate inference: run on GPU with inference mode; gracefully fallback if needed
     is_tf = model.lower() in KNOWN_TF_MODELS
     if is_tf:
-        try:
-            embeddings = em.get_embeddings_from_model(wav_path)
-        except Exception:
-            try:
-                import tensorflow as tf
-                with tf.device("/CPU:0"):
-                    embeddings = em.get_embeddings_from_model(wav_path)
-            except Exception:
-                embeddings = None
+        embeddings = em.get_embeddings_from_model(wav_path)
     else:
         try:
             import torch
@@ -543,41 +698,29 @@ def _embed_with_bacpipe(
 
     emb = _normalize_embeddings(embeddings)
     if emb.size == 0:
-        return emb, []
+        return emb, None
 
     n, dim = emb.shape
     window_sec, slide_sec = _model_window_sec(em)
     azimuth, elevation = _parse_direction_metadata(wav_name)
-    meta: List[dict] = []
     hop = slide_sec if isinstance(slide_sec, (int, float)) else (
         window_sec if isinstance(window_sec, (int, float)) else 1.0
     )
     win = window_sec if isinstance(window_sec, (int, float)) else float(hop)
-    for i in range(n):
-        start = float(i * hop)
-        end = float(start + win)
-        meta.append(
-            make_window_meta(
-                wav=wav_name,
-                method=method,
-                start_sec=start,
-                end_sec=end,
-                model=model,
-                backend=BACKEND_BACPIPE,
-                window_sec=float(win),
-                slide_sec=float(hop) if isinstance(hop, (int, float)) else 0.0,
-                embedding_dim=int(dim),
-                azimuth=azimuth,
-                elevation=elevation,
-                extra={
-                    "window_sec_note": None
-                    if isinstance(window_sec, (int, float))
-                    else str(window_sec),
-                    "wav_path": wav_path,
-                },
-            )
-        )
-    return emb, meta
+
+    # 1 lightweight record per WAV (Lazy Metadata) instead of 80 dict objects
+    record = {
+        "wav": wav_name,
+        "method": method,
+        "n_win": int(n),
+        "win": float(win),
+        "hop": float(hop),
+        "dim": int(dim),
+        "az": azimuth,
+        "el": elevation,
+        "path": wav_path,
+    }
+    return emb, record
 
 
 def run_pilot(
@@ -644,6 +787,7 @@ def run_pilot(
         target_dev = _model_target_device(model, resolved_device)
         out_dir = bacpipe_embeddings_dir(data_dir, resolved_loc, model)
         os.makedirs(out_dir, exist_ok=True)
+        ckpt_dir = os.path.join(out_dir, ".ckpt")
 
         # ── LAYER 1: Skip already completed models ──────────────────────────
         if _model_already_done(out_dir, date_str, methods):
@@ -662,36 +806,58 @@ def run_pilot(
         t0 = time.time()
 
         embedder_cache: Dict[str, Any] = {}
-        by_method_emb: Dict[str, List[np.ndarray]] = {}
-        by_method_meta: Dict[str, List[dict]] = {}
         errors: List[dict] = []
 
-        # ── LAYER 2: Load previous progress shard (if available) ────────────
-        ckpt_data = _load_wav_ckpt(out_dir, date_str)
-        start_idx = 0
-        if ckpt_data:
-            by_method_emb = ckpt_data["emb"]
-            by_method_meta = ckpt_data["meta"]
-            start_idx = ckpt_data["n"]
+        # ── Fail-fast: pre-initialize embedder once before WAV loop ─────────
+        try:
+            _get_embedder(model, target_dev, embedder_cache, checkpoint_dir=ckpt_path)
+        except Exception as e:
+            print(f"  [ERROR] Failed to initialize model '{model}': {e}")
+            errors.append({"file": "INITIALIZATION", "method": "init", "error": str(e)})
+            report["models"][model] = {
+                "out_dir": out_dir,
+                "elapsed_sec": time.time() - t0,
+                "error_count": 1,
+                "errors": errors,
+            }
+            continue
+        # ────────────────────────────────────────────────────────────────────
+
+        # ── LAYER 2: Load previous progress (Incremental Chunk Streaming) ───
+        start_idx, next_chunk_idx = _load_progress(out_dir, date_str, model)
+        buffer_emb: Dict[str, List[np.ndarray]] = {}
+        buffer_meta: List[dict] = []
+        chunk_idx = next_chunk_idx
         # ────────────────────────────────────────────────────────────────────
 
         for i, (wav_path, wav_name, method) in enumerate(method_wavs[start_idx:], start_idx + 1):
             try:
-                emb, meta = _embed_with_bacpipe(
+                emb, record = _embed_with_bacpipe(
                     model=model,
                     wav_path=wav_path,
                     wav_name=wav_name,
                     method=method,
-                    device=resolved_device,
+                    device=target_dev,
                     embedder_cache=embedder_cache,
                     checkpoint_dir=ckpt_path,
                 )
-                by_method_emb.setdefault(method, []).append(emb)
-                by_method_meta.setdefault(method, []).extend(meta)
+                if emb.size > 0 and record is not None:
+                    buffer_emb.setdefault(method, []).append(emb)
+                    buffer_meta.append(record)
 
-                # ── Save shard every N WAVs (Layer 2) ───────────────────────
-                if i % _CKPT_EVERY == 0:
-                    _save_wav_ckpt(out_dir, date_str, by_method_emb, by_method_meta, i)
+                # ── Save compact chunk every _CHUNK_SIZE WAVs & purge RAM ───
+                if i % _CHUNK_SIZE == 0:
+                    _save_chunk(ckpt_dir, date_str, chunk_idx, buffer_emb, buffer_meta, i)
+                    chunk_idx += 1
+                    buffer_emb.clear()
+                    buffer_meta.clear()
+                    gc.collect()
+                    try:
+                        import torch
+                        if torch.cuda.is_available():
+                            torch.cuda.empty_cache()
+                    except Exception:
+                        pass
                 # ────────────────────────────────────────────────────────────
 
                 if i % 25 == 0 or i == len(method_wavs):
@@ -700,6 +866,13 @@ def run_pilot(
                 errors.append({"file": wav_name, "method": method, "error": str(e)})
                 print(f"  [ERROR] {model} on {wav_name}: {e}")
 
+        # Save any trailing items in buffer as final chunk
+        if any(buffer_emb.values()):
+            _save_chunk(ckpt_dir, date_str, chunk_idx, buffer_emb, buffer_meta, len(method_wavs))
+            chunk_idx += 1
+            buffer_emb.clear()
+            buffer_meta.clear()
+            gc.collect()
 
         # Process noise references
         noise_embeddings: Dict[str, np.ndarray] = {}
@@ -707,16 +880,16 @@ def run_pilot(
         noise_errors: List[dict] = []
         for wav_path, wav_name, noise_group in noise_wavs:
             try:
-                emb, meta = _embed_with_bacpipe(
+                emb, record = _embed_with_bacpipe(
                     model=model,
                     wav_path=wav_path,
                     wav_name=wav_name,
                     method=f"noise_{noise_group}",
-                    device=resolved_device,
+                    device=target_dev,
                     embedder_cache=embedder_cache,
                     checkpoint_dir=ckpt_path,
                 )
-                if emb.size == 0:
+                if emb.size == 0 or record is None:
                     continue
                 if noise_group not in noise_embeddings:
                     noise_embeddings[noise_group] = emb.astype(np.float32)
@@ -724,7 +897,7 @@ def run_pilot(
                     noise_embeddings[noise_group] = np.concatenate(
                         [noise_embeddings[noise_group], emb.astype(np.float32)], axis=0
                     )
-                noise_meta.setdefault(noise_group, []).extend(meta)
+                noise_meta.setdefault(noise_group, []).extend(_expand_window_meta(record, model))
             except Exception as e:
                 noise_errors.append({"file": wav_name, "group": noise_group, "error": str(e)})
 
@@ -738,9 +911,25 @@ def run_pilot(
             "elapsed_sec": round(time.time() - t0, 1),
         }
 
-        for method, chunks in sorted(by_method_emb.items()):
+        # ── Assemble all chunks into final .npy & expand lazy metadata ──────
+        all_method_embs: Dict[str, List[np.ndarray]] = {}
+        all_method_meta: Dict[str, List[dict]] = {}
+
+        chunk_files = sorted(Path(ckpt_dir).glob(f"{date_str}_chunk_*.npz"))
+        print(f"  [Assembly] Streaming {len(chunk_files)} chunks into final outputs...")
+        for cp in chunk_files:
+            with np.load(cp) as l:
+                rec_meta = json.loads(gzip.decompress(l["meta_gz"].tobytes()).decode("utf-8"))
+                for rec in rec_meta:
+                    m = rec["method"]
+                    all_method_meta.setdefault(m, []).extend(_expand_window_meta(rec, model))
+                for k in l.files:
+                    if k != "meta_gz":
+                        all_method_embs.setdefault(k, []).append(l[k])
+
+        for method, chunks in sorted(all_method_embs.items()):
             all_emb = np.concatenate(chunks, axis=0).astype(np.float32)
-            meta = by_method_meta.get(method, [])
+            meta = all_method_meta.get(method, [])
             emb_path = os.path.join(out_dir, embedding_basename(date_str, method))
             meta_path = os.path.join(out_dir, meta_basename(date_str, method))
             np.save(emb_path, all_emb)
@@ -771,7 +960,7 @@ def run_pilot(
             }
 
         model_summary["noise_distance"] = _score_noise_distance(
-            by_method_emb, noise_embeddings
+            all_method_embs, noise_embeddings
         )
         for method, result in model_summary["noise_distance"].items():
             if result.get("status") == "ok":
@@ -790,13 +979,18 @@ def run_pilot(
 
         # ── Clean up intermediate shards (model completed, Layer 2) ──────────
         _ckpt_dir = os.path.join(out_dir, ".ckpt")
-        if os.path.isdir(_ckpt_dir):
+        if os.path.islink(_ckpt_dir):
+            os.unlink(_ckpt_dir)
+            print(f"  [Ckpt-L2] Symlink .ckpt removed (target left on ephemeral)")
+        elif os.path.isdir(_ckpt_dir):
             shutil.rmtree(_ckpt_dir)
-            print(f"  [Ckpt-L2] Intermediate shards cleaned up")
+            print(f"  [Ckpt-L2] Intermediate chunk files cleaned up")
         # ────────────────────────────────────────────────────────────────────
 
         # Explicit VRAM & RAM cleanup between models
         embedder_cache.clear()
+        all_method_embs.clear()
+        all_method_meta.clear()
         gc.collect()
         try:
             import torch
