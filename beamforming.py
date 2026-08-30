@@ -25,6 +25,7 @@ from config import (
     IRType,
 )
 from ircache import IRCache
+from audio_loader import load_audio_robust
 
 
 class Beamformer:
@@ -35,6 +36,7 @@ class Beamformer:
         flac_path: str,
         output_dir: str,
         ir_type_or_name: Union[IRType, str],
+        raw_audio: Optional[np.ndarray] = None,
     ):
         self.flac_path = flac_path
         self.output_dir = output_dir
@@ -55,9 +57,12 @@ class Beamformer:
         self.framelen = int(FRAME_LEN_SEC * self.fs)
         self.frameinc = self.framelen // 2
 
-        # Load audio (no filtering)
-        print(f"  Reading audio: {flac_path}")
-        self.raw, _ = librosa.load(flac_path, sr=self.fs, mono=False)
+        # Load audio (no filtering) with resilient auto-recovery if corrupt
+        if raw_audio is not None:
+            self.raw = raw_audio
+        else:
+            print(f"  Reading audio: {flac_path}")
+            self.raw, _ = load_audio_robust(flac_path, target_sr=self.fs, expected_channels=N_CHANNELS_EXPECTED)
 
         # Precompute STFT (shared across all directions)
         print(f"  Computing STFT ...")
