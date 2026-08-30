@@ -34,8 +34,8 @@ os.environ.setdefault("TEMP", _TMP_DIR)
 os.environ.setdefault("TMP", _TMP_DIR)
 if os.path.isdir(_EPHEM_BASE):
     os.environ.setdefault("HF_HOME", f"{_EPHEM_BASE}/.cache/huggingface")
+    os.environ.setdefault("HF_HUB_CACHE", f"{_EPHEM_BASE}/.cache/huggingface/hub")
     os.environ.setdefault("HUGGINGFACE_HUB_CACHE", f"{_EPHEM_BASE}/.cache/huggingface/hub")
-    os.environ.setdefault("TRANSFORMERS_CACHE", f"{_EPHEM_BASE}/.cache/huggingface/hub")
     os.environ.setdefault("TORCH_HOME", f"{_EPHEM_BASE}/.cache/torch")
 os.environ.setdefault("NUMBA_CACHE_DIR", f"{_TMP_DIR}/numba")
 os.environ.setdefault("TORCH_EXTENSIONS_DIR", f"{_TMP_DIR}/torch_ext")
@@ -577,10 +577,11 @@ def _save_chunk(
     buffer_emb: Dict[str, List[np.ndarray]],
     buffer_meta: List[dict],
     processed_count: int,
+    label: str = "",
 ) -> str:
     """Save one compact compressed FP16 chunk file and update state."""
     if not buffer_meta or not any(buffer_emb.values()):
-        print(f"  [Ckpt-L2] Buffer is empty, skipping chunk #{chunk_idx}")
+        print(f"  {label} [Ckpt-L2] Buffer is empty, skipping chunk #{chunk_idx}")
         return ""
 
     os.makedirs(ckpt_dir, exist_ok=True)
@@ -613,7 +614,7 @@ def _save_chunk(
         json.dump(state, f, indent=2)
 
     sz_mb = os.path.getsize(chunk_path) / (1024**2)
-    print(f"  [Ckpt-L2] Chunk #{chunk_idx} saved ({processed_count} WAVs total, {sz_mb:.1f} MB) — memory cleared")
+    print(f"  {label} [Ckpt-L2] Chunk #{chunk_idx} saved ({processed_count} WAVs total, {sz_mb:.1f} MB) — memory cleared")
     return chunk_path
 
 
@@ -742,6 +743,7 @@ def run_pilot(
     resolved_models = _resolve_models(models)
     resolved_device = _resolve_device(device)
     ckpt_path = Path(checkpoint_dir) if checkpoint_dir else _DEFAULT_CKPT
+    tag = f"[{resolved_loc}/{date_str}]"
 
     _configure_frameworks(resolved_device)
 
@@ -792,7 +794,7 @@ def run_pilot(
 
         # ── LAYER 1: Skip already completed models ──────────────────────────
         if _model_already_done(out_dir, date_str, methods):
-            print(f"\n[{model_idx}/{len(resolved_models)}] ✅ SKIP {model} "
+            print(f"\n{tag} [{model_idx}/{len(resolved_models)}] ✅ SKIP {model} "
                   f"— output already complete in {out_dir}")
             sum_path = os.path.join(out_dir, summary_basename(date_str))
             try:
@@ -803,7 +805,8 @@ def run_pilot(
             continue
         # ────────────────────────────────────────────────────────────────────
 
-        print(f"\n[{model_idx}/{len(resolved_models)}] Model: {model} (Target Device: {target_dev.upper()})")
+        model_tag = f"{tag} [{model_idx}/{len(resolved_models)}] {model}"
+        print(f"\n{model_tag} (Target Device: {target_dev.upper()})")
         t0 = time.time()
 
         embedder_cache: Dict[str, Any] = {}
@@ -848,7 +851,7 @@ def run_pilot(
 
                 # ── Save compact chunk every _CHUNK_SIZE WAVs & purge RAM ───
                 if i % _CHUNK_SIZE == 0:
-                    _save_chunk(ckpt_dir, date_str, chunk_idx, buffer_emb, buffer_meta, i)
+                    _save_chunk(ckpt_dir, date_str, chunk_idx, buffer_emb, buffer_meta, i, label=model_tag)
                     chunk_idx += 1
                     buffer_emb.clear()
                     buffer_meta.clear()
@@ -862,14 +865,15 @@ def run_pilot(
                 # ────────────────────────────────────────────────────────────
 
                 if i % 25 == 0 or i == len(method_wavs):
-                    print(f"  Processed {i}/{len(method_wavs)} WAVs ... ({time.time()-t0:.1f}s)")
+                    pct = 100.0 * i / len(method_wavs)
+                    print(f"  {model_tag}: {i}/{len(method_wavs)} WAVs ({pct:.0f}%) ... ({time.time()-t0:.1f}s)")
             except Exception as e:
                 errors.append({"file": wav_name, "method": method, "error": str(e)})
                 print(f"  [ERROR] {model} on {wav_name}: {e}")
 
         # Save any trailing items in buffer as final chunk
         if any(buffer_emb.values()):
-            _save_chunk(ckpt_dir, date_str, chunk_idx, buffer_emb, buffer_meta, len(method_wavs))
+            _save_chunk(ckpt_dir, date_str, chunk_idx, buffer_emb, buffer_meta, len(method_wavs), label=model_tag)
             chunk_idx += 1
             buffer_emb.clear()
             buffer_meta.clear()
