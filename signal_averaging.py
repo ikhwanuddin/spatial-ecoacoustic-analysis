@@ -6,25 +6,35 @@ No filtering applied.
 
 import os
 import time
+from typing import Optional
 import numpy as np
 import librosa
 import soundfile as sf
 
 from config import FS_TARGET, N_CHANNELS_EXPECTED
+from audio_loader import load_audio_robust
 
 
 class SignalAverager:
     """6-channel -> 1-channel direct-sum averaging (no filter)."""
 
-    def __init__(self, flac_path: str, output_dir: str):
+    def __init__(
+        self,
+        flac_path: str,
+        output_dir: str,
+        raw_audio: Optional[np.ndarray] = None,
+    ):
         self.flac_path = flac_path
         self.output_dir = output_dir
         self.fs = FS_TARGET
         self.base_name = os.path.splitext(os.path.basename(flac_path))[0]
 
-        # Load
-        print(f"  Reading audio: {flac_path}")
-        self.raw, _ = librosa.load(flac_path, sr=self.fs, mono=False)
+        # Load audio with resilient recovery if corrupt
+        if raw_audio is not None:
+            self.raw = raw_audio
+        else:
+            print(f"  Reading audio: {flac_path}")
+            self.raw, _ = load_audio_robust(flac_path, target_sr=self.fs, expected_channels=N_CHANNELS_EXPECTED)
 
         if self.raw.shape[0] != N_CHANNELS_EXPECTED:
             raise ValueError(

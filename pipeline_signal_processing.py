@@ -45,6 +45,7 @@ from config import (
 )
 from beamforming import Beamformer
 from signal_averaging import SignalAverager
+from audio_loader import load_audio_robust
 
 
 _HM_RE = re.compile(r"^(\d{2})-(\d{2})-\d{2}_dur=")
@@ -188,6 +189,18 @@ def process_one_flac(
     bf_dirs: List[Tuple[str, str]] = []
     cleaned_bf_spir = False
 
+    # 1. Resilient audio load with auto-recovery for corrupted/truncated FLACs
+    try:
+        raw_audio, was_repaired = load_audio_robust(
+            flac_path=flac_path,
+            target_sr=FS_TARGET,
+            expected_channels=6,
+        )
+    except Exception as exc:
+        print(f"  ❌ Unrecoverable audio error on {base_name}: {exc}")
+        print(f"  ⏩ Skipping {base_name} to ensure pipeline continues.")
+        return None
+
     for ir_name in ir_types:
         if ir_name not in IR_TYPES:
             print(f"⚠️  Unknown IR type: {ir_name} — skipping")
@@ -267,12 +280,16 @@ def process_one_flac(
             bf_dirs.append((bf_dir, label))
 
         print(f"\n── Beamforming [{ir_name}] → {bf_dir} ──")
-        beamformer = Beamformer(
-            flac_path=flac_path,
-            output_dir=bf_dir,
-            ir_type_or_name=ir_type,
-        )
-        beamformer.run()
+        try:
+            beamformer = Beamformer(
+                flac_path=flac_path,
+                output_dir=bf_dir,
+                ir_type_or_name=ir_type,
+                raw_audio=raw_audio,
+            )
+            beamformer.run()
+        except Exception as exc:
+            print(f"  ❌ Beamforming [{ir_name}] failed on {base_name}: {exc} (skipping this IR)")
 
     sa_dir = build_output_path(location_name, date_str, "sa", hour_str, minute_str)
     print(f"\n── Signal Averaging → {sa_dir} ──")
@@ -281,9 +298,10 @@ def process_one_flac(
     else:
         if force_signal and _sa_output_exists(sa_dir, base_name):
             print("  🗑  Overwriting existing SA output")
-        SignalAverager(flac_path=flac_path, output_dir=sa_dir).run()
-
-    import librosa
+        try:
+            SignalAverager(flac_path=flac_path, output_dir=sa_dir, raw_audio=raw_audio).run()
+        except Exception as exc:
+            print(f"  ❌ Signal averaging failed on {base_name}: {exc}")
 
     mono_dir = build_output_path(location_name, date_str, "mono", hour_str, minute_str)
     mono_file = os.path.join(mono_dir, base_name + "_mono.wav")
@@ -295,8 +313,7 @@ def process_one_flac(
             print("  🗑  Overwriting existing mono output")
         try:
             os.makedirs(mono_dir, exist_ok=True)
-            raw, _ = librosa.load(flac_path, sr=FS_TARGET, mono=False)
-            ch0 = raw[0, :] if raw.ndim > 1 else raw
+            ch0 = raw_audio[0, :].copy() if raw_audio.ndim > 1 else raw_audio.copy()
             amplitude = max(abs(ch0))
             if amplitude > 1.0:
                 ch0 = ch0 / amplitude
@@ -324,6 +341,7 @@ def process_one_flac(
         "sa_dir": sa_dir,
         "mono_dir": mono_dir,
         "elapsed": elapsed,
+        "was_repaired": was_repaired,
     }
 
 
@@ -405,19 +423,29 @@ def main() -> None:
 
         print(f"\n── Signal Processing ({len(flac_paths)} FLACs) ──")
         start = time.time()
+        failed_flacs = []
         for index, flac_path in enumerate(flac_paths, 1):
             print(f"\n[{index}/{len(flac_paths)}]")
-            process_one_flac(
-                flac_path=flac_path,
-                location_name=location_name,
-                date_str=date_str,
-                ir_types=ir_types,
-                force_bf=args.force_bf or args.force_signal,
-                force_signal=args.force_signal,
-                labir_speakers=labir_speakers,
-                labir_degrees=labir_degrees,
-            )
+            try:
+                process_one_flac(
+                    flac_path=flac_path,
+                    location_name=location_name,
+                    date_str=date_str,
+                    ir_types=ir_types,
+                    force_bf=args.force_bf or args.force_signal,
+                    force_signal=args.force_signal,
+                    labir_speakers=labir_speakers,
+                    labir_degrees=labir_degrees,
+                )
+            except Exception as exc:
+                print(f"❌ Error processing {os.path.basename(flac_path)}: {exc} (skipping)")
+                failed_flacs.append((os.path.basename(flac_path), str(exc)))
+
         print(f"  ⏱  Signal processing: {time.time() - start:.1f}s")
+        if failed_flacs:
+            print(f"\n⚠️  {len(failed_flacs)} FLAC file(s) failed / were corrupted and skipped:")
+            for fname, err in failed_flacs:
+                print(f"    → {fname}: {err}")
 
     print(f"\n{'=' * 60}")
     print(f"🎉 All done — total {time.time() - grand_start:.0f}s")
