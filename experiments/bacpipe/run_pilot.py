@@ -212,6 +212,7 @@ CURATED_BIRD_MODELS = [
     "audioprotopnet",
     "protoclr",
     "vggish",
+    "convnext_birdset",
 ]
 
 
