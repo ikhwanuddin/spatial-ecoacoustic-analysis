@@ -114,6 +114,7 @@ if os.path.isfile(f"{_CUDA_HOME}/nvvm/libdevice/libdevice.10.bc"):
 
 import argparse
 import gc
+import hashlib
 import gzip
 import importlib
 import json
@@ -140,6 +141,7 @@ from config import (
     RPIID_TO_LOCATION,
 )
 from embedding_schema import (
+    audits_dir,
     BACKEND_BACPIPE,
     CONDITIONS,
     noise_key,
@@ -383,6 +385,22 @@ def make_window_meta(
 def _l2_normalize_rows(X: np.ndarray) -> np.ndarray:
     norms = np.linalg.norm(X.astype(np.float32), axis=1, keepdims=True)
     return X.astype(np.float32) / np.maximum(norms, 1e-9)
+
+
+def _noise_fingerprint(noise_wavs: List[Tuple[str, str, str]]) -> str:
+    """Identity of the noise reference set, so a changed set forces a rescore.
+
+    Without this a summary that already holds a noise_distance block is treated
+    as done, and freshly rebuilt references are silently ignored.
+    """
+    parts = []
+    for path, name, group in sorted(noise_wavs, key=lambda item: item[1]):
+        try:
+            size = os.path.getsize(path)
+        except OSError:
+            size = -1
+        parts.append(f"{group}/{name}:{size}")
+    return hashlib.sha256("|".join(parts).encode("utf-8")).hexdigest()[:16]
 
 
 def _noise_group_for_method(method: str) -> str:
@@ -1087,6 +1105,7 @@ def run_pipeline(
     noise_wavs = find_noise_wavs(
         data_dir=data_dir, location=resolved_loc, date_str=date_str, noise_dir=noise_dir
     )
+    noise_fp = _noise_fingerprint(noise_wavs)
 
     report: Dict[str, Any] = {
         "location": resolved_loc,
@@ -1134,9 +1153,14 @@ def run_pipeline(
                     with open(sum_path, encoding="utf-8") as f:
                         cached_sum = json.load(f)
                     nd = cached_sum.get("noise_distance", {})
-                    # Check if noise distance is properly populated
-                    if nd and any(v.get("status") == "ok" for v in nd.values()):
+                    # Populated *and* scored against the reference set on disk now.
+                    scored_ok = nd and any(
+                        v.get("status") in ("ok", "scored_per_condition") for v in nd.values()
+                    )
+                    if scored_ok and cached_sum.get("noise_reference_fingerprint") == noise_fp:
                         noise_already_scored = True
+                    elif scored_ok:
+                        print(f"  [Noise] reference set changed for {model}; rescoring.")
             except Exception:
                 pass
 
@@ -1215,6 +1239,7 @@ def run_pipeline(
                 for group, emb in noise_embeddings.items()
             }
             model_summary["noise_distance"] = _score_noise_distance(existing_embs, noise_embeddings)
+            model_summary["noise_reference_fingerprint"] = noise_fp
             for method, result in model_summary["noise_distance"].items():
                 if result.get("status") == "ok":
                     delta = result.get("delta_vs_mono")
@@ -1411,6 +1436,7 @@ def run_pipeline(
                     f"{result['mean_noise_distance']:.4f}{delta_text}"
                 )
 
+        model_summary["noise_reference_fingerprint"] = noise_fp
         sum_path = os.path.join(meta_dir, summary_basename(date_str))
         with open(sum_path, "w", encoding="utf-8") as f:
             json.dump(model_summary, f, indent=2, ensure_ascii=False)
@@ -1563,7 +1589,7 @@ def main() -> None:
     )
 
     if not args.dry_run:
-        default_audit_dir = os.path.join(args.data_dir, args.location, "embeddings", "audits")
+        default_audit_dir = audits_dir(args.location)
         comparison_json, comparison_md = write_comparison_report(report, default_audit_dir)
         print(f"\nComparison report written: {comparison_json}")
         print(f"Comparison table written:  {comparison_md}")
