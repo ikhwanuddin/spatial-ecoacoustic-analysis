@@ -66,13 +66,13 @@ def safe(value: str) -> str:
 
 
 def beam_tag(name: str) -> Optional[str]:
-    """Beam identifier used to pair the same direction across recordings."""
+    """Beam identifier used to pair the same direction across recordings.
+
+    Kept whole, e.g. 'LabIR(S01_000)', so a reference file names the exact
+    steering direction it was cut from.
+    """
     m = re.search(r"(LabIR\(S\d{2}_\d{3}\)|SPIR[12]\([^)]*\))", name)
-    if not m:
-        return None
-    tag = m.group(1)
-    inner = re.search(r"LabIR\((S\d{2}_\d{3})\)", tag)
-    return inner.group(1) if inner else tag
+    return m.group(1) if m else None
 
 
 # ── detection ────────────────────────────────────────────────────────────────
@@ -192,7 +192,7 @@ def build_condition(condition: str, records: List[dict], sea_root: Path,
             print(f"  {stream:6s}: tidak ada sumber, dilewati")
             continue
         for tag, items in sorted(pieces.items()):
-            dest = out_dir / stream / f"{condition}_{safe(tag)}_noise.wav"
+            dest = out_dir / stream / f"{condition}_noise_{tag}.wav"
             seconds = write_concat(items, dest, fade_ms)
             if seconds:
                 manifest_files.append({"stream": stream, "beam": tag,

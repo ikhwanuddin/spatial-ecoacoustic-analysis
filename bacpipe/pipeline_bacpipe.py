@@ -143,6 +143,7 @@ from config import (
 from embedding_schema import (
     audits_dir,
     BACKEND_BACPIPE,
+    beam_tag_from_name,
     CONDITIONS,
     noise_key,
     DEFAULT_METHODS,
@@ -407,12 +408,34 @@ def _noise_group_for_method(method: str) -> str:
     return method.replace("bf_", "", 1)
 
 
-def _noise_keys_for_group(noise_embeddings: Dict[str, np.ndarray], group: str) -> List[str]:
-    """Reference keys belonging to one method, one per time condition."""
-    keys = [f"{c}_{group}" for c in CONDITIONS if f"{c}_{group}" in noise_embeddings]
-    if not keys and group in noise_embeddings:
-        keys = [group]          # reference predating condition scoping
-    return keys
+def _noise_keys_by_condition(
+    noise_embeddings: Dict[str, np.ndarray], group: str, methods: List[str]
+) -> Dict[str, List[str]]:
+    """Reference keys for one method, grouped by time condition.
+
+    References are stored per beam, so one method owns many keys inside a
+    condition. They are pooled within their condition and never across it.
+    """
+    def belongs(tail: str) -> bool:
+        # A beam tag is the group name, optionally with a sub-type digit,
+        # followed by its parameters: SPIR -> SPIR1(02m_000), SPIR2(64m_180_r2).
+        if tail == group:
+            return True
+        head = tail.split("(", 1)[0]
+        return head.rstrip("0123456789") == group and head != tail
+
+    by_condition: Dict[str, List[str]] = {}
+    for key in sorted(noise_embeddings):
+        for condition in CONDITIONS:
+            head = f"{condition}_"
+            if not key.startswith(head):
+                continue
+            if belongs(key[len(head):]):
+                by_condition.setdefault(condition, []).append(key)
+            break
+    if not by_condition and group in noise_embeddings:
+        by_condition[""] = [group]      # reference predating condition scoping
+    return by_condition
 
 
 def _score_noise_distance(
@@ -445,10 +468,12 @@ def _score_noise_distance(
         return np.concatenate(valid, axis=0)
 
     distances: Dict[str, Dict[str, Any]] = {}
+    methods_list = sorted(by_method_emb)
     for method, chunks in sorted(by_method_emb.items()):
         group = _noise_group_for_method(method)
-        keys = _noise_keys_for_group(noise_embeddings, group)
-        noise = noise_embeddings.get(keys[0]) if keys else None
+        keys_by_condition = _noise_keys_by_condition(noise_embeddings, group, methods_list)
+        first = next(iter(keys_by_condition.values()), [])
+        noise = [noise_embeddings[k] for k in first] if first else None
         X = _as_matrix(chunks)
         noise_matrix = _as_matrix(noise)
         if X is None:
@@ -481,22 +506,22 @@ def _score_noise_distance(
             continue
         X_norm = _l2_normalize_rows(X)
 
-        def _against(key: str) -> Optional[Dict[str, Any]]:
-            matrix = _as_matrix(noise_embeddings.get(key))
+        def _against(keys: List[str]) -> Optional[Dict[str, Any]]:
+            matrix = _as_matrix([noise_embeddings[k] for k in keys])
             if matrix is None or matrix.shape[1] != X.shape[1]:
                 return None
             mean_vec = _l2_normalize_rows(matrix).mean(axis=0)
             mean_vec /= max(float(np.linalg.norm(mean_vec)), 1e-9)
             cosine = X_norm @ mean_vec
             return {
-                "noise_key": key,
+                "n_noise_keys": len(keys),
                 "n_noise": int(len(matrix)),
                 "mean_cosine_to_noise": float(np.mean(cosine)),
                 "mean_noise_distance": float(1.0 - np.mean(cosine)),
                 "std_noise_distance": float(np.std(1.0 - cosine)),
             }
 
-        scored = {key: r for key in keys if (r := _against(key)) is not None}
+        scored = {c: r for c, ks in keys_by_condition.items() if (r := _against(ks)) is not None}
         if not scored:
             distances[method] = {"noise_group": group, "status": "empty_noise_embeddings"}
             continue
@@ -507,9 +532,9 @@ def _score_noise_distance(
             "per_condition": scored,
         }
         if len(scored) == 1:
-            only = next(iter(scored.values()))
-            entry.update({k: v for k, v in only.items() if k != "noise_key"})
-            entry["noise_key"] = only["noise_key"]
+            condition, only = next(iter(scored.items()))
+            entry.update(only)
+            entry["condition"] = condition or "unscoped"
             entry["status"] = "ok"
         else:
             entry["status"] = "scored_per_condition"
@@ -1153,8 +1178,9 @@ def run_pipeline(
                     with open(sum_path, encoding="utf-8") as f:
                         cached_sum = json.load(f)
                     nd = cached_sum.get("noise_distance", {})
-                    # Populated *and* scored against the reference set on disk now.
-                    scored_ok = nd and any(
+                    # Every method scored, against the reference set on disk now.
+                    # `any` would have let a partial failure count as finished.
+                    scored_ok = bool(nd) and all(
                         v.get("status") in ("ok", "scored_per_condition") for v in nd.values()
                     )
                     if scored_ok and cached_sum.get("noise_reference_fingerprint") == noise_fp:
@@ -1798,9 +1824,11 @@ def _strict_find_noise_wavs(
                 if part in ("LabIR", "SPIR", "sa", "mono"):
                     group = part
                     break
-            # Scope to the condition of the folder it was found under, so a
-            # dawn prototype is never averaged together with a night one.
-            found.append((str(path), path.name, noise_key(condition, group)))
+            # Scope to the condition it was found under and to the steering
+            # direction it was cut from, so a beam is only ever compared with
+            # noise captured through that same beam.
+            tag = beam_tag_from_name(path.name) or group
+            found.append((str(path), path.name, noise_key(condition, tag)))
     return found
 
 

@@ -39,6 +39,7 @@ from typing import Any, Dict, List, Optional, Sequence, Tuple
 import numpy as np
 
 from embedding_schema import (
+    beam_tag_from_name,
     condition_from_wav,
     noise_group_for_method,
     resolve_noise_vector,
@@ -179,15 +180,18 @@ def align_and_select_matched_windows(
     # time condition and its own method. Unscored points stay NaN.
     noise_distances = np.full(len(X), np.nan, dtype=np.float32)
     if noise_vectors:
-        buckets: Dict[Tuple[Optional[str], str], List[int]] = {}
+        buckets: Dict[Tuple[Optional[str], str, Optional[str]], List[int]] = {}
         for idx, meta in enumerate(flat_meta):
             method = meta.get("method")
             if method not in method_map:
                 continue
-            cond = meta.get("condition") or condition_from_wav(meta.get("wav", ""))
-            buckets.setdefault((cond, noise_group_for_method(method)), []).append(idx)
-        for (cond, group), idxs in buckets.items():
-            nvec, _key = resolve_noise_vector(noise_vectors, cond, group)
+            wav = meta.get("wav", "")
+            cond = meta.get("condition") or condition_from_wav(wav)
+            buckets.setdefault(
+                (cond, noise_group_for_method(method), beam_tag_from_name(wav, method)), []
+            ).append(idx)
+        for (cond, group, beam), idxs in buckets.items():
+            nvec, _key = resolve_noise_vector(noise_vectors, cond, group, beam)
             if nvec is None or len(nvec) != X.shape[1]:
                 continue
             rows = np.asarray(idxs, dtype=int)
@@ -614,16 +618,19 @@ def compute_noise_distance(
     noise_sim = np.full(len(X), np.nan, dtype=np.float32)
     keys_used: Dict[str, set] = {}
 
-    buckets: Dict[Tuple[Optional[str], str], List[int]] = {}
+    buckets: Dict[Tuple[Optional[str], str, Optional[str]], List[int]] = {}
     for idx, meta in enumerate(flat_meta or []):
         method = meta.get("method")
         if method not in method_names:
             continue
-        cond = meta.get("condition") or condition_from_wav(meta.get("wav", ""))
-        buckets.setdefault((cond, noise_group_for_method(method)), []).append(idx)
+        wav = meta.get("wav", "")
+        cond = meta.get("condition") or condition_from_wav(wav)
+        buckets.setdefault(
+            (cond, noise_group_for_method(method), beam_tag_from_name(wav, method)), []
+        ).append(idx)
 
-    for (cond, group), idxs in buckets.items():
-        nvec, key = resolve_noise_vector(noise_vectors, cond, group)
+    for (cond, group, beam), idxs in buckets.items():
+        nvec, key = resolve_noise_vector(noise_vectors, cond, group, beam)
         if nvec is None or len(nvec) != X.shape[1]:
             continue
         rows = np.asarray(idxs, dtype=int)
