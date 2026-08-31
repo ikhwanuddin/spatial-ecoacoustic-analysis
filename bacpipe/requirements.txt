@@ -1,5 +1,5 @@
-# Optional env for multi-model embedding pilot.
-# Prefer a dedicated venv: experiments/bacpipe/.venv
+# Optional environment for multi-model Bacpipe integration.
+# Prefer a dedicated venv: bacpipe/.venv
 bacpipe>=0.1.0
 numpy>=1.26
 soundfile>=0.12

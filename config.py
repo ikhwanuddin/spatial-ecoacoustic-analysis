@@ -109,7 +109,7 @@ SP_IR2 = IRType(
     name="SPIR2", folder="SP_IR2", use_dual_filter=False,
     fc_high=1000, param_label="distance",
     param_values=[1, 2, 4, 8, 16, 32, 64], degree_values=[180],
-    rep_values=[1, 2, 3],
+    rep_values=[2],  # Single representative repetition (rep 2) as recommended
     ir_filename_pattern="{distance:02d}m_180_{rep}.wav",
     output_suffix_pattern="SPIR2({distance:02d}m_180_r{rep})",
 )

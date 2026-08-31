@@ -1,6 +1,6 @@
 venv/
 .venv/
-experiments/bacpipe/.venv/
+bacpipe/.venv/
 __pycache__/
 *.pyc
 .DS_Store
@@ -9,8 +9,7 @@ __pycache__/
 ir_cache/
 pipeline_state.json
 # bacpipe / model downloads if stored under repo
-experiments/bacpipe/checkpoints/
-experiments/bacpipe/.venv/
+bacpipe/checkpoints/
 
 # Secrets — never commit
 .env
@@ -21,3 +20,8 @@ experiments/bacpipe/.venv/
 sea-embedding-visuals.o3839939
 sea-embedding-visuals.o3840251
 sea-embedding-visuals.o3843100
+
+# runtime output, not input
+logs/
+nvvm/
+sea-dashboards/

@@ -14,7 +14,8 @@ DRY_RUN=0
 [[ "${DRY_RUN}" -eq 1 ]] && MODELS="${1:-all}" && [[ "${1}" == "--dry-run" ]] && MODELS="all"
 
 ANALYSIS_OUTPUT="${ANALYSIS_OUTPUT:-/rds/general/user/ri322/ephemeral/sea-work}"
-EMB_BASE="${ANALYSIS_OUTPUT}/2A400/embeddings/bacpipe"
+EMB_BASE="${ANALYSIS_OUTPUT}/2A400/emb"
+META_BASE="${SEA_RESULTS:-$HOME/sea-emb}/2A400"
 mkdir -p "${SCRIPT_DIR}/logs"
 
 # 11 model yang digunakan
@@ -27,8 +28,8 @@ ALL_MODELS=(
 date_is_fully_done() {
     local DATE="$1"
     for MODEL in "${ALL_MODELS[@]}"; do
-        local SUMMARY="${EMB_BASE}/${MODEL}/${DATE}_summary.json"
-        local EMB_MONO="${EMB_BASE}/${MODEL}/${DATE}_mono_embeddings.npy"
+        local SUMMARY="${META_BASE}/${MODEL}/${DATE}_summary.json"
+        local EMB_MONO="${EMB_BASE}/${MODEL}/${DATE}_mono.npy"
         if [[ ! -f "${SUMMARY}" || ! -f "${EMB_MONO}" ]]; then
             return 1  # belum selesai
         fi

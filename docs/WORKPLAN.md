@@ -94,7 +94,7 @@ Data roots (`config.py`):
 |------|-----|
 | Keep one repo; bacpipe as adapter not rewrite | Good |
 | Archive species-ID as primary BF score | Good |
-| bacpipe pilot across available models; mono baseline with SA/BF comparators | Good *as early multi-model check* |
+| Bacpipe integration across available models; mono baseline with SA/BF comparators | Good *as early multi-model check* |
 | Preserve native BirdNET embedding path | Good |
 
 ### What drifted or needs re-centering
@@ -104,7 +104,7 @@ Data roots (`config.py`):
 | **Separability gap** as headline metric | Answers “do methods look different?” more than “is BF cleaner / higher SNR-like?” | Keep code optional; **do not treat as main claim**. Prefer **noise distance** and related SNR-proxy metrics you already trusted |
 | Heavy FP audit tooling | Useful context; easy to steal focus | **No further FP-on-BF work** unless you reopen it |
 | Default out path `embeddings/birdnet/` | Schema OK; most existing data still **flat** under `embeddings/*.npy` | Loaders must keep supporting **legacy flat** layout |
-| bacpipe pilot tiny (2 WAV/method) | Fine for smoke, not for Goal 1 conclusion | Scale only after metrics match **your** success criteria (noise distance first) |
+| Bacpipe integration smoke test (2 WAV/method) | Fine for smoke, not for Goal 1 conclusion | Scale only after metrics match **your** success criteria (noise distance first) |
 | Direction gap on 2 azimuths | Exploratory | Secondary to mono vs SA vs BF noise distance |
 
 ### What you already found satisfactory (preserve)
@@ -149,9 +149,9 @@ Implementation already partly scaffolded (session):
 
 | Path | Role |
 |------|------|
-| `experiments/bacpipe/run_pilot.py` | Embed existing method WAVs with bacpipe models |
-| `experiments/bacpipe/.venv` | Isolated env (bacpipe 1.3.3) |
-| `embeddings/bacpipe/{model}/` | Pilot npy outputs under sea-data |
+| `bacpipe/pipeline_bacpipe.py` | Embed existing method WAVs with bacpipe models |
+| `bacpipe/.venv` | Isolated env (bacpipe 1.3.3) |
+| `embeddings/bacpipe/{model}/` | Bacpipe npy outputs under sea-data |
 | `direction_meta.py` | az/el parse without TF |
 
 **Rules for this workstream:**
@@ -178,7 +178,7 @@ Implementation already partly scaffolded (session):
 ### 4.4 Optional later (not Goal 1 blockers)
 
 - bacpipe official Panel dashboard wired to our layout  
-- bacpipe integration remains separate in `experiments/bacpipe/run_pilot.py`  
+- Bacpipe is an active integrated downstream stage in `bacpipe/pipeline_bacpipe.py`  
 - Folder cleanup of archive scripts  
 
 ---
@@ -208,7 +208,7 @@ In code (`embedding_metrics.py` / `cluster_poc` noise hooks):
 - Report both absolute distance and **Δ versus mono**; positive Δ means farther from noise.
 - Always state **which noise group** (noise_mono vs noise_LabIR, etc.).
 
-**Implemented bacpipe rule:** `run_pilot.py --models all` re-embeds the same noise WAVs separately for every discovered model and writes model-specific noise files. Cross-model noise vectors are not interchangeable.
+**Implemented bacpipe rule:** `pipeline_bacpipe.py --models all` re-embeds the same noise WAVs separately for every discovered model and writes model-specific noise files. Cross-model noise vectors are not interchangeable.
 
 ### 6.2 Separability gap (SECONDARY diagnostic)
 
@@ -236,8 +236,8 @@ Archived pipeline only. Contextual for why species-ID failed as BF evaluation.
 | Repo | `/Users/ri322/macmini/spatial-ecoacoustic-analysis` |
 | Analysis data | `/Volumes/WD2TB/sea-data` |
 | Main venv | `venv/` (birdnetlib, metrics, cluster) |
-| bacpipe venv | `experiments/bacpipe/.venv` |
-| bacpipe checkpoints | `experiments/bacpipe/checkpoints/` (gitignored) |
+| bacpipe venv | `bacpipe/.venv` |
+| bacpipe checkpoints | `bacpipe/checkpoints/` (gitignored) |
 | Audits / tables | `…/2A400/embeddings/audits/` |
 
 ```bash
@@ -245,7 +245,7 @@ Archived pipeline only. Contextual for why species-ID failed as BF evaluation.
 source venv/bin/activate
 
 # bacpipe
-source experiments/bacpipe/.venv/bin/activate
+source bacpipe/.venv/bin/activate
 export PYTHONPATH="$(pwd):$PYTHONPATH"
 ```
 
@@ -259,7 +259,7 @@ export PYTHONPATH="$(pwd):$PYTHONPATH"
 | `process_noise_reference.py` | Yes — noise refs |
 | `cluster_poc.py` | Yes — visual + noise hooks |
 | `embedding_metrics.py` | Yes — but **prioritize noise distance reports** |
-| `experiments/bacpipe/run_pilot.py` | Yes — multi-model early check |
+| `bacpipe/pipeline_bacpipe.py` | Yes — multi-model early check |
 | `embedding_schema.py` / `embedding_io.py` | Support |
 | `direction_meta.py` | Support (az/el) |
 | `experiments/silent_chunk_fp_audit.py` | Optional context only |
@@ -272,7 +272,7 @@ export PYTHONPATH="$(pwd):$PYTHONPATH"
 | Artefact | Role now |
 |----------|----------|
 | `audits/2026-04-21_multi_model_comparison.md` | Exploratory separability; **re-score with noise distance before relying** |
-| `embeddings/bacpipe/birdnet|perch_bird/2026-04-21_*` | Pilot npy — OK for multi-model experiments if noise protocol added |
+| `embeddings/bacpipe/birdnet|perch_bird/2026-04-21_*` | Bacpipe npy — OK for multi-model experiments if noise protocol added |
 | `audits/*silent_fp*` / archive conf stats | Background on species-ID failure; not Goal 1 proof |
 | Separability gaps ~0.07 | **Diagnostic only** until noise distance multi-model is run |
 
@@ -290,7 +290,7 @@ export PYTHONPATH="$(pwd):$PYTHONPATH"
 
 ### Goal 1B — All-model bacpipe comparison
 
-- [x] Scaffold bacpipe multi-model pilot  
+- [x] Integrate Bacpipe multi-model pipeline  
 - [ ] Discover all models exposed by installed bacpipe version  
 - [ ] Re-embed the same noise WAVs separately for every model  
 - [ ] Run all feasible models on matched `mono`, `sa`, `bf_LabIR`, `bf_SPIR` WAVs  

@@ -23,7 +23,7 @@ export OMP_NUM_THREADS=4
 export ORT_NUM_THREADS=4
 
 cd "${SCRIPT_DIR}"
-VENV_DIR="${SCRIPT_DIR}/experiments/bacpipe/.venv"
+VENV_DIR="${SCRIPT_DIR}/bacpipe/.venv"
 VENV_PYTHON="${VENV_DIR}/bin/python"
 
 # Export all NVIDIA CUDA 12 & cuDNN 9 shared libraries for ONNX GPU
@@ -69,7 +69,7 @@ fi
 # Phase 2: Embedding (Lapisan 1+2 aktif — skip model done, resume WAV)
 echo ""
 echo "Phase 2: Ekstraksi embedding dengan sistem ingatan & GPU..."
-"${VENV_PYTHON}" experiments/bacpipe/run_pilot.py \
+"${VENV_PYTHON}" bacpipe/pipeline_bacpipe.py \
     --location 2A400 \
     --date "${DATE}" \
     --models "${MODELS:-all}" \

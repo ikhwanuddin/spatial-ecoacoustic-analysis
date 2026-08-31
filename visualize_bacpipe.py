@@ -28,6 +28,8 @@ from typing import Any, Dict, List, Optional, Sequence
 
 import numpy as np
 
+import narrative as narrative_defaults
+from narrative import build_digest, load_or_generate_narrative
 from spatial_clustering import (
     align_and_select_matched_windows,
     compute_noise_distance,
@@ -40,7 +42,12 @@ from spatial_clustering import (
 )
 from config import ANALYSIS_OUTPUT
 from embedding_io import load_embeddings_from_dir, list_embedding_files
-from embedding_schema import DEFAULT_METHODS, bacpipe_embeddings_dir, embeddings_root
+from embedding_schema import (
+    DEFAULT_METHODS,
+    bacpipe_embeddings_dir,
+    bacpipe_meta_dir,
+    embeddings_root,
+)
 
 
 DEFAULT_METHODS_LIST = list(DEFAULT_METHODS)
@@ -80,7 +87,7 @@ def _resolve_date(model_dirs: Sequence[str], requested: Optional[str]) -> str:
 
 
 def discover_models(data_dir: str, location: str, date_str: Optional[str]) -> List[str]:
-    root = Path(embeddings_root(data_dir, location)) / "bacpipe"
+    root = Path(embeddings_root(data_dir, location))
     if not root.is_dir():
         return []
     models = []
@@ -128,6 +135,7 @@ def _model_html(
     point_meta: Sequence[Sequence[Any]],
     stats: Dict[str, Any],
     parameters: Dict[str, Any],
+    narrative: Optional[Dict[str, Any]] = None,
 ) -> str:
     """Build one HTML report that references the shared Plotly asset."""
     title = f"Spatial Bioacoustic Embeddings — {model} — {date_str}"
@@ -142,6 +150,7 @@ def _model_html(
         "point_meta": list(point_meta),
         "stats": stats,
         "parameters": parameters,
+        "narrative": narrative,
     }
 
     template = r'''<!doctype html>
@@ -164,7 +173,6 @@ h3 { margin:0 0 12px; font-size:15px; }
 .badge-success { background:#dcfce7; color:#166534; }
 .badge-warning { background:#fef3c7; color:#92400e; }
 .subtitle { color:var(--muted); font-size:13px; margin-bottom:12px; word-break:break-all; }
-.note-box { background:#f1f5f9; border-left:4px solid var(--primary); padding:12px 16px; border-radius:6px; margin-bottom:20px; font-size:13px; line-height:1.45; }
 .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:14px; }
 .card { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:18px; box-shadow:0 1px 3px rgba(0,0,0,0.05); }
 .stat-value { font-size:24px; font-weight:700; color:#0f172a; }
@@ -178,6 +186,10 @@ th { color:var(--muted); font-weight:600; background:#f8fafc; font-size:12px; te
 tr:hover { background:#f8fafc; }
 code { font-size:12px; background:#f1f5f9; padding:2px 6px; border-radius:4px; font-family:ui-monospace,SFMono-Regular,Menlo,monospace; }
 .p-val { font-weight:600; color:#16a34a; }
+#narrative h3 { font-size:15px; margin:0 0 10px; }
+#narrative ul { margin:0; padding-left:20px; }
+#narrative li { margin-bottom:8px; }
+.narrative-foot { color:var(--muted); font-size:12px; margin:14px 0 0; }
 .sig-star { color:#e11d48; font-weight:bold; }
 @media(max-width:960px) { body { padding:16px; } .two { grid-template-columns:1fr; } }
 </style>
@@ -187,15 +199,16 @@ code { font-size:12px; background:#f1f5f9; padding:2px 6px; border-radius:4px; f
 <header>
 <h1>__TITLE__</h1>
 <div class="subtitle">Source: <code>__SOURCE__</code></div>
-<div class="note-box">
-  <strong>Methodological Framework:</strong>
-  Under matched-window evaluation (Cobos et al. 2017), each time window aligns <code>mono</code>, <code>sa</code>, and the optimal beamforming direction &theta;*(t) with maximum noise-prototype separation. HDBSCAN clustering is computed natively on high-dimensional embedding space using cosine metric; 2D projection is used strictly for visual rendering.
-</div>
 </header>
 
 <section class="grid" id="overview"></section>
 
-<h2>Matched Pairwise Performance vs Single-Channel Mono <span class="badge badge-success">Option A Design</span></h2>
+<section id="narrative-section">
+<h2>Interpretation <span class="badge" id="narrative-badge"></span></h2>
+<div class="card" id="narrative"></div>
+</section>
+
+<h2>Matched Pairwise Performance vs Single-Channel Mono</h2>
 <div class="two">
   <div class="card">
     <h3>Separation Gain (&Delta; vs Mono)</h3>
@@ -249,16 +262,35 @@ const ov = report.stats.overview;
 const hyp = (report.stats.matched_analysis || {}).summary_stats || {};
 const nWin = hyp.n_matched_windows || Math.round(ov.total_embeddings / 4);
 
-const spirHyp = (hyp.hypothesis_tests || {})['bf_SPIR'] || {};
-const spirWin = spirHyp.win_rate_pct !== undefined ? `${spirHyp.win_rate_pct}%` : 'N/A';
+const allTests = hyp.hypothesis_tests || {};
+function winCard(method, label) {
+  const t = allTests[method];
+  return (t && t.win_rate_pct !== undefined) ? [label, `${t.win_rate_pct}%`] : null;
+}
 
 document.getElementById('overview').innerHTML = [
   ['Matched Windows', nWin.toLocaleString()],
   ['Total Points', ov.total_embeddings.toLocaleString()],
   ['High-Dim Clusters', ov.n_clusters.toLocaleString()],
   ['Noise Ratio', `${ov.noise_pct}%`],
-  ['SPIR Win Rate', spirWin],
-].map(x => `<div class="card"><div class="stat-value">${x[1]}</div><div class="stat-label">${x[0]}</div></div>`).join('');
+  winCard('bf_LabIR', 'LabIR Win Rate'),
+  winCard('bf_SPIR', 'SPIR Win Rate'),
+].filter(Boolean).map(x => `<div class="card"><div class="stat-value">${x[1]}</div><div class="stat-label">${x[0]}</div></div>`).join('');
+
+// Interpretation card
+const nar = report.narrative;
+if (!nar) {
+  document.getElementById('narrative-section').style.display = 'none';
+} else {
+  const isLLM = nar.source && nar.source !== 'deterministic';
+  document.getElementById('narrative-badge').textContent = isLLM ? `AI-written · ${nar.source}` : 'rule-based summary';
+  const list = items => `<ul>${items.map(s => `<li>${s}</li>`).join('')}</ul>`;
+  document.getElementById('narrative').innerHTML =
+    `<h3>${nar.headline || ''}</h3>` +
+    list(nar.findings || []) +
+    ((nar.caveats || []).length ? `<h3 style="margin-top:16px">Caveats</h3>${list(nar.caveats)}` : '') +
+    `<p class="narrative-foot">Written from the numbers in this report by ${isLLM ? nar.source : 'a rule-based template'}${nar.generated_at ? ' on ' + nar.generated_at : ''}. Check it against the tables below before quoting it.</p>`;
+}
 
 // Pairwise Plot & Table
 const tests = hyp.hypothesis_tests || {};
@@ -289,16 +321,21 @@ testMethods.forEach(m => {
 hypTableHtml += `</tbody></table>`;
 document.getElementById('pairwise-table').innerHTML = hypTableHtml;
 
-// Steered angles distribution
-const beamDist = (hyp.beam_distribution || {})['bf_SPIR'] || {};
-const azMap = beamDist.azimuths || {};
-Plotly.newPlot('plot-angles', [{
-  x: Object.keys(azMap).map(k => `${k}°`),
-  y: Object.values(azMap),
+// Steered angles distribution, one trace per beamforming method
+const beamAll = hyp.beam_distribution || {};
+const beamMethods = Object.keys(beamAll);
+const azKeys = [...new Set(beamMethods.flatMap(m => Object.keys(beamAll[m].azimuths || {})))].sort((a,b) => Number(a) - Number(b));
+const beamColors = {'bf_LabIR':'#7c3aed', 'bf_SPIR':'#16a34a'};
+Plotly.newPlot('plot-angles', beamMethods.map(m => ({
+  x: azKeys.map(k => `${k}°`),
+  y: azKeys.map(k => (beamAll[m].azimuths || {})[k] || 0),
+  name: m,
   type: 'bar',
-  marker: {color: '#16a34a'}
-}], {
+  marker: {color: beamColors[m] || '#0891b2'}
+})), {
   margin:{l:48,r:20,t:20,b:40},
+  barmode:'group',
+  legend:{orientation:'h',y:1.12},
   xaxis:{title:'Selected Azimuth'},
   yaxis:{title:'Count'},
   paper_bgcolor:'white', plot_bgcolor:'white'
@@ -341,8 +378,12 @@ document.getElementById('method-table').innerHTML = `<table><thead><tr><th>Metho
 document.getElementById('run-info').innerHTML = `<table><tbody>
 <tr><th>Model</th><td>${report.model}</td></tr>
 <tr><th>Date</th><td>${report.date}</td></tr>
-<tr><th>Design Mode</th><td>Matched-Window Pairwise (Option A)</td></tr>
-<tr><th>High-Dim Clustering Metric</th><td>HDBSCAN Native Cosine</td></tr>
+<tr><th>Design Mode</th><td>Matched-window pairwise: every scored window is aligned across all methods, so each method is judged on identical audio</td></tr>
+<tr><th>Methods Compared</th><td>${report.method_names.join(', ')} (baseline: mono)</td></tr>
+<tr><th>Direction Selection</th><td>&theta;*(t) is the steered direction with the largest cosine distance from this model's noise-reference embeddings</td></tr>
+<tr><th>Noise Distance</th><td>Cosine distance to the mean noise-reference vector; not a dB signal-to-noise ratio</td></tr>
+<tr><th>High-Dim Clustering</th><td>HDBSCAN on the full ${report.stats.overview.embedding_dim}-D space, cosine metric (min_cluster_size=${report.parameters.min_cluster_size})</td></tr>
+<tr><th>2D Projection</th><td>UMAP, visual rendering only; never used for clustering or statistics</td></tr>
 <tr><th>Generated At</th><td>${report.parameters.generated_at}</td></tr>
 </tbody></table>`;
 </script>
@@ -450,6 +491,10 @@ def build_report(
     make_zip: bool,
     clean_output: bool,
     matched_mode: bool = True,
+    noise_dir: Optional[str] = None,
+    narrative_mode: str = "auto",
+    narrative_model: str = narrative_defaults.DEFAULT_MODEL,
+    narrative_base_url: str = narrative_defaults.DEFAULT_BASE_URL,
 ) -> Path:
     model_dirs = [bacpipe_embeddings_dir(data_dir, location, model) for model in models]
     resolved_date = _resolve_date(model_dirs, date_str)
@@ -471,12 +516,14 @@ def build_report(
 
     for model in models:
         source_dir = bacpipe_embeddings_dir(data_dir, location, model)
+        meta_dir = bacpipe_meta_dir(location, model)
         print(f"\n== {model} ==")
         _embeddings, X_raw, y_raw, flat_meta_raw, method_names = load_embeddings_from_dir(
             source_dir,
             methods=methods,
             date_filter=[resolved_date],
             source_tag=f"bacpipe:{model}",
+            meta_dir=meta_dir,
         )
         if len(X_raw) == 0:
             reason = "no embeddings for requested date"
@@ -484,7 +531,7 @@ def build_report(
             manifest["skipped_models"].append({"model": model, "reason": reason})
             continue
 
-        noise_vectors = load_noise_embeddings(source_dir)
+        noise_vectors = load_noise_embeddings(meta_dir, noise_dir=noise_dir, expected_dim=X_raw.shape[1] if len(X_raw) > 0 else None)
 
         if matched_mode and noise_vectors:
             print("  Aligning matched windows and selecting optimal beamforming direction...")
@@ -537,6 +584,19 @@ def build_report(
             "min_cluster_size": cluster_size,
             "generated_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
         }
+        digest = build_digest(
+            model=model,
+            date_str=resolved_date,
+            location=location,
+            method_names=method_names,
+            stats=stats,
+            parameters=parameters,
+        )
+        narrative = load_or_generate_narrative(
+            output_dir, model, digest, mode=narrative_mode,
+            llm_model=narrative_model, base_url=narrative_base_url,
+        )
+
         point_meta = _compact_metadata(flat_meta, y_method, method_names, cluster_labels, model)
         filename = f"{model}.html"
         (output_dir / filename).write_text(
@@ -551,6 +611,7 @@ def build_report(
                 point_meta=point_meta,
                 stats=stats,
                 parameters=parameters,
+                narrative=narrative,
             ),
             encoding="utf-8",
         )
@@ -594,6 +655,13 @@ def main() -> None:
     parser.add_argument("--no-zip", action="store_true", help="Do not create a zip archive")
     parser.add_argument("--no-clean", action="store_true", help="Keep preexisting generated HTML files")
     parser.add_argument("--no-matched", action="store_true", help="Disable matched-window pairwise selection (use raw)")
+    parser.add_argument("--noise-dir", default=None, help="Directory containing noise_*.npy embeddings")
+    parser.add_argument("--narrative", choices=["auto", "force", "off"], default="auto",
+                        help="Interpretation card: auto reuses a cached narrative, force regenerates, off uses the rule-based summary")
+    parser.add_argument("--narrative-model", default=narrative_defaults.DEFAULT_MODEL,
+                        help="Chat model id used to write the interpretation card")
+    parser.add_argument("--narrative-base-url", default=narrative_defaults.DEFAULT_BASE_URL,
+                        help="OpenAI-compatible chat completions endpoint")
     args = parser.parse_args()
 
     models = args.models or discover_models(args.data_dir, args.location, args.date)
@@ -619,6 +687,10 @@ def main() -> None:
         make_zip=not args.no_zip,
         clean_output=not args.no_clean,
         matched_mode=not args.no_matched,
+        noise_dir=args.noise_dir,
+        narrative_mode=args.narrative,
+        narrative_model=args.narrative_model,
+        narrative_base_url=args.narrative_base_url,
     )
 
 

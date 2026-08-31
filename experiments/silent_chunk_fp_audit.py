@@ -358,7 +358,7 @@ def run_audit(args: argparse.Namespace) -> Dict[str, Any]:
         summary["fp_proxy_pct_silent_high_conf"] = summary["silent_conf"]["pct_high_conf"]
 
     # write outputs
-    out_dir = args.output_dir or audits_dir(args.data_dir, location)
+    out_dir = args.output_dir or audits_dir(location)
     os.makedirs(out_dir, exist_ok=True)
     tag = "birdnet" if analyzer is not None else "energy"
     base = f"{args.date}_silent_fp_audit_{tag}"

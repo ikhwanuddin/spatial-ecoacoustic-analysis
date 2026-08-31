@@ -1,14 +1,12 @@
 """
 Load dense embeddings from native BirdNET, bacpipe, or legacy flat layouts.
 
-Filename convention (unchanged):
-  {date}_{method}_embeddings.npy
-  {date}_{method}_meta.json
+Filename convention:
+  {date}_{method}.npy          on ephemeral scratch
+  {date}_{method}_meta.json    in HOME, passed as *meta_dir*
 
-Search order for a location root (unless --embeddings points at one dir):
-  1. embeddings/birdnet/
-  2. embeddings/bacpipe/{model}/  (if models requested)
-  3. embeddings/                  (legacy flat; includes noise_*.npy)
+The vectors and their metadata live on two different filesystems, so every
+reader takes both directories.
 """
 
 from __future__ import annotations
@@ -25,15 +23,16 @@ from embedding_schema import (
     birdnet_embeddings_dir,
     embeddings_root,
     legacy_flat_embeddings_dir,
+    meta_basename,
 )
 
 
 def _parse_date_method(fname: str) -> Optional[Tuple[str, str]]:
-    if not fname.endswith("_embeddings.npy"):
+    if not fname.endswith(".npy"):
         return None
     if fname.startswith("noise_"):
         return None
-    stem = fname[: -len("_embeddings.npy")]
+    stem = fname[: -len(".npy")]
     parts = stem.split("_", 1)
     if len(parts) < 2:
         return None
@@ -73,6 +72,7 @@ def load_embeddings_from_dir(
     methods: Optional[Sequence[str]] = None,
     date_filter: Optional[Sequence[str]] = None,
     source_tag: Optional[str] = None,
+    meta_dir: Optional[str] = None,
 ) -> Tuple[Dict[str, np.ndarray], np.ndarray, np.ndarray, List[dict], List[str]]:
     """Load embeddings from a single directory (cluster_poc-compatible return).
 
@@ -96,7 +96,7 @@ def load_embeddings_from_dir(
             emb = emb.reshape(1, -1)
         if dim is None:
             dim = int(emb.shape[1])
-        meta_path = emb_path.replace("_embeddings.npy", "_meta.json")
+        meta_path = os.path.join(meta_dir or emb_dir, meta_basename(date_str, method))
         meta: List[dict] = []
         if os.path.isfile(meta_path):
             with open(meta_path, "r") as f:

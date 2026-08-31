@@ -275,7 +275,7 @@ def process_date(
         all_emb = np.concatenate(by_method_emb[method], axis=0).astype(np.float32)
         meta = by_method_meta.get(method, [])
 
-        emb_path = os.path.join(out_dir, f"{date_str}_{method}_embeddings.npy")
+        emb_path = os.path.join(out_dir, f"{date_str}_{method}.npy")
         np.save(emb_path, all_emb)
 
         meta_path = os.path.join(out_dir, f"{date_str}_{method}_meta.json")

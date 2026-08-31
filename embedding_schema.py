@@ -1,22 +1,29 @@
 """
 Shared embedding layout and metadata schema for the active pipeline.
 
-Disk layout under ANALYSIS_OUTPUT (default /Volumes/WD2TB/sea-data):
+Two roots. Bulk vectors stay on ephemeral scratch, which is wiped every 30
+days; everything small and expensive to recompute is written to HOME.
+
+Ephemeral, under ANALYSIS_OUTPUT:
 
   {location}/
     {date}/
       bf_LabIR/  bf_SPIR/  sa/  mono/     # method audio (full WAVs)
-    embeddings/
+    emb/
+      {model}/                            # e.g. birdnet, perch_bird
+        {date}_{method}.npy
+    emb_native/
       birdnet/                            # native BirdNET dense windows
-        {date}_{method}_embeddings.npy
-        {date}_{method}_meta.json
-        {date}_summary.json
-      bacpipe/
-        {model}/                          # e.g. birdnet, perch_bird
-          {date}_{method}_embeddings.npy
-          {date}_{method}_meta.json
-          {date}_summary.json
-      audits/                             # FP / silent-chunk reports
+
+HOME, under RESULTS_ROOT (default ~/sea-emb):
+
+  {location}/
+    {model}/
+      {date}_{method}_meta.json
+      {date}_summary.json
+      noise_{group}_embeddings.npy
+      noise_{group}_meta.json
+    audits/                               # FP / silent-chunk reports
 
 Meta JSON is a list of per-window dicts. Required keys (v1):
   wav, method, start_sec, end_sec, model, backend,
@@ -44,30 +51,43 @@ BIRDNET_EMBEDDING_DIM = 1024
 BIRDNET_MODEL_ID = "birdnet"
 
 
+# HOME root for the small, expensive-to-recompute outputs.
+RESULTS_ROOT = os.environ.get(
+    "SEA_RESULTS", os.path.join(os.path.expanduser("~"), "sea-emb")
+)
+
+
 def embeddings_root(data_dir: str, location: str) -> str:
-    return os.path.join(data_dir, location, "embeddings")
+    """Ephemeral root holding the raw embedding vectors."""
+    return os.path.join(data_dir, location, "emb")
 
 
 def birdnet_embeddings_dir(data_dir: str, location: str) -> str:
-    """Canonical dir for native BirdNET dense embeddings."""
-    return os.path.join(embeddings_root(data_dir, location), "birdnet")
+    """Native BirdNET dense embeddings, kept apart from the bacpipe models."""
+    return os.path.join(data_dir, location, "emb_native", "birdnet")
 
 
-def bacpipe_embeddings_dir(
-    data_dir: str, location: str, model: str
-) -> str:
-    """Canonical dir for one bacpipe model’s embeddings."""
-    return os.path.join(
-        embeddings_root(data_dir, location), "bacpipe", model
-    )
+def bacpipe_embeddings_dir(data_dir: str, location: str, model: str) -> str:
+    """Ephemeral dir holding one model's .npy vectors."""
+    return os.path.join(embeddings_root(data_dir, location), model)
 
 
-def audits_dir(data_dir: str, location: str) -> str:
-    return os.path.join(embeddings_root(data_dir, location), "audits")
+def results_root(location: str) -> str:
+    """HOME root for metadata, summaries, noise references and audits."""
+    return os.path.join(RESULTS_ROOT, location)
+
+
+def bacpipe_meta_dir(location: str, model: str) -> str:
+    """HOME dir holding one model's meta, summary and noise-reference files."""
+    return os.path.join(results_root(location), model)
+
+
+def audits_dir(location: str) -> str:
+    return os.path.join(results_root(location), "audits")
 
 
 def embedding_basename(date_str: str, method: str) -> str:
-    return f"{date_str}_{method}_embeddings.npy"
+    return f"{date_str}_{method}.npy"
 
 
 def meta_basename(date_str: str, method: str) -> str:
@@ -146,7 +166,7 @@ def find_embedding_sources(
     if os.path.isdir(flat):
         # Only add flat if it actually holds .npy at top level (legacy)
         has_npy = any(
-            f.endswith("_embeddings.npy")
+            f.endswith(".npy")
             for f in os.listdir(flat)
             if os.path.isfile(os.path.join(flat, f))
         )
