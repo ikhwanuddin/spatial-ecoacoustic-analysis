@@ -94,6 +94,52 @@ def dashboards_dir(location: str, date_str: str) -> str:
     return os.path.join(DASHBOARDS_ROOT, location, date_str)
 
 
+# Local-time bins used to scope a noise reference to a time condition.
+CONDITION_BINS = (("dawn", 5, 7), ("day", 7, 17), ("dusk", 17, 19))
+CONDITIONS = ("dawn", "day", "dusk", "night")
+
+
+def condition_of_hour(hour: int) -> str:
+    for name, lo, hi in CONDITION_BINS:
+        if lo <= hour < hi:
+            return name
+    return "night"
+
+
+def condition_from_wav(name: str) -> Optional[str]:
+    """Time condition from a recording name starting with HH-MM-SS."""
+    base = os.path.basename(str(name))
+    if len(base) < 2 or not base[:2].isdigit():
+        return None
+    hour = int(base[:2])
+    return condition_of_hour(hour) if 0 <= hour <= 23 else None
+
+
+def noise_group_for_method(method: str) -> str:
+    """bf_LabIR -> LabIR, mono -> mono."""
+    return method[3:] if method.startswith("bf_") else method
+
+
+def noise_key(condition: Optional[str], group: str) -> str:
+    return f"{condition}_{group}" if condition else group
+
+
+def resolve_noise_vector(noise_vectors, condition, group):
+    """Pick the reference for this condition and method.
+
+    Exact condition match wins. A condition-agnostic reference is accepted as a
+    fallback so dates whose references predate condition scoping still score.
+    Returns (vector, key_used) or (None, None) — never a silent zero.
+    """
+    if not noise_vectors:
+        return None, None
+    for key in ([noise_key(condition, group)] if condition else []) + [group]:
+        vec = noise_vectors.get(key)
+        if vec is not None:
+            return vec, key
+    return None, None
+
+
 def embedding_basename(date_str: str, method: str) -> str:
     return f"{date_str}_{method}.npy"
 
