@@ -9,7 +9,7 @@ Status per (location, date, model):
   DONE       - {date}_summary.json exists and covers every method present on disk
   RESUMABLE  - .ckpt/{date}_state.json exists but no complete summary yet
                (job died mid-stream; last_n is the exact WAV index to resume from)
-  ACTIVE     - same as RESUMABLE, but a live run_pilot.py process for that date
+  ACTIVE     - same as RESUMABLE, but a live pipeline_bacpipe.py process for that date
                is currently found running on a compute node (not actually stuck)
   NOT_STARTED - raw WAVs exist for that date but no summary/.ckpt at all
 
@@ -70,7 +70,7 @@ def model_status(model_dir: Path, date: str, methods_present: set) -> tuple:
 
 
 def get_active_dates() -> set:
-    """Best-effort: dates currently being processed by a live run_pilot.py on any node."""
+    """Best-effort: dates currently being processed by a live pipeline_bacpipe.py on any node."""
     active = set()
     try:
         out = subprocess.run(
@@ -99,7 +99,7 @@ def get_active_dates() -> set:
             ).stdout
         except Exception:
             continue
-        for m in re.finditer(r"run_pilot\.py.*?--date\s+(\S+)", ps_out):
+        for m in re.finditer(r"(?:pipeline_bacpipe|run_pilot)\.py.*?--date\s+(\S+)", ps_out):
             active.add(m.group(1))
     return active
 
@@ -113,7 +113,7 @@ def main() -> None:
 
     active_dates = set() if args.no_live_check else get_active_dates()
     if active_dates:
-        print(f"Live run_pilot.py dates right now: {sorted(active_dates)}\n")
+        print(f"Live Bacpipe pipeline dates right now: {sorted(active_dates)}\n")
 
     locations = (
         [args.location]

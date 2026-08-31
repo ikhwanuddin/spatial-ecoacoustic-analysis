@@ -53,7 +53,7 @@ module load tools/prod Python/3.11.5-GCCcore-13.2.0 2>/dev/null || true
 SCRIPT_DIR="/rds/general/user/ri322/home/spatial-ecoacoustic-analysis"
 cd "${SCRIPT_DIR}"
 
-VENV_DIR="${SCRIPT_DIR}/experiments/bacpipe/.venv"
+VENV_DIR="${SCRIPT_DIR}/bacpipe/.venv"
 VENV_PYTHON="${VENV_DIR}/bin/python"
 
 NV_LIBS=$(find "${VENV_DIR}/lib/python3.11/site-packages/nvidia" -maxdepth 2 -type d -name "lib" 2>/dev/null | tr "\n" ":")
@@ -70,7 +70,7 @@ echo "=== 1. VERIFIKASI GPU & LINGKUNGAN ==="
 
 echo ""
 echo "=== 2. EKSEKUSI PIPELINE (RESUME DARI CHECKPOINT) ==="
-"${VENV_PYTHON}" experiments/bacpipe/run_pilot.py \
+"${VENV_PYTHON}" bacpipe/pipeline_bacpipe.py \
     --location "${LOCATION}" \
     --date "${DATE}" \
     --models "${MODELS}" \

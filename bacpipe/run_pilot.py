@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-bacpipe multi-model embedding pilot on existing method WAVs.
+Legacy Bacpipe runner on existing method WAVs. The integrated entry point is pipeline_bacpipe.py.
 
 Optimized for HPC execution (CUDA GPU acceleration for PyTorch, CPU fallback for TF, VRAM GC).
 Does not run beamforming. Reads full WAVs under:
@@ -10,7 +10,7 @@ Writes schema-aligned arrays under:
   {data_dir}/{location}/embeddings/bacpipe/{model}/
 
 Usage:
-  python experiments/bacpipe/run_pilot.py \
+  python bacpipe/run_pilot.py \
     --location 2A400 --date 2026-04-21 --models all --methods mono,sa,bf_LabIR,bf_SPIR --device auto
 """
 
@@ -78,7 +78,7 @@ from typing import Any, Dict, List, Optional, Tuple
 import numpy as np
 
 # Repo root on path when run as script
-_REPO_ROOT = Path(__file__).resolve().parents[2]
+_REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
 
@@ -87,6 +87,7 @@ from embedding_schema import (  # noqa: E402
     BACKEND_BACPIPE,
     DEFAULT_METHODS,
     bacpipe_embeddings_dir,
+    bacpipe_meta_dir,
     embedding_basename,
     make_window_meta,
     meta_basename,
@@ -512,9 +513,9 @@ def _get_embedder(
 _CHUNK_SIZE = 50  # Process and stream to disk in chunks of N WAVs (keeps RAM < 350MB)
 
 
-def _model_already_done(out_dir: str, date_str: str, methods: List[str]) -> bool:
+def _model_already_done(out_dir: str, meta_dir: str, date_str: str, methods: List[str]) -> bool:
     """Layer 1: True if all outputs for this model are already complete on disk."""
-    summary_path = os.path.join(out_dir, summary_basename(date_str))
+    summary_path = os.path.join(meta_dir, summary_basename(date_str))
     if not os.path.exists(summary_path):
         return False
     try:
@@ -771,7 +772,7 @@ def run_pilot(
     }
 
     print(
-        f"bacpipe pilot: {resolved_loc} / {date_str} (Requested Device: {resolved_device.upper()}) — "
+        f"bacpipe legacy: {resolved_loc} / {date_str} (Requested Device: {resolved_device.upper()}) — "
         f"{len(method_wavs)} method WAVs across {methods}, "
         f"{len(noise_wavs)} noise WAVs, {len(resolved_models)} models: {resolved_models}"
     )
@@ -789,14 +790,16 @@ def run_pilot(
     for model_idx, model in enumerate(resolved_models, 1):
         target_dev = _model_target_device(model, resolved_device)
         out_dir = bacpipe_embeddings_dir(data_dir, resolved_loc, model)
+        meta_dir = bacpipe_meta_dir(resolved_loc, model)
+        os.makedirs(meta_dir, exist_ok=True)
         os.makedirs(out_dir, exist_ok=True)
         ckpt_dir = os.path.join(out_dir, ".ckpt")
 
         # ── LAYER 1: Skip already completed models ──────────────────────────
-        if _model_already_done(out_dir, date_str, methods):
+        if _model_already_done(out_dir, meta_dir, date_str, methods):
             print(f"\n{tag} [{model_idx}/{len(resolved_models)}] ✅ SKIP {model} "
                   f"— output already complete in {out_dir}")
-            sum_path = os.path.join(out_dir, summary_basename(date_str))
+            sum_path = os.path.join(meta_dir, summary_basename(date_str))
             try:
                 with open(sum_path, encoding="utf-8") as f:
                     report["models"][model] = json.load(f)
@@ -936,7 +939,7 @@ def run_pilot(
             all_emb = np.concatenate(chunks, axis=0).astype(np.float32)
             meta = all_method_meta.get(method, [])
             emb_path = os.path.join(out_dir, embedding_basename(date_str, method))
-            meta_path = os.path.join(out_dir, meta_basename(date_str, method))
+            meta_path = os.path.join(meta_dir, meta_basename(date_str, method))
             np.save(emb_path, all_emb)
             with open(meta_path, "w", encoding="utf-8") as f:
                 json.dump(meta, f, indent=2, ensure_ascii=False)
@@ -952,8 +955,8 @@ def run_pilot(
             )
 
         for group, emb in sorted(noise_embeddings.items()):
-            noise_path = os.path.join(out_dir, f"noise_{group}_embeddings.npy")
-            noise_meta_path = os.path.join(out_dir, f"noise_{group}_meta.json")
+            noise_path = os.path.join(meta_dir, f"noise_{group}_embeddings.npy")
+            noise_meta_path = os.path.join(meta_dir, f"noise_{group}_meta.json")
             np.save(noise_path, emb.astype(np.float32))
             with open(noise_meta_path, "w", encoding="utf-8") as f:
                 json.dump(noise_meta.get(group, []), f, indent=2, ensure_ascii=False)
@@ -976,7 +979,7 @@ def run_pilot(
                     f"{result['mean_noise_distance']:.4f}{delta_text}"
                 )
 
-        sum_path = os.path.join(out_dir, summary_basename(date_str))
+        sum_path = os.path.join(meta_dir, summary_basename(date_str))
         with open(sum_path, "w", encoding="utf-8") as f:
             json.dump(model_summary, f, indent=2, ensure_ascii=False)
         report["models"][model] = model_summary
@@ -1058,7 +1061,7 @@ def write_comparison_report(report: Dict[str, Any], output_dir: str) -> Tuple[st
 
 def main() -> None:
     p = argparse.ArgumentParser(
-        description="bacpipe embedding pilot on existing spatial method WAVs"
+        description="Legacy Bacpipe embedding runner on existing spatial method WAVs"
     )
     p.add_argument("--location", required=True)
     p.add_argument("--date", required=True, help="Single date YYYY-MM-DD")
@@ -1088,7 +1091,7 @@ def main() -> None:
         "--max-wavs-per-method",
         type=int,
         default=0,
-        help="Cap WAVs per method folder (balanced mono/SA/BF pilots).",
+        help="Cap WAVs per method folder (balanced mono/SA/BF runs).",
     )
     p.add_argument(
         "--dry-run",

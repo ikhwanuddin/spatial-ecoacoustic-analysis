@@ -445,7 +445,7 @@ def main() -> None:
     p.add_argument(
         "--bacpipe-models",
         default=None,
-        help="Comma list under embeddings/bacpipe/ (with --backends bacpipe)",
+        help="Comma list under emb/ (with --backends bacpipe)",
     )
     p.add_argument(
         "--tag",

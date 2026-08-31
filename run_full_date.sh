@@ -18,7 +18,7 @@ echo "   Models:   ${MODELS}"
 echo "=============================================================================="
 
 # 1. Environment & Path Configuration on CX3
-export MONITORING_DATA="${MONITORING_DATA:-/rds/general/ephemeral/user/ri322/ephemeral/monitoring_data}"
+export MONITORING_DATA="${MONITORING_DATA:-/rds/general/user/ri322/ephemeral/monitoring_data}"
 export ANALYSIS_OUTPUT="${ANALYSIS_OUTPUT:-/rds/general/user/ri322/ephemeral/sea-work}"
 
 # 2. High-Performance Local Cache & GPU Framework Stability
@@ -46,7 +46,7 @@ fi
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "${SCRIPT_DIR}"
 
-VENV_PYTHON="${SCRIPT_DIR}/experiments/bacpipe/.venv/bin/python"
+VENV_PYTHON="${SCRIPT_DIR}/bacpipe/.venv/bin/python"
 if [ ! -f "${VENV_PYTHON}" ]; then
     echo "❌ Error: Virtual environment python not found at ${VENV_PYTHON}"
     exit 1
@@ -78,7 +78,7 @@ echo ""
 echo "=============================================================================="
 echo "🧠 PHASE 2: MULTI-MODEL DEEP LEARNING EMBEDDING EXTRACTION"
 echo "=============================================================================="
-"${VENV_PYTHON}" experiments/bacpipe/run_pilot.py \
+"${VENV_PYTHON}" bacpipe/pipeline_bacpipe.py \
     --location "${LOCATION}" \
     --date "${DATE}" \
     --models "${MODELS}" \

@@ -76,40 +76,79 @@ def l2_normalize(X: np.ndarray) -> np.ndarray:
 
 # ── Noise Reference ─────────────────────────────────────
 
-def load_noise_embeddings(emb_dir: str) -> Optional[Dict[str, np.ndarray]]:
+def load_noise_embeddings(
+    emb_dir: str,
+    noise_dir: Optional[str] = None,
+    expected_dim: Optional[int] = None,
+) -> Optional[Dict[str, np.ndarray]]:
     """Load noise reference embeddings if available.
+
+    BUG-FIX: accepts an optional ``noise_dir`` override so that the visualizer
+    can pass ``--noise-dir`` from the CLI.  Search order:
+      1. noise_dir (if provided and is a directory)
+      2. emb_dir   (original behaviour -- noise_*.npy co-located with model)
 
     Returns:
         Dict group_name -> (D,) normalized mean noise vector per group, or None.
     """
-    if not os.path.isdir(emb_dir):
-        return None
-    noise_paths = [
-        f for f in os.listdir(emb_dir)
-        if f.startswith("noise_") and f.endswith("_embeddings.npy")
+    def _load_from(search_dir: str) -> Optional[Dict[str, np.ndarray]]:
+        if not os.path.isdir(search_dir):
+            return None
+        noise_paths = [
+            f for f in os.listdir(search_dir)
+            if f.startswith("noise_") and f.endswith("_embeddings.npy")
+        ]
+        if not noise_paths:
+            return None
+        noise_vectors: Dict[str, np.ndarray] = {}
+        for fname in sorted(noise_paths):
+            group = fname.replace("noise_", "").replace("_embeddings.npy", "")
+            path = os.path.join(search_dir, fname)
+            emb = np.load(path).astype(np.float32)
+            if emb.ndim == 1:
+                emb = emb.reshape(1, -1)
+            if len(emb) == 0:
+                continue
+            # L2-normalize individual noise embeddings, then average and re-normalize
+            emb_norm = l2_normalize(emb)
+            mean_vec = np.mean(emb_norm, axis=0)
+            norm = np.linalg.norm(mean_vec)
+            if norm > 0:
+                mean_vec = mean_vec / norm
+            if expected_dim is not None and len(mean_vec) != expected_dim:
+                # Mismatched model embedding dimension
+                continue
+            noise_vectors[group] = mean_vec.astype(np.float32)
+            print(f"  noise_{group}: {len(emb)} embeddings -> mean vector "
+                  f"(dim={len(mean_vec)}) from {os.path.basename(search_dir)}")
+        return noise_vectors if noise_vectors else None
+
+    # 1. Try caller-supplied noise_dir first
+    if noise_dir:
+        result = _load_from(noise_dir)
+        if result is not None:
+            return result
+
+    # 2. Try emb_dir directly
+    result = _load_from(emb_dir)
+    if result is not None:
+        return result
+
+    # 3. Try standard relative candidate paths
+    parent = os.path.dirname(emb_dir)
+    grandparent = os.path.dirname(parent)
+    candidates = [
+        os.path.join(parent, "noise_references"),
+        os.path.join(grandparent, "embeddings", "noise_references"),
+        os.path.join(grandparent, "noise_references"),
     ]
-    if not noise_paths:
-        return None
+    for cand in candidates:
+        if os.path.isdir(cand):
+            res = _load_from(cand)
+            if res is not None:
+                return res
 
-    noise_vectors: Dict[str, np.ndarray] = {}
-    for fname in sorted(noise_paths):
-        group = fname.replace("noise_", "").replace("_embeddings.npy", "")
-        path = os.path.join(emb_dir, fname)
-        emb = np.load(path).astype(np.float32)
-        if emb.ndim == 1:
-            emb = emb.reshape(1, -1)
-        if len(emb) == 0:
-            continue
-        # L2-normalize individual noise embeddings, then average and re-normalize
-        emb_norm = l2_normalize(emb)
-        mean_vec = np.mean(emb_norm, axis=0)
-        norm = np.linalg.norm(mean_vec)
-        if norm > 0:
-            mean_vec = mean_vec / norm
-        noise_vectors[group] = mean_vec.astype(np.float32)
-        print(f"  noise_{group}: {len(emb)} embeddings -> mean vector (dim={len(mean_vec)})")
-
-    return noise_vectors if noise_vectors else None
+    return None
 
 
 # ── Matched-Window Direction Selection ──────────────────
@@ -136,7 +175,7 @@ def align_and_select_matched_windows(
         for name, i in method_map.items():
             noise_group = name.replace("bf_", "")
             nvec = noise_vectors.get(noise_group)
-            if nvec is not None:
+            if nvec is not None and len(nvec) == X.shape[1]:
                 mask = (y_method == i)
                 if np.any(mask):
                     sims = np.dot(X_norm[mask], nvec)
@@ -565,7 +604,8 @@ def compute_noise_distance(
         mask = (y_method == i)
         if method in method_to_noise and np.any(mask):
             noise_vec = noise_vectors[method_to_noise[method]]
-            noise_sim[mask] = np.dot(X_norm[mask], noise_vec)
+            if len(noise_vec) == X.shape[1]:
+                noise_sim[mask] = np.dot(X_norm[mask], noise_vec)
 
     per_method = []
     for i, method in enumerate(method_names):

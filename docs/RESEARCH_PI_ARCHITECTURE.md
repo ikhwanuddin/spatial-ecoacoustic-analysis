@@ -80,7 +80,7 @@ Active pipeline entry points:
 - `cluster_poc.py`: clustering/dashboard and related diagnostics;
 - `process_noise_reference.py`: noise-reference embeddings;
 - `extract_embeddings.py`: embedding-only extraction from existing WAVs;
-- `experiments/bacpipe/run_pilot.py`: multi-model embeddings, including `perch_bird`, from existing method WAVs without re-running beamforming;
+- `bacpipe/pipeline_bacpipe.py`: multi-model embeddings, including `perch_bird`, from existing method WAVs without re-running beamforming;
 - `embedding_metrics.py`: method/direction/noise-distance calculations.
 
 Archived path:
@@ -93,14 +93,14 @@ Archived path:
   - Python 3.11.15
   - NumPy, SciPy, librosa, soundfile, BirdNET, and TensorFlow available
   - bacpipe not installed there
-- Multi-model environment: `spatial-ecoacoustic-analysis/experiments/bacpipe/.venv/`
+- Multi-model environment: `spatial-ecoacoustic-analysis/bacpipe/.venv/`
   - Python 3.11.15
   - bacpipe available
 - Observed data roots:
   - raw recordings: `/Volumes/HD Data/monitoring_data`
   - analysis outputs: `/Volumes/WD2TB/sea-data`
   - impulse responses: `/Users/ri322/macmini/MAARU-Impulse-Response`
-- Existing `2A400` outputs include native BirdNET embeddings, noise references, audits, and a bacpipe pilot report.
+- Existing `2A400` outputs include native BirdNET embeddings, noise references, audits, and a Bacpipe integration report.
 
 No assumption is made here about the Zotero location, Imperial HPC configuration, or the final Way Canguk validation strategy; those remain to be inspected or specified when a task needs them.
 
@@ -284,19 +284,19 @@ The first domain task capability used by this manager is `pipeline-audit`.
 - one recommended next task;
 - decision package if a scientific/resource decision is reached.
 
-### First concrete pilot task
+### First concrete integration audit
 
-Audit the existing `2026-04-21` multi-model pilot and native embedding outputs without re-running inference. Check:
+Audit the existing `2026-04-21` multi-model integration and native embedding outputs without re-running inference. Check:
 
 - matched WAV/source-minute coverage across `mono`, `sa`, `bf_LabIR`, and `bf_SPIR`;
 - embedding dimensions and metadata consistency;
-- whether the Perch/BirdNET pilot and native BirdNET outputs are being compared on compatible scopes;
+- whether the Perch/BirdNET integration and native BirdNET outputs are being compared on compatible scopes;
 - noise-reference availability and model compatibility;
 - definitions and sampling behind the recorded noise-distance and method-separability values;
 - missing edge-case checks;
 - which next bounded Perch run would reduce uncertainty.
 
-This pilot should produce an evidence audit, not a conclusion about whether beamforming is scientifically proven.
+This bounded audit should produce an evidence audit, not a conclusion about whether beamforming is scientifically proven.
 
 ---
 
@@ -330,7 +330,7 @@ Loop protection:
 1. Keep Archimedes installed and do not install `pi-subagents` yet.
 2. Add a project-scoped research task contract/capability after reviewing this specification.
 3. Use the current `researcher`, `scout`, `worker`, and `code-reviewer` only with the compact context and risk rules above.
-4. Run the read-only pilot audit.
+4. Run the read-only Bacpipe audit.
 
 ### Phase B — extend Archimedes with research capabilities
 

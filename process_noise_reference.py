@@ -4,25 +4,38 @@ Phase 4: Noise Reference Embedding Extraction.
 
 Reads pre-beamformed noise reference WAVs (provided by the researcher),
 extracts BirdNET embeddings, and saves them for use as baseline noise
-vectors in cluster analysis.
+vectors in cluster analysis and noise-distance scoring.
 
-No beamforming needed — noise WAVs are already beamformed outputs
-with _noise suffix (e.g. S12_000_noise.wav, SPIR1_02m_000_noise.wav).
+Supports both flat layout and condition-partitioned layouts:
+  Flat layout:
+    noise_references/
+      LabIR/*.wav
+      SPIR/*.wav
+      sa/*.wav
+      mono/*.wav
 
-Usage:
-  python process_noise_reference.py --location 2A400   \
-      --noise-dir /Volumes/WD2TB/sea-data/2A400/noise_references
+  Multi-condition layout:
+    noise_references/
+      dawn/LabIR/  dawn/SPIR/  dawn/sa/  dawn/mono/
+      day/...      dusk/...    night/...
 
 Output:
-  embeddings/noise_LabIR_embeddings.npy   + noise_LabIR_meta.json
-  embeddings/noise_SPIR_embeddings.npy    + noise_SPIR_meta.json
+  <output-dir>/noise_LabIR_embeddings.npy  + noise_LabIR_meta.json
+  <output-dir>/noise_SPIR_embeddings.npy   + noise_SPIR_meta.json
+  <output-dir>/noise_sa_embeddings.npy     + noise_sa_meta.json
+  <output-dir>/noise_mono_embeddings.npy   + noise_mono_meta.json
 """
 
 import argparse
+import io
 import json
 import os
+import re
+import shutil
 import sys
+import threading
 import time
+from contextlib import redirect_stderr, redirect_stdout
 from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
@@ -42,28 +55,62 @@ SLIDE_SEC = 1.5
 os.environ.setdefault("TF_CPP_MIN_LOG_LEVEL", "3")
 os.environ.setdefault("TFLITE_MIN_LOG_LEVEL", "3")
 
+import tensorflow as tf
 from birdnetlib.analyzer import Analyzer
 
-# ── Globals ──────────────────────────────────────────────
 
-_ANALYZER: Optional[Analyzer] = None
+# ── Thread-local BirdNET Extractor ──────────────────────────────────────────
+
+class BirdNetEmbeddingExtractor:
+    """Thread-safe BirdNET feature extractor using TFLite interpreter."""
+
+    def __init__(self):
+        with redirect_stdout(io.StringIO()), redirect_stderr(io.StringIO()):
+            analyzer = Analyzer()
+            self.model_path = analyzer.model_path
+
+        # Preserve intermediate tensors to extract GLOBAL_AVG_POOL layer
+        self.interp = tf.lite.Interpreter(
+            model_path=self.model_path,
+            experimental_preserve_all_tensors=True
+        )
+        self.interp.allocate_tensors()
+        self.input_idx = self.interp.get_input_details()[0]["index"]
+
+        # Dynamically locate the 1024-dim embedding layer
+        self.emb_idx = None
+        for t in self.interp.get_tensor_details():
+            name = t["name"]
+            shape = list(t["shape"])
+            if "GLOBAL_AVG_POOL" in name or (len(shape) == 2 and shape[1] == 1024 and "Mean" in name):
+                self.emb_idx = t["index"]
+                break
+        if self.emb_idx is None:
+            self.emb_idx = 545  # Standard BirdNET global avg pool fallback
+
+    def extract(self, audio_48k: np.ndarray) -> np.ndarray:
+        """Run model on (144000,) float32 audio and return 1024-dim float32 vector."""
+        batch = audio_48k.reshape(1, -1).astype(np.float32)
+        self.interp.set_tensor(self.input_idx, batch)
+        self.interp.invoke()
+        emb = self.interp.get_tensor(self.emb_idx)
+        return emb[0].astype(np.float32)
 
 
-def _get_analyzer() -> Analyzer:
-    global _ANALYZER
-    if _ANALYZER is not None:
-        return _ANALYZER
-    import io
-    from contextlib import redirect_stdout, redirect_stderr
-    with redirect_stdout(io.StringIO()), redirect_stderr(io.StringIO()):
-        _ANALYZER = Analyzer()
-    return _ANALYZER
+_thread_local = threading.local()
 
 
-# ── Audio helpers ──────────────────────────────────────
+def _get_extractor() -> BirdNetEmbeddingExtractor:
+    """Return a per-thread BirdNET extractor instance."""
+    if not hasattr(_thread_local, "extractor"):
+        _thread_local.extractor = BirdNetEmbeddingExtractor()
+    return _thread_local.extractor
+
+
+# ── Audio helpers ───────────────────────────────────────────────────────────
 
 def _audio_to_model_input(audio_16k: np.ndarray) -> np.ndarray:
-    """Resample 16 kHz → 48 kHz, pad/trim to MODEL_INPUT_SAMPLES."""
+    """Resample 16 kHz -> 48 kHz, pad/trim to MODEL_INPUT_SAMPLES."""
     from scipy.interpolate import interp1d
     n_in = len(audio_16k)
     duration = n_in / 16000.0
@@ -81,135 +128,141 @@ def _audio_to_model_input(audio_16k: np.ndarray) -> np.ndarray:
     return audio_48k
 
 
-def _extract_one_embedding(analyzer: Analyzer, audio_48k: np.ndarray) -> np.ndarray:
-    batch = audio_48k.reshape(1, -1).astype(np.float32)
-    return analyzer._return_embeddings(batch)[0].astype(np.float32)
-
-
-# ── Scanning ───────────────────────────────────────────
+# ── Scanning ────────────────────────────────────────────────────────────────
 
 def _scan_wav(wav_path: str, wav_name: str, group: str,
               azimuth: Optional[int] = None,
-              elevation: Optional[int] = None) -> Tuple[np.ndarray, List[dict]]:
+              elevation: Optional[int] = None,
+              condition: Optional[str] = None) -> Tuple[np.ndarray, List[dict]]:
     """Dense sliding-window embedding extraction for one noise WAV."""
-    analyzer = _get_analyzer()
-    emb_list: List[np.ndarray] = []
-    meta_list: List[dict] = []
+    extractor = _get_extractor()
 
     try:
         audio, sr = sf.read(wav_path, dtype="float32")
-        if audio.ndim > 1:
-            audio = audio[:, 0]
     except Exception as e:
-        print(f"    ⚠️  Cannot read {wav_name}: {e}", file=sys.stderr)
+        print(f"  [ERROR] Cannot read {wav_name}: {e}", file=sys.stderr)
         return np.zeros((0, EMBEDDING_DIM), dtype=np.float32), []
 
-    # Resample to 16 kHz if needed
+    if audio.ndim > 1:
+        audio = audio[:, 0]  # First channel if multichannel
+
     if sr != 16000:
+        duration = len(audio) / float(sr)
+        n_16k = int(duration * 16000)
         from scipy.interpolate import interp1d
-        duration = len(audio) / sr
-        n_new = int(duration * 16000)
         t_old = np.linspace(0, duration, len(audio), endpoint=False)
-        t_new = np.linspace(0, duration, n_new, endpoint=False)
+        t_new = np.linspace(0, duration, n_16k, endpoint=False)
         interp = interp1d(t_old, audio, kind="linear", copy=False,
-                          assume_sorted=True, fill_value=0.0)
+                          assume_sorted=True, fill_value=0.0, bounds_error=False)
         audio = interp(t_new).astype(np.float32)
 
     total_sec = len(audio) / 16000.0
     win_samp = int(WINDOW_SEC * 16000)
     step_samp = int(SLIDE_SEC * 16000)
 
+    emb_list: List[np.ndarray] = []
+    meta_list: List[dict] = []
+
+    # If audio is shorter than 1 window, process it as a single padded window
+    if len(audio) < win_samp:
+        model_input = _audio_to_model_input(audio)
+        try:
+            emb = extractor.extract(model_input)
+            emb_list.append(emb)
+            meta_list.append({
+                "wav": wav_name,
+                "group": group,
+                "type": "noise_reference",
+                "condition": condition,
+                "start_sec": 0.0,
+                "end_sec": round(total_sec, 2),
+                "azimuth": azimuth,
+                "elevation": elevation,
+            })
+        except Exception as e:
+            print(f"  [ERROR] Embedding failed for {wav_name}: {e}", file=sys.stderr)
+
+        if emb_list:
+            return np.stack(emb_list, axis=0).astype(np.float32), meta_list
+        return np.zeros((0, EMBEDDING_DIM), dtype=np.float32), []
+
     for start_sample in range(0, len(audio), step_samp):
         end_sample = start_sample + win_samp
-        segment = audio[start_sample:end_sample].astype(np.float32)
+        segment = audio[start_sample:end_sample]
         start_sec = start_sample / 16000.0
 
-        if len(segment) < 16000:  # < 1 second
+        if len(segment) < 16000:  # Skip slivers shorter than 1.0s
             break
 
         model_input = _audio_to_model_input(segment)
         try:
-            emb = _extract_one_embedding(analyzer, model_input)
+            emb = extractor.extract(model_input)
+            emb_list.append(emb)
+            meta_list.append({
+                "wav": wav_name,
+                "group": group,
+                "type": "noise_reference",
+                "condition": condition,
+                "start_sec": round(start_sec, 2),
+                "end_sec": round(min(start_sec + WINDOW_SEC, total_sec), 2),
+                "azimuth": azimuth,
+                "elevation": elevation,
+            })
         except Exception:
             continue
-
-        emb_list.append(emb)
-        meta_list.append({
-            "wav": wav_name,
-            "group": group,
-            "type": "noise_reference",
-            "start_sec": round(start_sec, 1),
-            "end_sec": round(min(start_sec + WINDOW_SEC, total_sec), 1),
-            "azimuth": azimuth,
-            "elevation": elevation,
-        })
 
     if emb_list:
         return np.stack(emb_list, axis=0).astype(np.float32), meta_list
     return np.zeros((0, EMBEDDING_DIM), dtype=np.float32), []
 
 
-# ── Find noise WAVs ────────────────────────────────────
+# ── Find noise WAVs ─────────────────────────────────────────────────────────
 
-def _find_noise_wavs(noise_dir: str) -> Dict[str, List[Tuple[str, str, Optional[int], Optional[int]]]]:
-    """Scan noise_references/ for _noise.wav files organised by group.
-
-    Expected structure:
-        noise_references/
-            LabIR/
-                S01_060_noise.wav
-                S12_000_noise.wav
-            SPIR/
-                SPIR1_02m_000_noise.wav
-                SPIR2_08m_180_r2_noise.wav
-            sa/
-                *_noise.wav
-            mono/
-                *_noise.wav
-
-    Returns: dict  group_name → [(wav_path, wav_name, azimuth, elevation), ...]
-    """
+def _find_noise_wavs(noise_dir: str) -> Dict[str, List[Tuple[str, str, Optional[int], Optional[int], Optional[str]]]]:
+    """Scan noise_references/ for _noise.wav files organised by group and condition."""
     if not os.path.isdir(noise_dir):
         return {}
 
-    import re
-
-    # Parse LabIR speaker/azimuth: LabIR(S{speaker}_{azimuth}) or just S{speaker}_{azimuth}
     _LABIR_PARSE = re.compile(r"S(\d{2})_(\d{3})")
     _LABIR_ELEVATION = {1: -45, 5: 0, 9: 45, 12: 90}
-    # Parse SPIR1: SPIR1({dist}m_{azimuth})
     _SPIR1_PARSE = re.compile(r"SPIR1\((\d{2})m_(\d{3})\)")
-    # Parse SPIR2: SPIR2({dist}m_{azimuth}_r{rep})
     _SPIR2_PARSE = re.compile(r"SPIR2\((\d{2})m_(\d{3})_r(\d)\)")
 
-    groups: Dict[str, List[Tuple[str, str, Optional[int], Optional[int]]]] = {}
+    groups: Dict[str, List[Tuple[str, str, Optional[int], Optional[int], Optional[str]]]] = {}
 
     for root, dirs, files in os.walk(noise_dir):
-        for fname in files:
-            if not fname.endswith("_noise.wav") or fname.startswith("._"):
+        for fname in sorted(files):
+            if not fname.endswith(".wav") or fname.startswith("._"):
                 continue
 
             wav_path = os.path.join(root, fname)
-            parent = os.path.basename(root)
+            rel_parts = os.path.relpath(wav_path, noise_dir).split(os.sep)
 
-            # Simple pass-through groups (sa, mono) — no direction metadata
-            if parent in ("sa", "mono"):
-                groups.setdefault(parent, []).append((wav_path, fname, None, None))
-                continue
+            condition = None
+            for p in rel_parts:
+                if p in ("dawn", "day", "dusk", "night"):
+                    condition = p
+                    break
 
-            # Beamforming groups — parse direction metadata
-            if parent in ("LabIR", "SPIR"):
-                group = parent
-            else:
-                # Deduce from filename pattern
-                if "LabIR" in fname or "S" in fname.replace("_noise.wav", "").split("_")[-1]:
+            group = "unknown"
+            for p in rel_parts:
+                if p in ("LabIR", "SPIR", "sa", "mono"):
+                    group = p
+                    break
+
+            if group == "unknown":
+                parent = os.path.basename(root)
+                if parent in ("LabIR", "SPIR", "sa", "mono"):
+                    group = parent
+                elif "LabIR" in fname or "S" in fname.replace("_noise.wav", "").split("_")[-1]:
                     group = "LabIR"
-                elif "SPIR1" in fname or "SPIR2" in fname:
+                elif "SPIR" in fname:
                     group = "SPIR"
-                else:
-                    group = "unknown"
+                elif "sa" in fname:
+                    group = "sa"
+                elif "mono" in fname:
+                    group = "mono"
 
-            # Parse azimuth/elevation if possible
             azimuth = None
             elevation = None
             m = _LABIR_PARSE.search(fname)
@@ -226,12 +279,12 @@ def _find_noise_wavs(noise_dir: str) -> Dict[str, List[Tuple[str, str, Optional[
                 azimuth = int(m.group(2))
                 elevation = 0
 
-            groups.setdefault(group, []).append((wav_path, fname, azimuth, elevation))
+            groups.setdefault(group, []).append((wav_path, fname, azimuth, elevation, condition))
 
     return groups
 
 
-# ── Main ────────────────────────────────────────────────
+# ── Main ────────────────────────────────────────────────────────────────────
 
 def main():
     parser = argparse.ArgumentParser(
@@ -239,65 +292,55 @@ def main():
     parser.add_argument("--location", type=str, required=True,
                         help="Location ID (e.g. 2A400)")
     parser.add_argument("--noise-dir", type=str, default=None,
-                        help="Directory of noise _noise.wav files "
-                             "(default: ANALYSIS_OUTPUT/location/noise_references)")
+                        help="Directory of noise _noise.wav files")
     parser.add_argument("--output-dir", type=str, default=None,
-                        help="Output directory for .npy and .json files "
-                             "(default: ANALYSIS_OUTPUT/location/embeddings)")
+                        help="Output directory for .npy and .json files")
     parser.add_argument("--workers", type=int, default=4,
                         help="Worker threads for parallel extraction")
+    parser.add_argument("--copy-to-bacpipe", action="store_true", default=True,
+                        help="Copy generated noise embeddings into bacpipe model directories")
     args = parser.parse_args()
 
     noise_dir = args.noise_dir or os.path.join(
         ANALYSIS_OUTPUT, args.location, "noise_references"
     )
     output_dir = args.output_dir or os.path.join(
-        ANALYSIS_OUTPUT, args.location, "embeddings"
+        ANALYSIS_OUTPUT, args.location, "embeddings", "noise_references"
     )
 
     if not os.path.isdir(noise_dir):
         print(f"❌ Noise directory not found: {noise_dir}")
-        print("   Expected structure:\n"
-              f"     {noise_dir}/\n"
-              "       LabIR/S01_060_noise.wav\n"
-              "       SPIR/SPIR1_02m_000_noise.wav")
         sys.exit(1)
 
     print(f"Location:  {args.location}")
     print(f"Noise dir: {noise_dir}")
     print(f"Output:    {output_dir}")
 
-    # Find noise WAVs
     groups = _find_noise_wavs(noise_dir)
     if not groups:
-        print("❌ No _noise.wav files found!")
+        print("❌ No WAV files found in noise directory!")
         sys.exit(1)
 
     total_files = sum(len(v) for v in groups.values())
     print(f"\nFound {total_files} noise WAV(s) in {len(groups)} group(s):")
     for group_name, files in sorted(groups.items()):
         print(f"  {group_name}: {len(files)} file(s)")
-        for _, fname, az, el in files:
-            az_str = f"{az}°" if az is not None else "N/A"
-            el_str = f"{el}°" if el is not None else "N/A"
-            print(f"      {fname:<50s} azimuth={az_str:<6s} elevation={el_str}")
 
-    # Warm model
-    print("\nLoading BirdNET model...")
+    print("\nWarming BirdNET model...")
     t_load = time.time()
-    _get_analyzer()
-    print(f"  ✓ Model loaded in {time.time() - t_load:.1f}s")
+    _get_extractor()
+    print(f"  ✓ Model ready in {time.time() - t_load:.1f}s")
 
     os.makedirs(output_dir, exist_ok=True)
 
-    # Extract embeddings per group
     grand_start = time.time()
-
     from concurrent.futures import ThreadPoolExecutor, as_completed
+
+    saved_npy_paths = []
 
     for group_name, files in sorted(groups.items()):
         print(f"\n{'='*60}")
-        print(f"📂 Group: {group_name}  ({len(files)} WAVs)")
+        print(f"📂 Group: {group_name} ({len(files)} WAVs)")
         print(f"{'='*60}")
 
         all_emb: List[np.ndarray] = []
@@ -306,9 +349,9 @@ def main():
 
         with ThreadPoolExecutor(max_workers=args.workers) as pool:
             futures = {
-                pool.submit(_scan_wav, wav_path, fname, group_name, azimuth, elevation):
+                pool.submit(_scan_wav, wav_path, fname, group_name, azimuth, elevation, condition):
                     fname
-                for wav_path, fname, azimuth, elevation in files
+                for wav_path, fname, azimuth, elevation, condition in files
             }
             for future in as_completed(futures):
                 fname = futures[future]
@@ -330,17 +373,34 @@ def main():
         meta_path = os.path.join(output_dir, f"noise_{group_name}_meta.json")
 
         np.save(emb_path, all_emb_arr)
-        with open(meta_path, "w") as f:
+        with open(meta_path, "w", encoding="utf-8") as f:
             json.dump(all_meta, f, indent=2, ensure_ascii=False)
 
+        saved_npy_paths.append((group_name, emb_path, meta_path))
         elapsed = time.time() - t0
-        print(f"  ✓ {len(all_emb_arr)} embeddings → {os.path.basename(emb_path)}")
-        print(f"  ⏱  {group_name} done in {elapsed:.1f}s")
+        print(f"  ✓ {len(all_emb_arr)} embeddings (shape: {all_emb_arr.shape}) -> {os.path.basename(emb_path)}")
+        print(f"  ⏱  {group_name} completed in {elapsed:.1f}s")
+
+    # Optionally mirror embeddings into bacpipe model directories
+    if args.copy_to_bacpipe:
+        bacpipe_dir = os.path.join(ANALYSIS_OUTPUT, args.location, "embeddings", "bacpipe")
+        if os.path.isdir(bacpipe_dir):
+            for model_dir in os.listdir(bacpipe_dir):
+                target_model_path = os.path.join(bacpipe_dir, model_dir)
+                if os.path.isdir(target_model_path):
+                    for group_name, emb_path, meta_path in saved_npy_paths:
+                        dest_emb = os.path.join(target_model_path, os.path.basename(emb_path))
+                        dest_meta = os.path.join(target_model_path, os.path.basename(meta_path))
+                        try:
+                            shutil.copy2(emb_path, dest_emb)
+                            shutil.copy2(meta_path, dest_meta)
+                        except Exception:
+                            pass
 
     grand_elapsed = time.time() - grand_start
     print(f"\n{'='*60}")
-    print(f"✅ All noise reference embeddings saved to: {output_dir}")
-    print(f"   Total time: {grand_elapsed:.1f}s")
+    print(f"✅ All noise reference embeddings successfully saved to: {output_dir}")
+    print(f"   Total elapsed: {grand_elapsed:.1f}s")
 
 
 if __name__ == "__main__":
