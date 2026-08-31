@@ -573,7 +573,7 @@ def build_report(
         if noise_vectors:
             stats["noise_analysis"] = compute_noise_distance(
                 X, y_method, method_names, cluster_labels, noise_vectors,
-                shared_analysis=shared,
+                shared_analysis=shared, flat_meta=flat_meta,
             )
         else:
             stats["noise_analysis"] = {"available": False}

@@ -141,6 +141,8 @@ from config import (
 )
 from embedding_schema import (
     BACKEND_BACPIPE,
+    CONDITIONS,
+    noise_key,
     DEFAULT_METHODS,
     bacpipe_embeddings_dir,
     bacpipe_meta_dir,
@@ -387,6 +389,14 @@ def _noise_group_for_method(method: str) -> str:
     return method.replace("bf_", "", 1)
 
 
+def _noise_keys_for_group(noise_embeddings: Dict[str, np.ndarray], group: str) -> List[str]:
+    """Reference keys belonging to one method, one per time condition."""
+    keys = [f"{c}_{group}" for c in CONDITIONS if f"{c}_{group}" in noise_embeddings]
+    if not keys and group in noise_embeddings:
+        keys = [group]          # reference predating condition scoping
+    return keys
+
+
 def _score_noise_distance(
     by_method_emb: Dict[str, Any],
     noise_embeddings: Dict[str, np.ndarray],
@@ -395,6 +405,12 @@ def _score_noise_distance(
 
     A failed model run can leave a valid-looking .npy file with shape
     (0, 0). It must be reported, not passed to matrix multiplication.
+
+    A method is only ever compared with a reference built from that same
+    method. When a date holds more than one time condition, this summary
+    cannot tell which window belongs to which condition -- it reports each
+    condition separately and marks the result, and the authoritative
+    per-window scoring is the one in visualize_bacpipe.
     """
     def _as_matrix(value: Any) -> Optional[np.ndarray]:
         parts = value if isinstance(value, list) else [value]
@@ -413,7 +429,8 @@ def _score_noise_distance(
     distances: Dict[str, Dict[str, Any]] = {}
     for method, chunks in sorted(by_method_emb.items()):
         group = _noise_group_for_method(method)
-        noise = noise_embeddings.get(group)
+        keys = _noise_keys_for_group(noise_embeddings, group)
+        noise = noise_embeddings.get(keys[0]) if keys else None
         X = _as_matrix(chunks)
         noise_matrix = _as_matrix(noise)
         if X is None:
@@ -444,18 +461,41 @@ def _score_noise_distance(
                 "n_noise": int(len(noise_matrix)),
             }
             continue
-        noise_mean = _l2_normalize_rows(noise_matrix).mean(axis=0)
-        noise_mean /= max(float(np.linalg.norm(noise_mean)), 1e-9)
-        cosine = _l2_normalize_rows(X) @ noise_mean
-        distances[method] = {
+        X_norm = _l2_normalize_rows(X)
+
+        def _against(key: str) -> Optional[Dict[str, Any]]:
+            matrix = _as_matrix(noise_embeddings.get(key))
+            if matrix is None or matrix.shape[1] != X.shape[1]:
+                return None
+            mean_vec = _l2_normalize_rows(matrix).mean(axis=0)
+            mean_vec /= max(float(np.linalg.norm(mean_vec)), 1e-9)
+            cosine = X_norm @ mean_vec
+            return {
+                "noise_key": key,
+                "n_noise": int(len(matrix)),
+                "mean_cosine_to_noise": float(np.mean(cosine)),
+                "mean_noise_distance": float(1.0 - np.mean(cosine)),
+                "std_noise_distance": float(np.std(1.0 - cosine)),
+            }
+
+        scored = {key: r for key in keys if (r := _against(key)) is not None}
+        if not scored:
+            distances[method] = {"noise_group": group, "status": "empty_noise_embeddings"}
+            continue
+        entry: Dict[str, Any] = {
             "noise_group": group,
-            "status": "ok",
             "n": int(len(X)),
             "embedding_dim": int(X.shape[1]),
-            "mean_cosine_to_noise": float(np.mean(cosine)),
-            "mean_noise_distance": float(1.0 - np.mean(cosine)),
-            "std_noise_distance": float(np.std(1.0 - cosine)),
+            "per_condition": scored,
         }
+        if len(scored) == 1:
+            only = next(iter(scored.values()))
+            entry.update({k: v for k, v in only.items() if k != "noise_key"})
+            entry["noise_key"] = only["noise_key"]
+            entry["status"] = "ok"
+        else:
+            entry["status"] = "scored_per_condition"
+        distances[method] = entry
 
     mono = distances.get("mono", {})
     mono_distance = mono.get("mean_noise_distance") if mono.get("status") == "ok" else None
@@ -519,12 +559,15 @@ def find_noise_wavs(
         if path.name.startswith("._"):
             continue
         rel = path.relative_to(root)
-        group = "unknown"
+        group, condition = "unknown", None
         for part in rel.parts:
             if part in ("LabIR", "SPIR", "sa", "mono"):
                 group = part
-                break
-        found.append((str(path), path.name, group))
+            elif part in CONDITIONS:
+                condition = part
+        # Scope the reference to its time condition so a dawn prototype can
+        # never be averaged together with a night one.
+        found.append((str(path), path.name, noise_key(condition, group)))
     return found
 
 
@@ -1548,6 +1591,9 @@ _STRICT_TIME_RANGES = {
 _STRICT_ACTIVE_SCOPE = {}
 
 
+NOISE_REFERENCE_BEAM = "LabIR(S05_000)"
+
+
 def _strict_condition(name: str) -> Optional[str]:
     match = re.search(r"(?:^|_)(\d{2})-(\d{2})-(\d{2})(?:_|\\.)", name)
     if not match:
@@ -1626,12 +1672,16 @@ def _strict_prepare_review(
         result["detector"] = str(detector)
         return result
     result["status"] = "review_prepared"
-    # LabIR is the sole source for this review. Mono/SA references must later
-    # inherit the manually accepted LabIR intervals; they are not used here.
-    labir_wavs = find_method_wavs(
-        data_dir=data_dir, location=location, date_str=date_str,
-        methods=["bf_LabIR"],
-    )
+    # Only the reference beam is scanned. Running the detector on all 19 beams
+    # costs 19x the time and yields 19 disagreeing interval sets for the same
+    # instant; mono/SA/SPIR inherit the intervals accepted on this one beam.
+    labir_wavs = [
+        item for item in find_method_wavs(
+            data_dir=data_dir, location=location, date_str=date_str,
+            methods=["bf_LabIR"],
+        )
+        if NOISE_REFERENCE_BEAM in item[1]
+    ]
     for condition in conditions:
         condition_dir = review_base / condition
         prepared, skipped = 0, 0
@@ -1722,7 +1772,9 @@ def _strict_find_noise_wavs(
                 if part in ("LabIR", "SPIR", "sa", "mono"):
                     group = part
                     break
-            found.append((str(path), path.name, group))
+            # Scope to the condition of the folder it was found under, so a
+            # dawn prototype is never averaged together with a night one.
+            found.append((str(path), path.name, noise_key(condition, group)))
     return found
 
 
@@ -1760,7 +1812,11 @@ def run_pipeline(*args, **kwargs):
         condition for condition in _STRICT_TIME_CONDITIONS
         if any(_strict_condition(name) == condition for _p, name, _m in method_wavs)
     ]
-    noise_base = kwargs.get("noise_dir") or os.path.join(data_dir, "noise_references")
+    # Same root the finder uses, otherwise the gate looks in a directory that
+    # never holds the per-date references and blocks every run.
+    noise_base = kwargs.get("noise_dir") or os.path.join(
+        data_dir, location, date_str, "noise_references"
+    )
     gate = _strict_gate(
         location, date_str, methods, available, noise_base,
         auto_prepare and not dry_run,
@@ -1785,7 +1841,7 @@ def run_pipeline(*args, **kwargs):
         if gate.get("preparation"):
             print("Noise-review preparation completed. Inspect candidates, then materialize approved method-specific WAVs under:")
             print("  " + str(Path(noise_base).parent / "noise_auto_review" / location / date_str))
-        print("Required layout: <noise-root>/<location>/<date>/<condition>/<group>/*.wav")
+        print("Required layout: <data-dir>/<location>/<date>/noise_references/<condition>/<group>/*.wav")
         return report
     result = _original_run_pipeline(*args, **kwargs)
     result["available_conditions"] = available

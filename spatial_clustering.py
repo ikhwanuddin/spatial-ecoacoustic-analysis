@@ -38,6 +38,12 @@ from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 import numpy as np
 
+from embedding_schema import (
+    condition_from_wav,
+    noise_group_for_method,
+    resolve_noise_vector,
+)
+
 try:
     from scipy.stats import wilcoxon
     HAS_SCIPY = True
@@ -169,17 +175,24 @@ def align_and_select_matched_windows(
     method_map = {name: i for i, name in enumerate(method_names)}
     X_norm = l2_normalize(X)
 
-    # Compute noise distance per point if noise reference exists
-    noise_distances = np.zeros(len(X), dtype=np.float32)
+    # Noise distance per point, against the reference for that point's own
+    # time condition and its own method. Unscored points stay NaN.
+    noise_distances = np.full(len(X), np.nan, dtype=np.float32)
     if noise_vectors:
-        for name, i in method_map.items():
-            noise_group = name.replace("bf_", "")
-            nvec = noise_vectors.get(noise_group)
-            if nvec is not None and len(nvec) == X.shape[1]:
-                mask = (y_method == i)
-                if np.any(mask):
-                    sims = np.dot(X_norm[mask], nvec)
-                    noise_distances[mask] = 1.0 - sims
+        buckets: Dict[Tuple[Optional[str], str], List[int]] = {}
+        for idx, meta in enumerate(flat_meta):
+            method = meta.get("method")
+            if method not in method_map:
+                continue
+            cond = meta.get("condition") or condition_from_wav(meta.get("wav", ""))
+            buckets.setdefault((cond, noise_group_for_method(method)), []).append(idx)
+        for (cond, group), idxs in buckets.items():
+            nvec, _key = resolve_noise_vector(noise_vectors, cond, group)
+            if nvec is None or len(nvec) != X.shape[1]:
+                continue
+            rows = np.asarray(idxs, dtype=int)
+            noise_distances[rows] = 1.0 - np.dot(X_norm[rows], nvec)
+    noise_distances = np.nan_to_num(noise_distances, nan=0.0)
 
     # Group by temporal window: (src_recording, round(start_sec, 2), round(end_sec, 2))
     windows: Dict[Tuple[str, float, float], Dict[str, List[Dict[str, Any]]]] = {}
@@ -586,36 +599,53 @@ def compute_noise_distance(
     cluster_labels: np.ndarray,
     noise_vectors: Dict[str, np.ndarray],
     shared_analysis: Optional[Dict[str, Any]] = None,
+    flat_meta: Optional[List[Dict[str, Any]]] = None,
 ) -> Dict[str, Any]:
-    """Compute cosine distance from noise reference prototype for each method."""
-    method_to_noise: Dict[str, str] = {}
-    for method in method_names:
-        noise_group = method.replace("bf_", "")
-        if noise_group in noise_vectors:
-            method_to_noise[method] = noise_group
+    """Cosine distance to the noise prototype of the same method AND condition.
 
-    if not method_to_noise:
+    Each point is scored against the reference built from its own method and its
+    own time condition. A point with no matching reference is left unscored
+    (NaN) and excluded from the means rather than silently counted as zero.
+    """
+    if not noise_vectors:
         return {"available": False}
 
     X_norm = l2_normalize(X)
-    noise_sim = np.zeros(len(X), dtype=np.float32)
+    noise_sim = np.full(len(X), np.nan, dtype=np.float32)
+    keys_used: Dict[str, set] = {}
 
-    for i, method in enumerate(method_names):
-        mask = (y_method == i)
-        if method in method_to_noise and np.any(mask):
-            noise_vec = noise_vectors[method_to_noise[method]]
-            if len(noise_vec) == X.shape[1]:
-                noise_sim[mask] = np.dot(X_norm[mask], noise_vec)
+    buckets: Dict[Tuple[Optional[str], str], List[int]] = {}
+    for idx, meta in enumerate(flat_meta or []):
+        method = meta.get("method")
+        if method not in method_names:
+            continue
+        cond = meta.get("condition") or condition_from_wav(meta.get("wav", ""))
+        buckets.setdefault((cond, noise_group_for_method(method)), []).append(idx)
+
+    for (cond, group), idxs in buckets.items():
+        nvec, key = resolve_noise_vector(noise_vectors, cond, group)
+        if nvec is None or len(nvec) != X.shape[1]:
+            continue
+        rows = np.asarray(idxs, dtype=int)
+        noise_sim[rows] = np.dot(X_norm[rows], nvec)
+        keys_used.setdefault(group, set()).add(key)
+
+    if not np.any(np.isfinite(noise_sim)):
+        return {"available": False, "reason": "no point matched a noise reference"}
 
     per_method = []
     for i, method in enumerate(method_names):
-        mask = (y_method == i)
+        mask = (y_method == i) & np.isfinite(noise_sim)
+        n_total = int(np.sum(y_method == i))
         if np.sum(mask) > 0:
             mean_sim = float(np.mean(noise_sim[mask]))
             per_method.append({
                 "method": method,
                 "mean_noise_sim": round(mean_sim, 4),
                 "mean_noise_distance": round(1.0 - mean_sim, 4),
+                "n_scored": int(np.sum(mask)),
+                "n_unscored": n_total - int(np.sum(mask)),
+                "noise_keys": sorted(keys_used.get(noise_group_for_method(method), [])),
             })
 
     mono_entry = next((p for p in per_method if p["method"] == "mono"), None)
