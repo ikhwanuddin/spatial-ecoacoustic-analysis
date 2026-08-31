@@ -274,7 +274,7 @@ def make_plots(out: Path, x: np.ndarray, sample_rate: int, result: dict) -> None
         if item["candidate"]:
             axes[1].axvspan(item["start_sec"], item["end_sec"], color="#16a34a", alpha=0.12)
     fig.colorbar(image, ax=axes[1], label="PSD (dB)")
-    fig.suptitle(f"LabIR temporal foreground exclusion ({result['config']['window_sec']}s window) — {result.get('source_scope', {}).get('condition', 'review').capitalize()} Review")
+    fig.suptitle(f"LabIR temporal foreground exclusion ({result['config']['window_sec']}s window) — {(result.get('source_scope', {}).get('condition') or 'review').capitalize()} Review")
     fig.tight_layout()
     fig.savefig(out / "temporal_diagnostic_overview.png", dpi=160)
     plt.close(fig)
