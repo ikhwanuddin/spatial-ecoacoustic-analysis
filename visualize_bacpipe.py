@@ -46,6 +46,7 @@ from embedding_schema import (
     DEFAULT_METHODS,
     bacpipe_embeddings_dir,
     bacpipe_meta_dir,
+    dashboards_dir,
     embeddings_root,
 )
 
@@ -671,7 +672,7 @@ def main() -> None:
 
     model_dirs = [bacpipe_embeddings_dir(args.data_dir, args.location, m) for m in models]
     resolved_date = _resolve_date(model_dirs, args.date)
-    output_dir = Path(args.output_dir) if args.output_dir else Path(f"{args.location}_embedding_visuals_{resolved_date}")
+    output_dir = Path(args.output_dir) if args.output_dir else dashboards_dir(args.location, resolved_date)
 
     build_report(
         data_dir=args.data_dir,
