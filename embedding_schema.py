@@ -55,6 +55,9 @@ BIRDNET_MODEL_ID = "birdnet"
 RESULTS_ROOT = os.environ.get(
     "SEA_RESULTS", os.path.join(os.path.expanduser("~"), "sea-emb")
 )
+DASHBOARDS_ROOT = os.environ.get(
+    "SEA_DASHBOARDS", os.path.join(os.path.expanduser("~"), "sea-dashboards")
+)
 
 
 def embeddings_root(data_dir: str, location: str) -> str:
@@ -84,6 +87,11 @@ def bacpipe_meta_dir(location: str, model: str) -> str:
 
 def audits_dir(location: str) -> str:
     return os.path.join(results_root(location), "audits")
+
+
+def dashboards_dir(location: str, date_str: str) -> str:
+    """HOME dir for one date's HTML dashboard set."""
+    return os.path.join(DASHBOARDS_ROOT, location, date_str)
 
 
 def embedding_basename(date_str: str, method: str) -> str:
