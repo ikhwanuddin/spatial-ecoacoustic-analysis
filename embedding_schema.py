@@ -35,6 +35,7 @@ Optional:
 from __future__ import annotations
 
 import os
+import re
 from typing import Any, Dict, List, Optional
 
 SCHEMA_VERSION = 1
@@ -115,6 +116,20 @@ def condition_from_wav(name: str) -> Optional[str]:
     return condition_of_hour(hour) if 0 <= hour <= 23 else None
 
 
+BEAM_TAG_PATTERN = re.compile(r"(LabIR\(S\d{2}_\d{3}\)|SPIR[12]\([^)]*\))")
+
+
+def beam_tag_from_name(name: str, method: Optional[str] = None) -> Optional[str]:
+    """Steering direction encoded in a filename, e.g. 'LabIR(S01_000)'.
+
+    mono and sa have no beam, so they fall back to their own group name.
+    """
+    match = BEAM_TAG_PATTERN.search(os.path.basename(str(name)))
+    if match:
+        return match.group(1)
+    return noise_group_for_method(method) if method else None
+
+
 def noise_group_for_method(method: str) -> str:
     """bf_LabIR -> LabIR, mono -> mono."""
     return method[3:] if method.startswith("bf_") else method
@@ -124,16 +139,24 @@ def noise_key(condition: Optional[str], group: str) -> str:
     return f"{condition}_{group}" if condition else group
 
 
-def resolve_noise_vector(noise_vectors, condition, group):
-    """Pick the reference for this condition and method.
+def resolve_noise_vector(noise_vectors, condition, group, beam_tag=None):
+    """Pick the reference for this window's condition, method and direction.
 
-    Exact condition match wins. A condition-agnostic reference is accepted as a
-    fallback so dates whose references predate condition scoping still score.
+    A beam is measured against noise captured through that same beam. Order:
+      1. <condition>_<beam_tag>  same time, same steering direction
+      2. <condition>_<group>     same time, method pooled over its beams
+      3. <group>                 reference predating condition scoping
     Returns (vector, key_used) or (None, None) — never a silent zero.
     """
     if not noise_vectors:
         return None, None
-    for key in ([noise_key(condition, group)] if condition else []) + [group]:
+    candidates = []
+    if condition and beam_tag:
+        candidates.append(noise_key(condition, beam_tag))
+    if condition:
+        candidates.append(noise_key(condition, group))
+    candidates.append(group)
+    for key in candidates:
         vec = noise_vectors.get(key)
         if vec is not None:
             return vec, key
