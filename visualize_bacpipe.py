@@ -32,6 +32,7 @@ import narrative as narrative_defaults
 from narrative import build_digest, load_or_generate_narrative
 from spatial_clustering import (
     align_and_select_matched_windows,
+    compute_all_beam_noise_analysis,
     compute_noise_distance,
     compute_shared_cluster_analysis,
     compute_stats,
@@ -187,6 +188,7 @@ th { color:var(--muted); font-weight:600; background:#f8fafc; font-size:12px; te
 tr:hover { background:#f8fafc; }
 code { font-size:12px; background:#f1f5f9; padding:2px 6px; border-radius:4px; font-family:ui-monospace,SFMono-Regular,Menlo,monospace; }
 .p-val { font-weight:600; color:#16a34a; }
+.note-box { background:#f1f5f9; border-left:4px solid var(--primary); padding:12px 16px; border-radius:6px; margin-bottom:16px; font-size:13px; line-height:1.45; }
 #narrative h3 { font-size:15px; margin:0 0 10px; }
 #narrative ul { margin:0; padding-left:20px; }
 #narrative li { margin-bottom:8px; }
@@ -238,6 +240,23 @@ code { font-size:12px; background:#f1f5f9; padding:2px 6px; border-radius:4px; f
 
 <h2>2D Projection — Coloured by Native High-Dimensional Cluster</h2>
 <div class="card"><div id="plot-cluster" class="chart"></div></div>
+
+<h2>All-Beam Noise Distance <span class="badge" id="allbeam-badge"></span></h2>
+<div class="note-box" id="allbeam-note"></div>
+<div class="two">
+  <div class="card">
+    <h3>Every Beam Scored Against Its Own Reference</h3>
+    <div id="allbeam-method"></div>
+  </div>
+  <div class="card">
+    <h3>Does Choosing the Best Beam Explain the Gain?</h3>
+    <div id="allbeam-selection"></div>
+  </div>
+</div>
+<div class="card" style="margin-top:16px">
+  <h3>Per-Beam Detail</h3>
+  <div id="allbeam-detail" style="max-height:420px; overflow:auto"></div>
+</div>
 
 <h2>Per-Method Evaluation Summary</h2>
 <div class="card" id="method-table"></div>
@@ -368,6 +387,39 @@ Plotly.newPlot('plot-method', methodTraces, {...plotLayout, height:500, title:'2
 const clusterIds = [...new Set(report.clusters)].sort((a,b)=>a-b);
 const clusterTraces = clusterIds.map((cid,j) => traceForIndices(indicesWhere(i=>report.clusters[i]===cid), cid===-1?'Noise':`CL-${String(cid).padStart(3,'0')}`, cid===-1?'#94a3b8':clusterColors[j%clusterColors.length]));
 Plotly.newPlot('plot-cluster', clusterTraces, {...plotLayout, height:500, title:'High-Dimensional HDBSCAN Clusters'}, plotConfig);
+
+// All-beam analysis
+const ab = report.stats.all_beam_analysis || {};
+if (!ab.available) {
+  document.getElementById('allbeam-note').textContent = 'No noise reference resolved, so no beam could be scored.';
+  document.getElementById('allbeam-badge').textContent = 'unavailable';
+} else {
+  document.getElementById('allbeam-badge').textContent = `${ab.n_scored.toLocaleString()} of ${ab.n_points.toLocaleString()} embeddings`;
+  document.getElementById('allbeam-note').innerHTML =
+    `Every steering direction is measured against the reference captured through that same beam, including directions never selected as &theta;*(t). ` +
+    `The matched analysis higher up keeps one beam per window; this table keeps all ${ab.n_points.toLocaleString()} of them` +
+    (ab.n_unscored ? `, and ${ab.n_unscored.toLocaleString()} stayed unscored.` : '.');
+
+  document.getElementById('allbeam-method').innerHTML =
+    `<table><thead><tr><th>Method</th><th>Beams</th><th>N</th><th>Mean Noise Distance</th><th>&Delta; vs Mono</th></tr></thead><tbody>` +
+    (ab.per_method || []).map(r => r.n ? `<tr><td><b>${r.method}</b></td><td>${r.n_beams}</td><td>${r.n.toLocaleString()}</td><td>${r.mean_noise_distance.toFixed(4)}</td><td>${r.delta_vs_mono === undefined ? '—' : (r.delta_vs_mono >= 0 ? '+' : '') + r.delta_vs_mono.toFixed(4)}</td></tr>` : `<tr><td><b>${r.method}</b></td><td colspan="4">unscored</td></tr>`).join('') +
+    `</tbody></table>`;
+
+  const sel = ab.selection_comparison || {};
+  const selRows = Object.keys(sel).map(m => {
+    const t = sel[m];
+    const cell = o => `${(o.mean_delta_vs_mono >= 0 ? '+' : '') + o.mean_delta_vs_mono.toFixed(4)}<br><span style="color:var(--muted)">${o.win_rate_pct}% win</span>`;
+    return `<tr><td><b>${m}</b><br><span style="color:var(--muted)">${t.n_beams_per_window} beams/window</span></td><td>${cell(t.best_beam)}</td><td>${cell(t.median_beam)}</td><td>${cell(t.mean_beam)}</td><td><b>${(t.selection_effect >= 0 ? '+' : '') + t.selection_effect.toFixed(4)}</b></td></tr>`;
+  }).join('');
+  document.getElementById('allbeam-selection').innerHTML =
+    `<table><thead><tr><th>Method</th><th>Best beam</th><th>Median beam</th><th>Mean beam</th><th>Best &minus; Median</th></tr></thead><tbody>${selRows}</tbody></table>` +
+    `<p style="color:var(--muted);font-size:12px;margin:10px 0 0">The last column is the part of the advantage that comes from being allowed to pick the best of several beams. Mono and SA have one channel and no choice, so they cannot gain it.</p>`;
+
+  document.getElementById('allbeam-detail').innerHTML =
+    `<table><thead><tr><th>Method</th><th>Beam</th><th>Condition</th><th>N</th><th>Mean</th><th>SD</th><th>Reference key</th></tr></thead><tbody>` +
+    (ab.per_beam || []).map(r => `<tr><td>${r.method}</td><td><code>${r.beam}</code></td><td>${r.condition || '—'}</td><td>${r.n}</td><td>${r.mean_noise_distance.toFixed(4)}</td><td>${r.std_noise_distance.toFixed(4)}</td><td><code>${r.noise_key}</code></td></tr>`).join('') +
+    `</tbody></table>`;
+}
 
 const methodRows = report.stats.per_method || [];
 const noiseRows = (report.stats.noise_analysis || {}).per_method || [];
@@ -575,8 +627,14 @@ def build_report(
                 X, y_method, method_names, cluster_labels, noise_vectors,
                 shared_analysis=shared, flat_meta=flat_meta,
             )
+            # Every beam is scored here, including directions never chosen as
+            # theta*(t); the matched analysis above keeps only one beam per window.
+            stats["all_beam_analysis"] = compute_all_beam_noise_analysis(
+                X_raw, y_raw, method_names, flat_meta_raw, noise_vectors
+            )
         else:
             stats["noise_analysis"] = {"available": False}
+            stats["all_beam_analysis"] = {"available": False}
 
         parameters = {
             "design_mode": "matched_window_pairwise" if matched_mode else "raw_all_angles",

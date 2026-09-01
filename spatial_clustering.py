@@ -667,6 +667,143 @@ def compute_noise_distance(
     }
 
 
+def compute_all_beam_noise_analysis(
+    X: np.ndarray,
+    y_method: np.ndarray,
+    method_names: List[str],
+    flat_meta: List[Dict[str, Any]],
+    noise_vectors: Dict[str, np.ndarray],
+) -> Dict[str, Any]:
+    """Score every beam, not only the one selected as theta*(t).
+
+    The matched-window analysis keeps a single beam per window, which discards
+    most of the embeddings and lets the winner be picked by a maximum. Here
+    every beam is measured against the reference captured through that same
+    beam, so a direction that is never selected still reports a value.
+
+    Also contrasts three ways of summarising a method within one window --
+    the best beam, the median beam and the mean over beams -- against mono.
+    The gap between "best" and "median" is the size of the selection effect.
+    """
+    if not noise_vectors or len(X) == 0:
+        return {"available": False}
+
+    X_norm = l2_normalize(X)
+    distance = np.full(len(X), np.nan, dtype=np.float32)
+    beam_of = [None] * len(X)
+    key_of = [None] * len(X)
+
+    buckets: Dict[Tuple[Optional[str], str, Optional[str]], List[int]] = {}
+    for idx, meta in enumerate(flat_meta):
+        method = meta.get("method")
+        if method not in method_names:
+            continue
+        wav = meta.get("wav", "")
+        cond = meta.get("condition") or condition_from_wav(wav)
+        beam = beam_tag_from_name(wav, method)
+        beam_of[idx] = beam
+        buckets.setdefault((cond, noise_group_for_method(method), beam), []).append(idx)
+
+    for (cond, group, beam), idxs in buckets.items():
+        nvec, key = resolve_noise_vector(noise_vectors, cond, group, beam)
+        if nvec is None or len(nvec) != X.shape[1]:
+            continue
+        rows = np.asarray(idxs, dtype=int)
+        distance[rows] = 1.0 - np.dot(X_norm[rows], nvec)
+        for r in rows:
+            key_of[r] = key
+
+    scored = np.isfinite(distance)
+    if not np.any(scored):
+        return {"available": False, "reason": "no point matched a noise reference"}
+
+    # per beam
+    per_beam: List[Dict[str, Any]] = []
+    for (cond, group, beam), idxs in sorted(buckets.items(), key=lambda kv: (kv[0][1], str(kv[0][2]))):
+        rows = np.asarray(idxs, dtype=int)
+        rows = rows[np.isfinite(distance[rows])]
+        if len(rows) == 0:
+            continue
+        per_beam.append({
+            "method": method_names[int(y_method[rows[0]])],
+            "beam": beam,
+            "condition": cond,
+            "n": int(len(rows)),
+            "mean_noise_distance": round(float(np.mean(distance[rows])), 4),
+            "std_noise_distance": round(float(np.std(distance[rows])), 4),
+            "noise_key": key_of[rows[0]],
+        })
+
+    # per method over every beam
+    per_method: List[Dict[str, Any]] = []
+    for i, method in enumerate(method_names):
+        mask = (y_method == i) & scored
+        total = int(np.sum(y_method == i))
+        if not np.any(mask):
+            per_method.append({"method": method, "n": 0, "n_unscored": total})
+            continue
+        per_method.append({
+            "method": method,
+            "n_beams": len({beam_of[r] for r in np.flatnonzero(mask)}),
+            "n": int(np.sum(mask)),
+            "n_unscored": total - int(np.sum(mask)),
+            "mean_noise_distance": round(float(np.mean(distance[mask])), 4),
+        })
+    mono = next((p for p in per_method if p["method"] == "mono" and p.get("n")), None)
+    if mono:
+        for p in per_method:
+            if p.get("n"):
+                p["delta_vs_mono"] = round(p["mean_noise_distance"] - mono["mean_noise_distance"], 4)
+
+    # best / median / mean beam per window, against mono
+    windows: Dict[Tuple[str, float, float], Dict[str, List[float]]] = {}
+    for idx, meta in enumerate(flat_meta):
+        if not scored[idx]:
+            continue
+        method = meta.get("method")
+        if method not in method_names:
+            continue
+        wav = str(meta.get("wav", ""))
+        src = meta.get("source_recording") or wav.split("_mono")[0].split("_sa")[0] \
+            .split("_LabIR")[0].split("_SPIR")[0]
+        key = (src, round(float(meta.get("start_sec", 0.0)), 2),
+               round(float(meta.get("end_sec", 0.0)), 2))
+        windows.setdefault(key, {}).setdefault(method, []).append(float(distance[idx]))
+
+    selection: Dict[str, Any] = {}
+    for method in method_names:
+        if method == "mono":
+            continue
+        rows = [(np.max(v[method]), float(np.median(v[method])), float(np.mean(v[method])),
+                 v["mono"][0])
+                for v in windows.values() if method in v and v.get("mono")]
+        if not rows:
+            continue
+        best, med, avg, base = (np.array([r[i] for r in rows], dtype=np.float64) for i in range(4))
+        selection[method] = {
+            "n_windows": len(rows),
+            "n_beams_per_window": round(float(np.mean(
+                [len(v[method]) for v in windows.values() if method in v])), 2),
+            "best_beam": {"mean_delta_vs_mono": round(float(np.mean(best - base)), 5),
+                          "win_rate_pct": round(float(np.mean(best > base) * 100), 1)},
+            "median_beam": {"mean_delta_vs_mono": round(float(np.mean(med - base)), 5),
+                            "win_rate_pct": round(float(np.mean(med > base) * 100), 1)},
+            "mean_beam": {"mean_delta_vs_mono": round(float(np.mean(avg - base)), 5),
+                          "win_rate_pct": round(float(np.mean(avg > base) * 100), 1)},
+            "selection_effect": round(float(np.mean(best - med)), 5),
+        }
+
+    return {
+        "available": True,
+        "n_points": int(len(X)),
+        "n_scored": int(np.sum(scored)),
+        "n_unscored": int(len(X) - np.sum(scored)),
+        "per_beam": per_beam,
+        "per_method": per_method,
+        "selection_comparison": selection,
+    }
+
+
 # ── Cache IO ─────────────────────────────────────────────
 
 def save_cache(cache_path: str, emb_dir: str, umap_2d: np.ndarray,
