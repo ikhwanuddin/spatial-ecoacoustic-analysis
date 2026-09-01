@@ -453,19 +453,106 @@ document.getElementById('run-info').innerHTML = `<table><tbody>
     return template
 
 
+def _win_badge(label: str, pct) -> str:
+    """Colour-coded win-rate chip. Green >=80, amber 60-80, grey <60."""
+    if pct is None:
+        return f'<span class="chip chip-na">{html.escape(label)}: n/a</span>'
+    cls = "chip-hi" if pct >= 80 else ("chip-mid" if pct >= 60 else "chip-lo")
+    return f'<span class="chip {cls}">{html.escape(label)}: {pct}%</span>'
+
+
+def _method_note_html() -> str:
+    """Shared derivation of the numbers shown on every model page."""
+    return r'''
+<section class="method">
+<h2>How these numbers are computed</h2>
+
+<p>Every model page reports the same quantities. They are defined once here.</p>
+
+<h3>1. Habitat noise prototype</h3>
+<p>Noise references are cut from vetted background intervals detected on a single
+reference beam, <code>LabIR(S05_000)</code>, then the identical time intervals are cut
+from every other method so all methods hear the same silence. For a given date,
+time condition and beam, the \(K\) reference windows are embedded, L2-normalised,
+averaged and re-normalised:</p>
+<p>$$\bar{\mathbf{n}} \;=\; \frac{\sum_{k=1}^{K} \hat{\mathbf{n}}_k}{\left\lVert \sum_{k=1}^{K} \hat{\mathbf{n}}_k \right\rVert},
+\qquad \hat{\mathbf{n}}_k = \frac{\mathbf{n}_k}{\lVert \mathbf{n}_k \rVert}$$</p>
+
+<h3>2. Noise distance</h3>
+<p>For a window embedding \(\mathbf{e}\), scored against the prototype of its own
+date, its own time condition and its own beam:</p>
+<p>$$d(\mathbf{e}) \;=\; 1 - \frac{\mathbf{e} \cdot \bar{\mathbf{n}}}{\lVert \mathbf{e} \rVert \, \lVert \bar{\mathbf{n}} \rVert}$$</p>
+<p>Larger means further from the background. This is a cosine distance in embedding
+space, <em>not</em> a signal-to-noise ratio in decibels.</p>
+
+<h3>3. Matched windows</h3>
+<p>A time window enters the comparison only if all four methods produced an embedding
+for it. Let \(\mathcal{W}\) be that set, \(N = \lvert \mathcal{W} \rvert\). This removes
+sample-size imbalance between a 1-channel method and a 31-beam one.</p>
+
+<h3>4. Beam selection</h3>
+<p>For a beamformed method with beam set \(\mathcal{B}\), each window is represented by
+its single best-scoring beam:</p>
+<p>$$\theta^{*}(t) \;=\; \arg\max_{b \in \mathcal{B}} \; d(\mathbf{e}_{t,b}),
+\qquad d_{m}(t) \;=\; d\!\left(\mathbf{e}_{t,\theta^{*}(t)}\right)$$</p>
+<p>For <code>mono</code> and <code>sa</code>, \(\lvert \mathcal{B} \rvert = 1\) and no choice is made.</p>
+
+<h3>5. Win rate</h3>
+<p>Paired against the mono channel of the same window, \(\Delta_{m}(t) = d_{m}(t) - d_{\text{mono}}(t)\):</p>
+<p>$$\mathrm{WR}_{m} \;=\; \frac{100}{N} \sum_{t \in \mathcal{W}} \mathbb{1}\!\left[\Delta_{m}(t) > 0\right]$$</p>
+<p>So a win rate of 94.2% means the method beat mono on 94.2% of matched windows.
+50% is the coin-flip line.</p>
+
+<h3>6. The other metrics</h3>
+<p>Mean delta, the average size of the advantage:</p>
+<p>$$\bar{\Delta}_{m} \;=\; \frac{1}{N} \sum_{t \in \mathcal{W}} \Delta_{m}(t)$$</p>
+<p>Cliff's delta, a sign-based effect size on the paired differences:</p>
+<p>$$\delta_{m} \;=\; \frac{1}{N}\sum_{t} \mathbb{1}\!\left[\Delta_{m}(t) > 0\right] \;-\; \frac{1}{N}\sum_{t} \mathbb{1}\!\left[\Delta_{m}(t) < 0\right]$$</p>
+<p>Reported \(p\) values come from a one-sided Wilcoxon signed-rank test on the paired
+distances, alternative <em>greater</em>. Note that this is the paired-dominance form of
+Cliff's delta, computed on matched pairs rather than over all cross-pairs.</p>
+
+<h3>7. What the win rate does not tell you</h3>
+<div class="warn">
+<p>The win rate above uses \(\theta^{*}(t)\), the beam chosen by maximising the very
+quantity that is then reported. Taking a maximum over 19 or 31 candidates raises the
+score even when no beam carries real signal, so this figure is an <strong>upper
+bound</strong>, not an unbiased estimate.</p>
+<p>Each model page therefore also carries <em>Does Choosing the Best Beam Explain the
+Gain?</em>, which repeats the comparison using the median and mean beam instead of the
+best. The gap between the best-beam and median-beam columns is the size of the
+selection effect. Read the two together.</p>
+</div>
+
+<h3>8. Sorting</h3>
+<p>Cards are ordered by the higher of the two win rates, descending, so the strongest
+and weakest models sit at opposite ends of the list.</p>
+</section>
+'''
+
+
 def _index_html(manifest: Dict[str, Any]) -> str:
-    cards = []
+    entries = []
     for item in manifest["models"]:
         ov = item["overview"]
         hyp = (item.get("matched_analysis") or {}).get("summary_stats", {}).get("hypothesis_tests", {})
-        spir = hyp.get("bf_SPIR", {})
-        win_str = f"SPIR Win Rate: {spir.get('win_rate_pct', 'N/A')}%" if "win_rate_pct" in spir else ""
+        spir = hyp.get("bf_SPIR", {}).get("win_rate_pct")
+        labir = hyp.get("bf_LabIR", {}).get("win_rate_pct")
+        rank = max([v for v in (spir, labir) if v is not None], default=-1.0)
+        entries.append((rank, item, ov, spir, labir))
+    entries.sort(key=lambda e: e[0], reverse=True)
+
+    cards = []
+    for _rank, item, ov, spir, labir in entries:
+        href = html.escape(item["html"])
         cards.append(
-            f'''<article class="card"><h2><a href="{html.escape(item["html"])}">{html.escape(item["model"])}</a></h2>
-<p>{ov["total_embeddings"]:,} points · {ov["embedding_dim"]}D · {ov["n_clusters"]} clusters · <span class="badge">{win_str}</span></p>
-<p><a href="{html.escape(item["html"])}">Open evaluation dashboard →</a></p></article>'''
+            f'''<article class="card"><h2><a href="{href}">{html.escape(item["model"])}</a></h2>
+<p class="meta">{ov["total_embeddings"]:,} points &middot; {ov["embedding_dim"]}D &middot; {ov["n_clusters"]} clusters</p>
+<p class="rates">{_win_badge("SPIR Win Rate", spir)} {_win_badge("LabIR Win Rate", labir)}</p>
+<p><a href="{href}">Open evaluation dashboard &rarr;</a></p></article>'''
         )
     cards_html = "\n".join(cards)
+
     skipped = manifest.get("skipped_models", [])
     skipped_html = ""
     if skipped:
@@ -473,29 +560,67 @@ def _index_html(manifest: Dict[str, Any]) -> str:
             f"<li><code>{html.escape(item['model'])}</code>: {html.escape(item['reason'])}</li>"
             for item in skipped
         ) + "</ul>"
+
     location = html.escape(manifest["location"])
     date_str = html.escape(manifest["date"])
-    return f'''<!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Spatial Bioacoustic Evaluation — {location} — {date_str}</title>
-<style>
-:root {{ --bg:#f8fafc; --card:#fff; --text:#0f172a; --muted:#64748b; --border:#e2e8f0; --primary:#2563eb; }}
-body {{ margin:0; padding:32px; background:var(--bg); color:var(--text); font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }}
-main {{ max-width:1100px; margin:auto; }}
-h1 {{ margin:0 0 6px; font-size:26px; font-weight:700; }}
-.subtitle {{ color:var(--muted); margin-bottom:24px; }}
-.badge {{ background:#dcfce7; color:#166534; padding:2px 8px; border-radius:10px; font-weight:600; font-size:12px; }}
-.grid {{ display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:16px; margin-top:16px; }}
-.card {{ background:var(--card); border:1px solid var(--border); border-radius:12px; padding:20px; box-shadow:0 1px 3px rgba(0,0,0,0.05); }}
-a {{ color:var(--primary); text-decoration:none; font-weight:600; }}
-a:hover {{ text-decoration:underline; }}
-</style></head><body>
-<main>
-<h1>Spatial Bioacoustic Evaluation Dashboard</h1>
-<div class="subtitle">Location: <b>{location}</b> | Date: <b>{date_str}</b> | Design: <b>Matched-Window Pairwise Direction Selection</b></div>
-<div class="grid">{cards_html}</div>
-{skipped_html}
-</main></body></html>'''
+
+    css = '''
+:root { --bg:#f8fafc; --card:#fff; --text:#0f172a; --muted:#64748b; --border:#e2e8f0; --primary:#2563eb; }
+body { margin:0; padding:32px; background:var(--bg); color:var(--text); font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
+main { max-width:1100px; margin:auto; }
+h1 { margin:0 0 6px; font-size:26px; font-weight:700; }
+.subtitle { color:var(--muted); margin-bottom:24px; }
+.grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:16px; margin-top:16px; }
+.card { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:20px; box-shadow:0 1px 3px rgba(0,0,0,0.05); }
+.card h2 { margin:0 0 8px; font-size:17px; }
+.meta { margin:0 0 10px; color:var(--muted); font-variant-numeric:tabular-nums; }
+.rates { margin:0 0 12px; display:flex; flex-wrap:wrap; gap:6px; }
+.chip { padding:3px 9px; border-radius:10px; font-weight:600; font-size:12px; white-space:nowrap; font-variant-numeric:tabular-nums; }
+.chip-hi { background:#dcfce7; color:#166534; }
+.chip-mid { background:#fef3c7; color:#92400e; }
+.chip-lo { background:#e2e8f0; color:#475569; }
+.chip-na { background:#f1f5f9; color:#94a3b8; }
+a { color:var(--primary); text-decoration:none; font-weight:600; }
+a:hover { text-decoration:underline; }
+.method { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:24px 28px; margin-top:32px; }
+.method h2 { margin-top:0; font-size:20px; }
+.method h3 { font-size:15px; margin:22px 0 6px; }
+.method p { margin:8px 0; }
+.method code { background:#f1f5f9; padding:1px 5px; border-radius:4px; font-size:13px; }
+.method .warn { background:#fffbeb; border-left:3px solid #f59e0b; padding:12px 16px; border-radius:0 8px 8px 0; margin-top:10px; }
+'''
+
+    katex = '''
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  if (window.renderMathInElement) {
+    renderMathInElement(document.body, {
+      delimiters: [
+        {left: "$$", right: "$$", display: true},
+        {left: "\\\\(", right: "\\\\)", display: false}
+      ],
+      throwOnError: false
+    });
+  }
+});
+</script>'''
+
+    return (
+        '<!doctype html>\n<html lang="en"><head><meta charset="utf-8">'
+        '<meta name="viewport" content="width=device-width,initial-scale=1">\n'
+        f'<title>Spatial Bioacoustic Evaluation &mdash; {location} &mdash; {date_str}</title>\n'
+        f'{katex}\n<style>{css}</style></head><body>\n<main>\n'
+        '<h1>Spatial Bioacoustic Evaluation Dashboard</h1>\n'
+        f'<div class="subtitle">Location: <b>{location}</b> | Date: <b>{date_str}</b> | '
+        'Design: <b>Matched-Window Pairwise Direction Selection</b></div>\n'
+        f'<div class="grid">{cards_html}</div>\n'
+        f'{skipped_html}\n'
+        f'{_method_note_html()}\n'
+        '</main></body></html>'
+    )
 
 
 def _write_plotly_asset(output_dir: Path, custom_plotly_js: Optional[str] = None) -> None:
