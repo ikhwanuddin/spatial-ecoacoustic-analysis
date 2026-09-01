@@ -297,14 +297,15 @@ jadi `vggish` (urutan ke-12) ikut jatuh ke CPU padahal terdaftar sebagai model G
 
 ## 5b. Daftar Tugas Berjalan (per 2026-09-01)
 
-Urutannya penting: nomor 3 dan 6 terhambat sampai nomor 1 selesai.
+Urutannya penting: nomor 3 dan 6 terhambat sampai nomor 1 selesai. Nomor 1 dan 2 kini selesai,
+sehingga nomor 3 semestinya sudah bisa jalan.
 
-**1. Noise reference 2026-04-30** — SEDANG DIKERJAKAN
+**1. Noise reference 2026-04-30** — SELESAI (4 kondisi x 52 file: dawn 42s, day 131s, dusk 45s, night 93s unik)
 `generate_official_noise_references.py --date 2026-04-30`. Tanggal ini punya 60 rekaman dan
 **keempat kondisi lengkap**: dawn 3, day 29, dusk 6, night 22. Jauh lebih kaya dari 04-21 yang
 cuma 7 rekaman malam. Ini yang akan menambah kelas latar.
 
-**2. Embed noise reference 04-30 untuk 12 model**
+**2. Embed noise reference 04-30 untuk 12 model** — SELESAI (239.096 skor beam, nol tak ter-skor; dashboard 12 model jadi)
 `pipeline_bacpipe.py --date 2026-04-30` tanpa `--models`. Embedding metodenya sudah ada untuk
 kedua belas model, jadi ini hanya jalur Fast Noise Scoring, bukan ekstraksi ulang.
 
