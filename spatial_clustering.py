@@ -188,10 +188,11 @@ def align_and_select_matched_windows(
             wav = meta.get("wav", "")
             cond = meta.get("condition") or condition_from_wav(wav)
             buckets.setdefault(
-                (cond, noise_group_for_method(method), beam_tag_from_name(wav, method)), []
+                (cond, noise_group_for_method(method), beam_tag_from_name(wav, method),
+                 meta.get("date")), []
             ).append(idx)
-        for (cond, group, beam), idxs in buckets.items():
-            nvec, _key = resolve_noise_vector(noise_vectors, cond, group, beam)
+        for (cond, group, beam, date_str), idxs in buckets.items():
+            nvec, _key = resolve_noise_vector(noise_vectors, cond, group, beam, date_str)
             if nvec is None or len(nvec) != X.shape[1]:
                 continue
             rows = np.asarray(idxs, dtype=int)
@@ -626,11 +627,12 @@ def compute_noise_distance(
         wav = meta.get("wav", "")
         cond = meta.get("condition") or condition_from_wav(wav)
         buckets.setdefault(
-            (cond, noise_group_for_method(method), beam_tag_from_name(wav, method)), []
+            (cond, noise_group_for_method(method), beam_tag_from_name(wav, method),
+             meta.get("date")), []
         ).append(idx)
 
-    for (cond, group, beam), idxs in buckets.items():
-        nvec, key = resolve_noise_vector(noise_vectors, cond, group, beam)
+    for (cond, group, beam, date_str), idxs in buckets.items():
+        nvec, key = resolve_noise_vector(noise_vectors, cond, group, beam, date_str)
         if nvec is None or len(nvec) != X.shape[1]:
             continue
         rows = np.asarray(idxs, dtype=int)
@@ -702,10 +704,11 @@ def compute_all_beam_noise_analysis(
         cond = meta.get("condition") or condition_from_wav(wav)
         beam = beam_tag_from_name(wav, method)
         beam_of[idx] = beam
-        buckets.setdefault((cond, noise_group_for_method(method), beam), []).append(idx)
+        buckets.setdefault((cond, noise_group_for_method(method), beam,
+                            meta.get("date")), []).append(idx)
 
-    for (cond, group, beam), idxs in buckets.items():
-        nvec, key = resolve_noise_vector(noise_vectors, cond, group, beam)
+    for (cond, group, beam, date_str), idxs in buckets.items():
+        nvec, key = resolve_noise_vector(noise_vectors, cond, group, beam, date_str)
         if nvec is None or len(nvec) != X.shape[1]:
             continue
         rows = np.asarray(idxs, dtype=int)
@@ -719,7 +722,7 @@ def compute_all_beam_noise_analysis(
 
     # per beam
     per_beam: List[Dict[str, Any]] = []
-    for (cond, group, beam), idxs in sorted(buckets.items(), key=lambda kv: (kv[0][1], str(kv[0][2]))):
+    for (cond, group, beam, _d), idxs in sorted(buckets.items(), key=lambda kv: (kv[0][1], str(kv[0][2]))):
         rows = np.asarray(idxs, dtype=int)
         rows = rows[np.isfinite(distance[rows])]
         if len(rows) == 0:

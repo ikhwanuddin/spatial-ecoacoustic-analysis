@@ -135,26 +135,32 @@ def noise_group_for_method(method: str) -> str:
     return method[3:] if method.startswith("bf_") else method
 
 
-def noise_key(condition: Optional[str], group: str) -> str:
-    return f"{condition}_{group}" if condition else group
+def noise_key(condition: Optional[str], group: str, date_str: Optional[str] = None) -> str:
+    parts = [p for p in (date_str, condition) if p] + [group]
+    return "_".join(parts)
 
 
-def resolve_noise_vector(noise_vectors, condition, group, beam_tag=None):
-    """Pick the reference for this window's condition, method and direction.
+def resolve_noise_vector(noise_vectors, condition, group, beam_tag=None, date_str=None):
+    """Pick the reference for this window's date, condition, method and direction.
 
-    A beam is measured against noise captured through that same beam. Order:
-      1. <condition>_<beam_tag>  same time, same steering direction
-      2. <condition>_<group>     same time, method pooled over its beams
-      3. <group>                 reference predating condition scoping
+    A beam is measured against noise captured through that same beam. Most
+    specific wins, so a reference built from the window's own date is preferred
+    over one pooled across dates:
+      1. <date>_<condition>_<beam>   same day, same time, same direction
+      2. <date>_<condition>_<group>  same day, method pooled over its beams
+      3. <condition>_<beam>          pooled across dates, same direction
+      4. <condition>_<group>         pooled across dates and beams
+      5. <group>                     reference predating condition scoping
     Returns (vector, key_used) or (None, None) — never a silent zero.
     """
     if not noise_vectors:
         return None, None
     candidates = []
-    if condition and beam_tag:
-        candidates.append(noise_key(condition, beam_tag))
-    if condition:
-        candidates.append(noise_key(condition, group))
+    for d in ((date_str,) if date_str else ()) + (None,):
+        if condition and beam_tag:
+            candidates.append(noise_key(condition, beam_tag, d))
+        if condition:
+            candidates.append(noise_key(condition, group, d))
     candidates.append(group)
     for key in candidates:
         vec = noise_vectors.get(key)
