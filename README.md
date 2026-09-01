@@ -2,6 +2,13 @@
 
 Spatial (array) ecoacoustic pipeline for MAARU monitoring data: beamforming and baselines → **dense embeddings** for method comparison. Species-ID scoring is **archived** (not the research path).
 
+## Working context
+
+Operational context for continuing work on CX3 — storage rules, how to run the
+pipeline, current data status, open problems and hard-won cluster facts — lives in
+[`docs/CONTEXT.md`](docs/CONTEXT.md). Read it before touching anything on the cluster.
+It is symlinked to `~/README.md` on CX3 and is updated as the work moves.
+
 ## Entry points
 
 | Status | Script | Role |
