@@ -295,6 +295,63 @@ jadi `vggish` (urutan ke-12) ikut jatuh ke CPU padahal terdaftar sebagai model G
 
 ---
 
+## 5b. Daftar Tugas Berjalan (per 2026-09-01)
+
+Urutannya penting: nomor 3 dan 6 terhambat sampai nomor 1 selesai.
+
+**1. Noise reference 2026-04-30** — SEDANG DIKERJAKAN
+`generate_official_noise_references.py --date 2026-04-30`. Tanggal ini punya 60 rekaman dan
+**keempat kondisi lengkap**: dawn 3, day 29, dusk 6, night 22. Jauh lebih kaya dari 04-21 yang
+cuma 7 rekaman malam. Ini yang akan menambah kelas latar.
+
+**2. Embed noise reference 04-30 untuk 12 model**
+`pipeline_bacpipe.py --date 2026-04-30` tanpa `--models`. Embedding metodenya sudah ada untuk
+kedua belas model, jadi ini hanya jalur Fast Noise Scoring, bukan ekstraksi ulang.
+
+**3. Ulang uji separability dengan 04-21 + 04-30 digabung**
+Penghambat utama sekarang adalah kelas latar: 274 window untuk model ber-window 1 detik,
+tapi hanya **5** untuk model ber-window 5 detik dan **0** untuk biolingual (window 10 detik).
+Dengan 5 sampel, tidak ada teknik statistik yang menolong. Ini murni soal jumlah data.
+
+**4. Nyalakan skor bird-ness BirdNET**
+`run_pretrained_classifier` sekarang `False` di `pipeline_bacpipe.py`. Nyalakan, lalu ambil
+**skor tertinggi di antara seluruh kelas dan buang nama spesiesnya**. Dasarnya: pada eksperimen
+terpisah, BirdNET memberi confidence di atas 0,7 untuk rekaman Way Canguk sementara nama
+spesiesnya sama sekali tidak dapat dipercaya. Itu justru bukti bahwa head-nya menangkap
+"mirip burung", bukan identitas. Yang dipakai hanya sinyal bird-ness itu.
+
+**5. Validasi skor bird-ness sebelum dipercaya**
+Korelasikan skor bird-ness dengan jumlah event biofoni dari detektor. Kalau korelasinya kuat,
+skor itu sah dipakai. Kalau lemah, jangan dipakai.
+
+**6. Seleksi beam memakai skor bird-ness, lalu evaluasi terpisah**
+Ini versi lapangan dari automated source selection di paper FA2025. Kriteria pemilihan
+(bird-ness) berbeda dari kriteria penilaian (separability), jadi sirkularitasnya putus.
+Laporkan tiga angka: lantai (median beam), operasional (terpilih bird-ness), oracle (best beam).
+
+**7. Linear probe**
+Baru setelah kelas latar cukup. Dua kelas saja — ada burung / tidak ada burung — **bukan**
+label spesies. Labelnya dari detektor akustik sendiri. Mengukur apakah informasi itu tersimpan
+rapi di dalam embedding, dan itulah definisi kualitas representasi yang dipakai di literatur.
+
+**8. Belum diputuskan: target 60 detik noise reference**
+04-21 hanya menghasilkan 38 detik unik. Menaikkannya berarti melonggarkan kriteria bersih —
+keputusan ilmiah, bukan teknis. 04-30 kemungkinan besar melampaui 60 detik tanpa perlu
+dilonggarkan, karena rekamannya delapan kali lebih banyak.
+
+### Yang sudah terjawab dan jangan diulang
+
+- **Noise distance saja tidak memadai** sebagai metrik utama. Diuji atas 12 model: AUC semua
+  metode berkerumun di 0,50–0,54, tidak terbedakan dari lempar koin maupun satu sama lain.
+- **Tapi bukan nol.** Korelasi Spearman dengan jumlah event burung positif di **seluruh** 12
+  model, +0,09 sampai +0,16. Hubungannya nyata, cuma lemah.
+- **`best beam` adalah agregasi terburuk** saat dinilai dengan label dari luar (rata-rata AUC
+  0,500, tepat di lempar koin). Kemenangan telak best-beam kemarin adalah artefak memilih dan
+  menilai dengan metrik yang sama.
+- **Panjang window menentukan jumlah kelas latar**, bukan kualitas model: 1 detik → 274 window
+  latar, 3 detik → 27, 5 detik → 5, 10 detik → 0. Di hutan ini, potongan 10 detik selalu
+  kemasukan burung.
+
 ## 6. Fakta Lapangan CX3 (mahal didapat, jangan diulang)
 
 ### 6.1 perch_bird JALAN di GPU
