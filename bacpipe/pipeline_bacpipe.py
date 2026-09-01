@@ -427,11 +427,13 @@ def _noise_keys_by_condition(
 
     by_condition: Dict[str, List[str]] = {}
     for key in sorted(noise_embeddings):
+        # keys look like <condition>_<tail> or <date>_<condition>_<tail>
+        rest = re.sub(r"^\d{4}-\d{2}-\d{2}_", "", key)
         for condition in CONDITIONS:
             head = f"{condition}_"
-            if not key.startswith(head):
+            if not rest.startswith(head):
                 continue
-            if belongs(key[len(head):]):
+            if belongs(rest[len(head):]):
                 by_condition.setdefault(condition, []).append(key)
             break
     if not by_condition and group in noise_embeddings:
@@ -1833,7 +1835,9 @@ def _strict_find_noise_wavs(
             # Ignore a reference for a beam the current config no longer makes.
             if tag not in ("LabIR", "SPIR", "sa", "mono") and tag not in _ALLOWED_BEAMS:
                 continue
-            found.append((str(path), path.name, noise_key(condition, tag)))
+            # Carry the date, otherwise one date's references silently overwrite
+            # another's: the arrays are stored per model, not per date.
+            found.append((str(path), path.name, noise_key(condition, tag, date)))
     return found
 
 

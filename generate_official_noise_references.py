@@ -252,8 +252,9 @@ def main() -> None:
     parser.add_argument("--python", default=sys.executable)
     parser.add_argument("--target-sec", type=float, default=60.0,
                         help="minimum noise seconds wanted per condition (default 60)")
-    parser.add_argument("--max-sec", type=float, default=0.0,
-                        help="cap per condition in seconds; 0 keeps every accepted interval")
+    parser.add_argument("--max-sec", type=float, default=120.0,
+                        help="cap per condition in seconds, spread evenly over its recordings; "
+                             "0 keeps every accepted interval")
     parser.add_argument("--window-sec", type=float, default=2.0)
     parser.add_argument("--hop-sec", type=float, default=1.0)
     parser.add_argument("--fade-ms", type=float, default=5.0)
@@ -270,6 +271,7 @@ def main() -> None:
     print(f"{args.location} {args.date}: {len(references)} rekaman referensi {REFERENCE_BEAM}")
 
     by_condition: Dict[str, List[dict]] = defaultdict(list)
+    failed: List[str] = []
     for wav in references:
         hour = hour_of(wav)
         if hour is None:
@@ -278,9 +280,15 @@ def main() -> None:
         condition = condition_of(hour)
         print(f"  {wav.name}  ->  {condition}")
         review_dir = args.review_root / args.location / args.date / condition / safe(wav.stem)
-        json_path = run_detector(args.detector, args.python, wav, review_dir,
-                                 args.window_sec, args.hop_sec)
-        intervals = accepted_intervals(json_path, drop_overlap=args.no_overlap)
+        try:
+            json_path = run_detector(args.detector, args.python, wav, review_dir,
+                                     args.window_sec, args.hop_sec)
+            intervals = accepted_intervals(json_path, drop_overlap=args.no_overlap)
+        except (RuntimeError, OSError, ValueError) as exc:
+            # One unreadable or too-short recording must not abort the date.
+            print(f"    ⚠️  dilewati: {str(exc).splitlines()[-1][:120]}")
+            failed.append(wav.name)
+            continue
         print(f"    {len(intervals)} interval bersih "
               f"({sum(w['end_sec'] - w['start_sec'] for w in intervals):.1f} s tersambung, "
               f"{unique_seconds(intervals):.1f} s unik)")
@@ -298,15 +306,18 @@ def main() -> None:
     summary = {}
     for condition, records in sorted(by_condition.items()):
         if args.max_sec > 0:
-            budget = args.max_sec
+            # Spread the budget evenly over the recordings of this condition.
+            # Spending it in file order would take every reference from the
+            # first few recordings and leave the rest of the day unrepresented.
+            quota = args.max_sec / max(len(records), 1)
             for rec in records:
                 rec["intervals"].sort(key=lambda w: w.get("background_score", 0), reverse=True)
-                kept = []
+                kept, spent = [], 0.0
                 for w in rec["intervals"]:
-                    if budget <= 0:
+                    if spent >= quota:
                         break
                     kept.append(w)
-                    budget -= w["end_sec"] - w["start_sec"]
+                    spent += w["end_sec"] - w["start_sec"]
                 rec["intervals"] = sorted(kept, key=lambda w: w["start_sec"])
             records = [r for r in records if r["intervals"]]
         summary[condition] = build_condition(condition, records, args.sea_root,
@@ -318,6 +329,9 @@ def main() -> None:
         mark = "OK " if total >= args.target_sec else "KURANG"
         print(f"{mark} {condition:6s} {total:8.1f} s tersambung / {man['unique_noise_sec']:7.1f} s unik"
               f"  dari {man['n_recordings']} rekaman, {len(man['files'])} file")
+    if failed:
+        print(f"{len(failed)} rekaman dilewati: {', '.join(f[:20] for f in failed[:5])}"
+              + (" ..." if len(failed) > 5 else ""))
     missing = [c for c in ("dawn", "day", "dusk", "night") if c not in summary]
     if missing:
         print(f"not_available: {', '.join(missing)} (tidak ada rekaman pada kondisi itu)")

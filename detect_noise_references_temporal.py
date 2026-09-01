@@ -370,6 +370,12 @@ def main() -> None:
         json.dumps(result, indent=2)
     )
 
+    if not result["windows"]:
+        # A recording shorter than one analysis window produces nothing to score.
+        print(f"no analysis window fits in {args.input.name} "
+              f"(duration_sec={result['duration_sec']}, window_sec={args.window_sec})")
+        raise SystemExit(0)
+
     fields = [key for key in result["windows"][0] if key not in ("events", "bird_events")]
     with (args.output_dir / f"{stem}_temporal_window_scores.csv").open("w", newline="") as handle:
         writer = csv.DictWriter(handle, fieldnames=fields)
