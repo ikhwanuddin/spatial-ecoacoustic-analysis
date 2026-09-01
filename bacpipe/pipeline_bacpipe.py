@@ -136,6 +136,7 @@ if str(_PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(_PROJECT_ROOT))
 
 from config import (
+    expected_beam_tags,
     ANALYSIS_OUTPUT,
     LOCATION_MAP,
     RPIID_TO_LOCATION,
@@ -1644,6 +1645,7 @@ _STRICT_ACTIVE_SCOPE = {}
 
 
 NOISE_REFERENCE_BEAM = "LabIR(S05_000)"
+_ALLOWED_BEAMS = expected_beam_tags()
 
 
 def _strict_condition(name: str) -> Optional[str]:
@@ -1828,6 +1830,9 @@ def _strict_find_noise_wavs(
             # direction it was cut from, so a beam is only ever compared with
             # noise captured through that same beam.
             tag = beam_tag_from_name(path.name) or group
+            # Ignore a reference for a beam the current config no longer makes.
+            if tag not in ("LabIR", "SPIR", "sa", "mono") and tag not in _ALLOWED_BEAMS:
+                continue
             found.append((str(path), path.name, noise_key(condition, tag)))
     return found
 

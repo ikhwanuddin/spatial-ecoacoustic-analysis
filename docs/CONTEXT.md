@@ -112,11 +112,21 @@ S01 (elevasi −45°) × 6 + S05 (0°) × 6 + S09 (+45°) × 6 + S12 (zenith) ×
   - user meminta pilih satu repetisi saja (`rep_values=[2]`) → 7 × 1 = **7**
 - Total: dulu 24 + 21 = **45**, sekarang 24 + 7 = **31**
 
-> **BAHAYA:** seluruh embedding yang ada sekarang, **dan noise reference-nya**, dibangun dengan
-> **45 beam SPIR**. `config.py` sekarang menghasilkan **31**. Ekstraksi ulang apa pun akan
-> menghasilkan data yang tidak sebanding dengan data lama maupun dengan noise reference 45-beam.
-> Kalau memang mau pindah ke 31 beam, noise reference **wajib** dibuat ulang juga, dan seluruh
-> tanggal harus diekstrak ulang — jangan dicampur.
+**Sudah diselesaikan lewat allowlist, bukan lewat beamform ulang.** Audio di disk masih memuat
+45 beam SPIR karena di-beamform 22 Agustus, sebelum keputusan rep-2. `config.expected_beam_tags()`
+menurunkan daftar beam sah langsung dari `PRODUCTION_IR_SUBSETS` (19 LabIR + 24 SPIR1 +
+7 SPIR2 = 50), dan penyaringan dilakukan di tiga tempat:
+
+- `generate_official_noise_references.py` — beam di luar daftar tidak pernah jadi referensi
+- `embedding_io.load_embeddings_from_dir` — barisnya dibuang saat pemuatan, dengan laporan jumlah
+- `pipeline_bacpipe` — referensi noise untuk beam tak sah diabaikan
+
+Hasilnya identik dengan beamform ulang, karena tiap beam adalah operasi filter independen:
+SPIR1 dan SPIR2-r2 tidak terpengaruh ada-tidaknya r1/r3. Terverifikasi di 04-21: noise ref
+52 file (bukan 66), embedding bf_SPIR 25.200 → 17.360 = 560 × 31, 7.840 baris dibuang.
+
+Berkas SPIR2 r1 dan r3 sengaja **tidak** dihapus dari disk; ia hanya tidak pernah dipakai.
+Kalau suatu saat config berubah lagi, daftar sahnya ikut berubah tanpa perlu menyentuh data.
 
 Tiap window dinilai dengan **noise distance**: cosine distance embedding terhadap mean vector
 noise reference habitat. Makin jauh dari noise = makin bagus, itu efek yang diharapkan dari
@@ -216,10 +226,10 @@ sebabnya terukur:
 | metode | best beam | median beam | mean beam | **best − median** |
 |---|---|---|---|---|
 | bf_LabIR | +0,0546 / 99 % | +0,0022 / 63 % | +0,0071 / 76 % | **+0,0524** |
-| bf_SPIR | +0,0570 / 100 % | +0,0072 / 71 % | +0,0094 / 75 % | **+0,0498** |
+| bf_SPIR | +0,0556 / 100 % | +0,0101 / 74 % | +0,0115 / 77 % | **+0,0455** |
 | sa | +0,0244 / 82 % | +0,0244 / 82 % | +0,0244 / 82 % | 0,0000 |
 
-**96 % keunggulan bf_LabIR dan 87 % keunggulan bf_SPIR hilang begitu beam tidak boleh dipilih.**
+**96 % keunggulan bf_LabIR dan 82 % keunggulan bf_SPIR hilang begitu beam tidak boleh dipilih.**
 Sebabnya sirkular: θ*(t) dipilih sebagai beam dengan noise distance **tertinggi**, lalu noise
 distance itu juga yang dilaporkan sebagai hasil. Metrik yang sama dipakai untuk memilih dan
 untuk menilai.
@@ -232,7 +242,7 @@ Dinilai atas **semua** beam, urutannya berbalik lagi:
 | metode | beam | n | noise distance | Δ vs mono |
 |---|---|---|---|---|
 | sa | 1 | 560 | 0,0777 | **+0,0244** |
-| bf_SPIR | 45 | 25.200 | 0,0627 | +0,0094 |
+| bf_SPIR | 31 | 17.360 | 0,0648 | +0,0115 |
 | bf_LabIR | 19 | 10.640 | 0,0603 | +0,0070 |
 | mono | 1 | 560 | 0,0533 | 0 |
 

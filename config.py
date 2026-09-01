@@ -160,6 +160,29 @@ LABIR_SPEAKER_ELEVATION = {
     9: 45,     # Above horizontal
     12: 90,    # Zenith (straight up)
 }
+def expected_beam_tags(subsets=None):
+    """Beam names the active IR configuration is supposed to produce.
+
+    The beamformed audio on disk may predate a configuration change, so this is
+    the allowlist that decides which beams the analysis is allowed to use.
+    Names match output_suffix_pattern exactly, e.g. 'LabIR(S01_000)',
+    'SPIR1(02m_000)', 'SPIR2(64m_180_r2)'.
+    """
+    subsets = subsets if subsets is not None else PRODUCTION_IR_SUBSETS
+    tags = set()
+    for ir in subsets.values():
+        zenith = ir.zenith_speakers or set()
+        for value in ir.param_values:
+            degrees = [ir.degree_values[0]] if value in zenith else ir.degree_values
+            for degree in degrees:
+                for rep in (ir.rep_values or [None]):
+                    fields = {ir.param_label: value, "degrees": degree}
+                    if rep is not None:
+                        fields["rep"] = rep
+                    tags.add(ir.output_suffix_pattern.format(**fields))
+    return tags
+
+
 PROTOTYPE_IR_SUBSETS = {
     "LabIR": IRType(
         name="LabIR", folder="Lab_IR", use_dual_filter=True,

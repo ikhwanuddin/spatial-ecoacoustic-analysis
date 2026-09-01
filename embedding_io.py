@@ -17,7 +17,9 @@ from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 import numpy as np
 
+from config import expected_beam_tags
 from embedding_schema import (
+    beam_tag_from_name,
     DEFAULT_METHODS,
     bacpipe_embeddings_dir,
     birdnet_embeddings_dir,
@@ -73,6 +75,7 @@ def load_embeddings_from_dir(
     date_filter: Optional[Sequence[str]] = None,
     source_tag: Optional[str] = None,
     meta_dir: Optional[str] = None,
+    allowed_beams: Optional[Sequence[str]] = None,
 ) -> Tuple[Dict[str, np.ndarray], np.ndarray, np.ndarray, List[dict], List[str]]:
     """Load embeddings from a single directory (cluster_poc-compatible return).
 
@@ -85,6 +88,11 @@ def load_embeddings_from_dir(
     """
     methods = list(methods) if methods else list(DEFAULT_METHODS)
     files = list_embedding_files(emb_dir, methods=methods, date_filter=date_filter)
+    # The beamformed audio on disk can predate a configuration change, so rows
+    # whose steering direction is no longer configured are dropped here rather
+    # than quietly inflating every per-method statistic.
+    allowed = expected_beam_tags() if allowed_beams is None else set(allowed_beams)
+    dropped = 0
 
     all_emb: Dict[str, List[np.ndarray]] = {m: [] for m in methods}
     all_meta: Dict[str, List[dict]] = {m: [] for m in methods}
@@ -114,9 +122,25 @@ def load_embeddings_from_dir(
                 rec.setdefault("source_tag", source_tag)
             rec.setdefault("date", date_str)
             rec.setdefault("method", method)
+
+        if allowed:
+            keep = [
+                i for i, rec in enumerate(meta)
+                if (tag := beam_tag_from_name(rec.get("wav", ""), method)) is None
+                or tag == method or tag in allowed
+            ]
+            if len(keep) < len(meta):
+                dropped += len(meta) - len(keep)
+                rows = np.asarray(keep, dtype=int)
+                emb = emb[rows]
+                meta = [meta[i] for i in keep]
+
         all_emb[method].append(emb)
         all_meta[method].extend(meta)
         print(f"  [{source_tag or emb_dir}] {os.path.basename(emb_path)}: {len(emb)}")
+
+    if dropped:
+        print(f"  [beam filter] dropped {dropped} embeddings whose beam is not in the current config")
 
     embeddings: Dict[str, np.ndarray] = {}
     d = dim or 1024

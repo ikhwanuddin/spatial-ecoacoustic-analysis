@@ -42,6 +42,9 @@ from typing import Dict, List, Optional, Tuple
 import numpy as np
 import soundfile as sf
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from config import expected_beam_tags  # noqa: E402
+
 REFERENCE_BEAM = "LabIR(S05_000)"
 STREAMS = ("LabIR", "SPIR", "sa", "mono")
 
@@ -173,6 +176,8 @@ def build_condition(condition: str, records: List[dict], sea_root: Path,
           f"{sum(len(r['intervals']) for r in records)} interval, "
           f"{total_sec:.1f} s tersambung ({uniq_sec:.1f} s unik)")
 
+    allowed = expected_beam_tags()
+    skipped_beams: set = set()
     manifest_files: List[dict] = []
     for stream in STREAMS:
         # beam tag -> ordered list of (wav, start, end)
@@ -184,6 +189,11 @@ def build_condition(condition: str, records: List[dict], sea_root: Path,
             for wav in sorted(src_dir.glob("*.wav")):
                 tag = beam_tag(wav.name) if stream in ("LabIR", "SPIR") else stream
                 if tag is None:
+                    continue
+                # A beam the current configuration no longer produces must not
+                # become a reference; the audio on disk can be older than config.
+                if stream in ("LabIR", "SPIR") and tag not in allowed:
+                    skipped_beams.add(tag)
                     continue
                 for w in rec["intervals"]:
                     pieces[tag].append((wav, w["start_sec"], w["end_sec"]))
@@ -201,8 +211,11 @@ def build_condition(condition: str, records: List[dict], sea_root: Path,
         made = [f for f in manifest_files if f["stream"] == stream]
         print(f"  {stream:6s}: {len(made)} file × {made[0]['duration_sec']:.1f} s")
 
+    if skipped_beams:
+        print(f"  beam di disk tapi tidak ada di config, dilewati: {len(skipped_beams)}")
     manifest = {
         "location": location, "date": date, "condition": condition,
+        "beams_skipped_not_in_config": sorted(skipped_beams),
         "reference_beam": REFERENCE_BEAM,
         "policy": "intervals detected on the reference beam, sliced identically into every stream",
         "n_recordings": len(records),
