@@ -204,47 +204,44 @@ Dashboard yang sudah ada: `2026-04-21` (12 model), `2026-04-26` (12 model).
 
 ## 5. Masalah Terbuka
 
-### 5.1 δ ekstrem pada beamforming — sekarang +1.0, sebelumnya −1.0
+### 5.1 Keunggulan beamforming sebagian besar adalah selection bias — TERUKUR
 
-**Sebab lama sudah hilang.** Dulu `bf_LabIR` kalah dari `mono` di 560/560 window (δ = −1.0)
-karena referensi noise-nya rusak: satu klip 2 detik, dari tanggal lain (2026-05-15), dan
-prototipe mono/sa hanya 1 vektor melawan centroid 19/45 beam. Setelah referensi 04-21 dibangun
-ulang (42 detik, per kondisi, per metode) hasilnya berbalik:
+Riwayatnya: mula-mula δ = −1,0 (BF kalah 560/560) karena referensi noise rusak. Setelah
+referensi 04-21 dibangun ulang dan dipasangkan per beam per kondisi, angkanya jadi δ ≈ +0,98
+(BF menang ~99 %). Dua-duanya ekstrem, dan dua-duanya artefak.
 
-| metode | Δ vs mono | win rate | Cliff's δ | kunci noise |
+Sekarang seluruh 36.960 embedding dinilai (bukan hanya 2.240 yang lolos seleksi θ*), dan
+sebabnya terukur:
+
+| metode | best beam | median beam | mean beam | **best − median** |
 |---|---|---|---|---|
-| sa | +0,0244 | 81,6 % | +0,632 | 1 |
-| bf_LabIR | +0,0546 | 98,9 % | +0,979 | 18 beam |
-| bf_SPIR | +0,0570 | 99,5 % | +0,989 | 42 beam |
+| bf_LabIR | +0,0546 / 99 % | +0,0022 / 63 % | +0,0071 / 76 % | **+0,0524** |
+| bf_SPIR | +0,0570 / 100 % | +0,0072 / 71 % | +0,0094 / 75 % | **+0,0498** |
+| sa | +0,0244 / 82 % | +0,0244 / 82 % | +0,0244 / 82 % | 0,0000 |
 
-Angka di atas memakai pemasangan **per beam**. Dengan pemasangan per metode (prototipe
-dirata-rata antar beam) keunggulan BF dua kali lipat lebih besar dan win rate menyentuh
-100 %; per beam lebih jujur karena tiap arah dibandingkan dengan lantai noise arahnya sendiri.
+**96 % keunggulan bf_LabIR dan 87 % keunggulan bf_SPIR hilang begitu beam tidak boleh dipilih.**
+Sebabnya sirkular: θ*(t) dipilih sebagai beam dengan noise distance **tertinggi**, lalu noise
+distance itu juga yang dilaporkan sebagai hasil. Metrik yang sama dipakai untuk memilih dan
+untuk menilai.
 
-**Tapi δ = +1,0 sama mencurigakannya dengan δ = −1,0.** Curigai **selection bias**:
-`align_and_select_matched_windows()` memilih θ*(t) sebagai beam dengan noise distance
-**tertinggi** dari 19 (LabIR) atau 45 (SPIR) kandidat per window, sedangkan `mono` dan `sa`
-tidak punya pilihan sama sekali. Maksimum dari 19 undian hampir pasti melampaui satu undian
-tunggal, terlepas dari akustiknya.
+`sa` jadi kontrol yang bagus: ia hanya punya satu sinyal sehingga tidak bisa memilih, dan
+ketiga kolomnya identik. Itu sekaligus bukti bahwa perhitungannya benar.
 
-Pola angkanya mendukung dugaan itu: `sa`, satu-satunya metode tanpa pemilihan beam, memberi
-efek yang wajar (81,6 %, δ = 0,63), sedangkan dua metode yang boleh memilih tetap ~99 %.
+Dinilai atas **semua** beam, urutannya berbalik lagi:
 
-**Belum diuji.** Pembanding yang adil misalnya: beam tetap (bukan max), beam acak, atau
-membandingkan mono terhadap beam median alih-alih beam terbaik. Jangan mengutip angka 100 %
-sebagai bukti beamforming bekerja sebelum ini diselesaikan.
+| metode | beam | n | noise distance | Δ vs mono |
+|---|---|---|---|---|
+| sa | 1 | 560 | 0,0777 | **+0,0244** |
+| bf_SPIR | 45 | 25.200 | 0,0627 | +0,0094 |
+| bf_LabIR | 19 | 10.640 | 0,0603 | +0,0070 |
+| mono | 1 | 560 | 0,0533 | 0 |
 
-### 5.2 Laporan lama tidak reproducible
-Dashboard `2026-04-21` versi 19:58 UTC melaporkan mono noise distance **0.4007** dan bf_SPIR
-menang 65.4%. Menghitung ulang dari data on-disk menghasilkan **0.4543** dan bf_SPIR menang 1.1%
-— kesimpulannya terbalik. Penyebabnya belum ditemukan; file embedding tidak berubah sejak 22 Agu
-dan noise reference ditulis sebelum laporan itu dibuat. Dugaan: versi kode saat itu berbeda
-(beberapa file memang uncommitted seharian). **Angka yang berlaku sekarang adalah yang baru.**
+Signal averaging mengungguli kedua beamformer. Angka `best beam` **tidak boleh** dikutip
+sebagai performa beamforming tanpa menyebut bahwa beam-nya dipilih memakai metrik yang sama.
 
-### 5.3 Narasi dashboard masih rule-based
-12 file `narrative_*.json` di `sea-dashboards/2A400/2026-04-21/` bernilai `"source": "deterministic"`
-karena dibuat saat backend LLM belum jalan. Jalankan ulang dengan `--narrative force` untuk
-menggantinya dengan tulisan LLM.
+Yang belum dijawab: apakah ada cara memilih beam yang **tidak** memakai noise distance
+(mis. dari arah sumber yang diketahui, atau kriteria independen). Kalau ada, angka best-beam
+jadi sah. Selama belum ada, median beam adalah pembanding yang jujur.
 
 ### 5.6 Noise reference — produsen sudah diperbaiki, konsumennya belum
 
