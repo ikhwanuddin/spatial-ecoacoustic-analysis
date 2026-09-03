@@ -25,3 +25,10 @@ sea-embedding-visuals.o3843100
 logs/
 nvvm/
 sea-dashboards/
+
+# personal project notes, kept out of the public repo
+docs/
+
+# editor and patch backups
+*.bak
+*.bak-*
