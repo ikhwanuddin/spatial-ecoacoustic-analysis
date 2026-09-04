@@ -1,6 +1,5 @@
 venv/
 .venv/
-bacpipe/.venv/
 __pycache__/
 *.pyc
 .DS_Store
@@ -8,8 +7,6 @@ __pycache__/
 *.ipynb
 ir_cache/
 pipeline_state.json
-# bacpipe / model downloads if stored under repo
-bacpipe/checkpoints/
 
 # Secrets — never commit
 .env
@@ -17,18 +14,20 @@ bacpipe/checkpoints/
 !.env.example
 **/.env
 **/secrets/
-sea-embedding-visuals.o3839939
-sea-embedding-visuals.o3840251
-sea-embedding-visuals.o3843100
 
-# runtime output, not input
+# Runtime output & scratch
 logs/
 nvvm/
 sea-dashboards/
+output/
 
-# personal project notes, kept out of the public repo
-docs/
+# Personal project notes & development plan, kept out of the public repo
+docs/*
+!docs/USAGE.md
 
-# editor and patch backups
+# Editor and patch backups
 *.bak
 *.bak-*
+
+# Archived legacy scripts
+archive/

@@ -114,10 +114,24 @@ SP_IR2 = IRType(
     output_suffix_pattern="SPIR2({distance:02d}m_180_r{rep})",
 )
 
+# Coarse search grid for the hierarchical peak search. Six elevations from -45
+# to +75 crossed with six azimuths, plus the zenith speaker: 37 directions over
+# the sphere. Its own folder and tags, so the 19 beam LabIR path is untouched.
+SBF_IR = IRType(
+    name="SBF", folder="Lab_IR", use_dual_filter=True,
+    fc_high=1000, fc_low=4000, param_label="speaker",
+    param_values=[1, 3, 5, 7, 9, 11, 12],
+    degree_values=[0, 60, 120, 180, 240, 300],
+    zenith_speakers={12},
+    ir_filename_pattern="Lab_IR_S{speaker:02d}_{degrees:03d}.wav",
+    output_suffix_pattern="SBF(S{speaker:02d}_{degrees:03d})",
+)
+
 IR_TYPES: Dict[str, IRType] = {
     "LabIR": LAB_IR,
     "SPIR1": SP_IR1,
     "SPIR2": SP_IR2,
+    "SBF": SBF_IR,
 }
 
 # ============================================================
@@ -133,6 +147,7 @@ PRODUCTION_IR_SUBSETS = {
         ir_filename_pattern="Lab_IR_S{speaker:02d}_{degrees:03d}.wav",
         output_suffix_pattern="LabIR(S{speaker:02d}_{degrees:03d})",
     ),
+    "SBF": SBF_IR,
     "SPIR1": SP_IR1,
     "SPIR2": IRType(
         name="SPIR2", folder="SP_IR2", use_dual_filter=False,
