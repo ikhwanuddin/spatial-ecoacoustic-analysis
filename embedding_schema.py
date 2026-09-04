@@ -116,7 +116,7 @@ def condition_from_wav(name: str) -> Optional[str]:
     return condition_of_hour(hour) if 0 <= hour <= 23 else None
 
 
-BEAM_TAG_PATTERN = re.compile(r"(LabIR\(S\d{2}_\d{3}\)|SPIR[12]\([^)]*\))")
+BEAM_TAG_PATTERN = re.compile(r"(LabIR\(S\d{2}_\d{3}\)|SBF\(S\d{2}_\d{3}\)|SPIR[12]\([^)]*\))")
 
 
 def beam_tag_from_name(name: str, method: Optional[str] = None) -> Optional[str]:
