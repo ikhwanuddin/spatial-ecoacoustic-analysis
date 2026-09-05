@@ -4,17 +4,20 @@ Renders raw 6-channel FLAC recordings into Mono, Signal Averaging (SA),
 and Onset-Aligned Filter-and-Sum Beamforming (LabIR and SPIR).
 
 Vectorized matrix contraction (einsum) & multi-core parallel ISTFT (KISS).
+Includes automatic FLAC integrity verification and repair with graceful skip reporting.
 """
 
 import os
 import glob
 import time
 import argparse
+import subprocess
 import multiprocessing
 import numpy as np
 import scipy.signal as signal
 import soundfile as sf
 import librosa
+from typing import Tuple, Optional, Dict, Any
 
 from config import (
     FS_TARGET,
@@ -42,6 +45,117 @@ _BEAM_CATALOG = None
 _W_TENSOR = None
 
 
+def format_size(num_bytes: int) -> str:
+    val = float(num_bytes)
+    for unit in ["B", "KB", "MB", "GB"]:
+        if abs(val) < 1024.0:
+            return f"{val:3.1f} {unit}"
+        val /= 1024.0
+    return f"{val:.1f} TB"
+
+
+def load_and_verify_flac(flac_path: str, scratch_dir: str) -> Tuple[Optional[np.ndarray], Optional[int], Optional[Dict[str, Any]]]:
+    """
+    Loads 6-channel FLAC audio, attempting automatic repair if corrupted.
+    Returns:
+        (audio_array, sample_rate, None) if successful
+        (None, None, error_info_dict) if unrecoverable and must be skipped.
+    """
+    if not os.path.isfile(flac_path):
+        return None, None, {
+            "flac_path": flac_path,
+            "file_name": os.path.basename(flac_path),
+            "file_size_bytes": 0,
+            "file_size_human": "0 B",
+            "initial_error": "File not found",
+            "repair_attempts": [],
+            "decision": "SKIPPED",
+        }
+
+    file_size = os.path.getsize(flac_path)
+    if file_size == 0:
+        return None, None, {
+            "flac_path": flac_path,
+            "file_name": os.path.basename(flac_path),
+            "file_size_bytes": 0,
+            "file_size_human": "0 B",
+            "initial_error": "File is completely empty (0 bytes)",
+            "repair_attempts": [],
+            "decision": "SKIPPED",
+        }
+
+    initial_error = None
+    try:
+        audio_raw, sr = sf.read(flac_path, dtype="float32")
+        if audio_raw.ndim == 2 and audio_raw.shape[1] == 6 and len(audio_raw) > 0:
+            return audio_raw, sr, None
+        else:
+            shape_str = str(getattr(audio_raw, "shape", None))
+            initial_error = f"Invalid audio shape: {shape_str} (expected 6 channels)"
+    except Exception as e:
+        initial_error = str(e)
+
+    # Attempt automatic repair via ffmpeg error-tolerance stream reconstruction
+    repair_details = []
+    ffmpeg_bin = os.path.expanduser("~/miniforge3/envs/sea/bin/ffmpeg")
+    if not os.path.exists(ffmpeg_bin):
+        ffmpeg_bin = "ffmpeg"
+
+    repaired_path = os.path.join(scratch_dir, "repaired_audio.flac")
+    cmd = [
+        ffmpeg_bin, "-y", "-v", "error",
+        "-err_detect", "ignore_err",
+        "-i", flac_path,
+        "-c:a", "flac",
+        repaired_path
+    ]
+    try:
+        res = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
+        if os.path.exists(repaired_path) and os.path.getsize(repaired_path) > 0:
+            rep_audio, rep_sr = sf.read(repaired_path, dtype="float32")
+            if rep_audio.ndim == 2 and rep_audio.shape[1] == 6 and len(rep_audio) > 0:
+                print(f"   ⚠️ REPAIRED corrupted FLAC via ffmpeg ({file_size} bytes -> {len(rep_audio)} samples)")
+                return rep_audio, rep_sr, None
+            else:
+                rep_shape_str = str(getattr(rep_audio, "shape", None))
+                repair_details.append(f"ffmpeg produced invalid shape: {rep_shape_str}")
+        else:
+            repair_details.append(f"ffmpeg failed: {res.stderr.strip()}")
+    except Exception as e:
+        repair_details.append(f"ffmpeg exception: {str(e)}")
+
+    # Secondary attempt via flac CLI -F decode forcing
+    flac_bin = os.path.expanduser("~/miniforge3/envs/sea/bin/flac")
+    if os.path.exists(flac_bin):
+        wav_temp = os.path.join(scratch_dir, "repaired_temp.wav")
+        cmd_flac = [flac_bin, "-d", "-F", "-f", "-o", wav_temp, flac_path]
+        try:
+            res_flac = subprocess.run(cmd_flac, capture_output=True, text=True, timeout=30)
+            if os.path.exists(wav_temp) and os.path.getsize(wav_temp) > 0:
+                rep_audio, rep_sr = sf.read(wav_temp, dtype="float32")
+                if rep_audio.ndim == 2 and rep_audio.shape[1] == 6 and len(rep_audio) > 0:
+                    print(f"   ⚠️ REPAIRED corrupted FLAC via flac CLI ({file_size} bytes)")
+                    try: os.remove(wav_temp)
+                    except Exception: pass
+                    return rep_audio, rep_sr, None
+                else:
+                    repair_details.append(f"flac CLI produced invalid shape: {getattr(rep_audio, shape, None)}")
+            else:
+                repair_details.append(f"flac CLI decoding failed: {res_flac.stderr.strip()}")
+        except Exception as e:
+            repair_details.append(f"flac CLI exception: {str(e)}")
+
+    return None, None, {
+        "flac_path": flac_path,
+        "file_name": os.path.basename(flac_path),
+        "file_size_bytes": file_size,
+        "file_size_human": format_size(file_size),
+        "initial_error": initial_error,
+        "repair_attempts": repair_details,
+        "decision": "SKIPPED",
+    }
+
+
 def butter_highpass_filter(data: np.ndarray, cutoff: float = HIGH_PASS_CUTOFF, fs: int = FS_TARGET, order: int = 5) -> np.ndarray:
     """Apply zero-phase Butterworth high-pass filter across all channels."""
     nyq = 0.5 * fs
@@ -64,7 +178,7 @@ def get_onset_steering_weights(ir_path: str) -> np.ndarray:
 
     # Load multi-channel IR
     ir_raw, sr = sf.read(ir_path)
-    if ir_raw.shape[0] < ir_raw.shape[1]:  # Ensure shape is (n_samples, n_channels)
+    if ir_raw.shape[0] < ir_raw.shape[1]:
         ir_raw = ir_raw.T
 
     # Resample to 16 kHz if necessary
@@ -90,7 +204,6 @@ def get_onset_steering_weights(ir_path: str) -> np.ndarray:
     ir_tapered = ir_window * taper
 
     # FFT zero-padded to STFT frame length (FRAME_LEN = 320)
-    # Shape: (n_channels, n_freq) = (6, 161)
     IR = np.fft.rfft(ir_tapered.T, n=FRAME_LEN, axis=-1)
 
     # Relative steering vector normalized by reference channel
@@ -153,15 +266,21 @@ def _worker_istft_save(task):
     sf.write(out_path, z.astype(np.float32), fs)
 
 
-def render_single_flac(flac_path: str, output_dir: str, render_beams: bool = True, workers: int = 8):
+def render_single_flac(flac_path: str, output_dir: str, render_beams: bool = True, workers: int = 8) -> Tuple[bool, Optional[Dict[str, Any]]]:
     """
     Render a single 6-channel FLAC file into Mono, SA, and Beamformed WAV files.
     Uses vectorized matrix contraction (einsum) and multi-core parallel ISTFT.
+    Returns:
+        (True, None) if successful.
+        (False, error_info_dict) if corrupted and unrecoverable.
     """
     os.makedirs(output_dir, exist_ok=True)
 
-    # 1. Load multi-channel audio
-    audio_raw, sr = sf.read(flac_path)
+    # 1. Load and verify multi-channel audio (with automatic repair if corrupted)
+    audio_raw, sr, error_info = load_and_verify_flac(flac_path, output_dir)
+    if audio_raw is None:
+        return False, error_info
+
     if sr != FS_TARGET:
         audio_raw = librosa.resample(audio_raw.T, orig_sr=sr, target_sr=FS_TARGET).T
 
@@ -181,7 +300,7 @@ def render_single_flac(flac_path: str, output_dir: str, render_beams: bool = Tru
     sf.write(sa_path, sa_audio.astype(np.float32), FS_TARGET)
 
     if not render_beams:
-        return
+        return True, None
 
     # 5. Multidirectional Beamforming in STFT domain
     catalog, W_tensor = get_beam_weights_tensor()
@@ -193,7 +312,7 @@ def render_single_flac(flac_path: str, output_dir: str, render_beams: bool = Tru
     ], axis=0)
 
     # Vectorized matrix contraction: Z[k, f, t] = sum_c W[k, c, f] * X[c, f, t]
-    Z_all = np.einsum('kcf, cft -> kft', W_tensor, X)
+    Z_all = np.einsum('kcf,cft->kft', W_tensor, X)
 
     # Parallel ISTFT and WAV saving
     tasks = [
@@ -202,6 +321,8 @@ def render_single_flac(flac_path: str, output_dir: str, render_beams: bool = Tru
     ]
     with multiprocessing.Pool(processes=workers) as pool:
         pool.map(_worker_istft_save, tasks)
+
+    return True, None
 
 
 def main():
@@ -240,8 +361,11 @@ def main():
         out_folder = os.path.join(target_scratch, rec_name)
         print(f"[{idx}/{len(flac_files)}] Rendering {rec_name}...")
         t_start = time.time()
-        render_single_flac(flac, out_folder, render_beams=True, workers=args.workers)
-        print(f"    ✓ Done in {time.time() - t_start:.2f}s ({len(os.listdir(out_folder))} WAV files created)")
+        ok, err = render_single_flac(flac, out_folder, render_beams=True, workers=args.workers)
+        if ok:
+            print(f"    ✓ Done in {time.time() - t_start:.2f}s ({len(os.listdir(out_folder))} WAV files created)")
+        else:
+            print(f"    ❌ Skipped corrupted FLAC ({err['file_size_human']}): {err['initial_error']}")
 
     print(f"\n🏁 Finished rendering in {time.time() - t0:.2f}s")
 

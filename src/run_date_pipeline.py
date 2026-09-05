@@ -1,9 +1,11 @@
 """
 Integrated Pipeline Runner for Spatial Ecoacoustic Analysis (SEA).
-Executes Modules 1 -> 2 -> 3 -> 4 sequentially across all recordings in a date.
+Executes Modules 1 -> 2 -> 3 -> 4 -> 5 sequentially across all recordings in a date.
+Includes automatic detection of corrupted FLAC files, repair attempts via ffmpeg/flac,
+graceful skipping of unrecoverable files, and structured skip reporting.
 
 Usage:
-  python src/run_date_pipeline.py --location 2A400 --date 2026-04-22 --processes 4
+  python src/run_date_pipeline.py --location 2A400 --date 2026-04-22 --processes 8
 """
 
 import os
@@ -63,6 +65,8 @@ def process_date(location: str, date_str: str, max_files: int = 0, processes: in
         "beamformed_SPIR": {},
         "beamformed_all": {},
     }
+    corrupted_skipped = []
+    processed_count = 0
 
     for idx, flac in enumerate(flac_files, 1):
         rec_name = os.path.splitext(os.path.basename(flac))[0]
@@ -74,15 +78,22 @@ def process_date(location: str, date_str: str, max_files: int = 0, processes: in
         print(f"\n[{idx}/{len(flac_files)}] >>> Recording: {rec_name}")
         t_rec = time.time()
 
-        # Step 1: Render Signals
+        # Step 1: Render Signals (with corruption verification & auto-repair)
         results_json = os.path.join(rec_scratch, "results.json")
         processed_json = os.path.join(rec_output, "processed.json")
 
-        # Check if already rendered
         wav_count = len([f for f in os.listdir(rec_scratch) if f.endswith(".wav")])
         if wav_count < 52:
             print("  1️⃣  Rendering 52 audio streams (Mono, SA, LabIR, SPIR)...")
-            render_single_flac(flac, rec_scratch, render_beams=True, workers=processes)
+            ok, err_info = render_single_flac(flac, rec_scratch, render_beams=True, workers=processes)
+            if not ok:
+                print(f"  ❌ GAGAL OLAH: Berkas FLAC rusak dan tidak dapat dipulihkan.")
+                print(f"     Berkas   : {err_info['file_name']}")
+                print(f"     Ukuran   : {err_info['file_size_human']} ({err_info['file_size_bytes']} bytes)")
+                print(f"     Penyebab : {err_info['initial_error']}")
+                print(f"     Keputusan: SKIP rekaman ini dan lanjut ke rekaman berikutnya.\n")
+                corrupted_skipped.append(err_info)
+                continue
         else:
             print("  1️⃣  [Skipped] 52 WAV streams already exist.")
 
@@ -122,6 +133,7 @@ def process_date(location: str, date_str: str, max_files: int = 0, processes: in
                     daily_collated[m][sp] = {"conf_list": [], "start_time_list": []}
                 daily_collated[m][sp]["conf_list"].extend(sinfo.get("conf_list", []))
 
+        processed_count += 1
         print(f"  ✓ Recording completed in {time.time() - t_rec:.2f}s")
 
     # Step 5: Generate Daily Summary
@@ -136,8 +148,18 @@ def process_date(location: str, date_str: str, max_files: int = 0, processes: in
     daily_md_path = os.path.join(output_date_dir, "daily_summary.md")
     with open(daily_md_path, "w") as f:
         f.write(f"# Daily Detection Summary: {location} ({date_str})\n\n")
-        f.write(f"Total recordings: {len(flac_files)}\n\n")
+        f.write(f"Total recordings in source : {len(flac_files)}\n")
+        f.write(f"Successfully processed    : {processed_count}\n")
+        f.write(f"Corrupted & skipped       : {len(corrupted_skipped)}\n\n")
         f.write(md_table + "\n")
+
+        if corrupted_skipped:
+            f.write("\n## ⚠️ Corrupted & Skipped Recordings\n\n")
+            f.write(f"Total: **{len(corrupted_skipped)}** berkas FLAC rusak tidak dapat dipulihkan.\n\n")
+            f.write("| # | File Name | File Size | Initial Error | Decision |\n")
+            f.write("|---|---|---|---|:---:|\n")
+            for c_idx, c in enumerate(corrupted_skipped, 1):
+                f.write(f"| {c_idx} | `{c['file_name']}` | {c['file_size_human']} | {c['initial_error']} | **{c['decision']}** |\n")
 
     print(md_table)
     print(f"\n✅ Daily summary saved to: {daily_md_path}")
@@ -146,6 +168,27 @@ def process_date(location: str, date_str: str, max_files: int = 0, processes: in
     print("\n" + "=" * 70)
     print(f"📋 GENERATING DETECTION AUDIT MANIFEST: {location} | {date_str}")
     generate_date_audit_manifest(location, date_str, min_conf=0.25, out_dir=output_date_dir)
+
+    # Step 7: Save Standalone Corrupted Files Report (if any)
+    if corrupted_skipped:
+        corr_json_path = os.path.join(output_date_dir, "corrupted_files.json")
+        with open(corr_json_path, "w", encoding="utf-8") as f:
+            json.dump(corrupted_skipped, f, indent=4, ensure_ascii=False)
+
+        corr_md_path = os.path.join(output_date_dir, "corrupted_files.md")
+        with open(corr_md_path, "w", encoding="utf-8") as f:
+            f.write(f"# Laporan Berkas FLAC Rusak (Skipped): {location} ({date_str})\n\n")
+            f.write(f"Total berkas dilewati: **{len(corrupted_skipped)}** dari {len(flac_files)} berkas.\n\n")
+            f.write("| # | File Name | File Size | Initial Error | Repair Attempts | Decision |\n")
+            f.write("|---|---|---|---|---|:---:|\n")
+            for c_idx, c in enumerate(corrupted_skipped, 1):
+                rep_str = "; ".join(c.get("repair_attempts", [])) or "Gagal rekonstruksi stream"
+                f.write(f"| {c_idx} | `{c['file_name']}` | {c['file_size_human']} | {c['initial_error']} | {rep_str} | **{c['decision']}** |\n")
+
+        print("\n" + "!" * 70)
+        print(f"⚠️  PERINGATAN: Terdapat {len(corrupted_skipped)} berkas FLAC rusak yang di-skip.")
+        print(f"   Laporan lengkap disimpan di: {corr_md_path}")
+        print("!" * 70)
 
     print(f"🏁 Total execution time: {time.time() - t_global:.2f}s")
 
