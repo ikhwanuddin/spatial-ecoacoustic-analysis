@@ -73,13 +73,17 @@ python src/01_render_signals.py \
 * `--max-files`: Batas berkas yang dirender (`0` untuk memproses seluruh tanggal).
 * `--file-pattern`: Menyaring berkas spesifik (opsional).
 
-### Modul 2: BirdNET Batch Inference
-Menjalankan inferensi BirdNET-Analyzer secara paralel pada seluruh berkas WAV di folder rekaman:
+### Modul 2: BirdNET Batch Inference (Akselerasi GPU & Fallback CPU)
+Menjalankan inferensi Cornell BirdNET V2.4 secara otomatis mendeteksi hardware:
+* **Mode GPU (Otomatis jika /dev/nvidia0 aktif):** Memakai `birdnetv2.4.keras` batched inference (`batch_size=256`, throughput ~1.020 windows/s) + upsampling integer cepat via `scipy.signal.resample_poly` (73.8x lebih cepat dari librosa). Inferensi 52 stream selesai dalam ~4-5 detik!
+* **Mode CPU (Fallback):** Memakai `birdnetlib.batch.DirectoryMultiProcessingAnalyzer`.
 
 ```bash
 python src/02_birdnet_infer.py \
     $EPHEM/sea-scratch/2A400/2026-04-22/00-02-33_dur=240secs \
-    --processes 4
+    --device auto \
+    --batch-size 256 \
+    --min-conf 0.05
 ```
 *Output:* Menghasilkan berkas `results.json` di dalam direktori rekaman tersebut.
 
@@ -108,8 +112,11 @@ python src/04_pair_and_recap.py \
 
 ## 5. Menjalankan Pipeline Skala Penuh per Tanggal
 
-Untuk memproses satu tanggal penuh (atau membatasi jumlah berkas untuk pengujian):
+Pipeline runner `src/run_date_pipeline.py` mengorkestrasi Modul 1 sampai Modul 4 secara otomatis untuk seluruh rekaman dalam satu tanggal:
+1. **Model VRAM Persistence:** Bobot model GPU dimuat satu kali ke VRAM dan digunakan ulang di semua rekaman (0.00s overhead per rekaman berikutnya).
+2. **Efisiensi Waktu:** 1 rekaman 4 menit (52 stream WAV) diproses tuntas dalam ~25-40 detik. Satu hari penuh (143 rekaman / ~9,5 jam audio mentah / ~500 jam audio multi-stream) selesai dalam waktu ~1 jam.
 
+Menjalankan langsung di compute node (interaktif / login):
 ```bash
 python src/run_date_pipeline.py \
     --location 2A400 \
@@ -117,9 +124,13 @@ python src/run_date_pipeline.py \
     --processes 8
 ```
 
-Atau serahkan ke antrean PBS klaster:
+Atau serahkan ke antrean PBS klaster GPU (`v1_gpu72`):
 ```bash
 qsub sea-jobs/run_date_pipeline.pbs
+```
+*Parameter lingkungan PBS opsional:*
+```bash
+qsub -v LOCATION=2A400,DATE=2026-04-22,PROCESSES=8 sea-jobs/run_date_pipeline.pbs
 ```
 
 ---

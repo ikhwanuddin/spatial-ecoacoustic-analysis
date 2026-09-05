@@ -1,0 +1,24 @@
+#!/bin/bash
+#PBS -N sea-date-pipeline
+#PBS -l select=1:ncpus=8:mem=32gb:ngpus=1:gpu_type=RTX6000
+#PBS -l walltime=04:00:00
+#PBS -j oe
+#PBS -o /rds/general/user/ri322/home/sea-jobs/logs/run_date_pipeline.log
+
+# Ensure logs dir exists
+mkdir -p /rds/general/user/ri322/home/sea-jobs/logs
+
+# Setup environment
+export PATH=/rds/general/user/ri322/home/miniforge3/envs/sea/bin:$PATH
+export LD_LIBRARY_PATH=/rds/general/user/ri322/home/miniforge3/envs/sea/lib:$LD_LIBRARY_PATH
+source /rds/general/user/ri322/home/miniforge3/bin/activate sea
+
+cd /rds/general/user/ri322/home/spatial-ecoacoustic-analysis
+
+LOCATION=${LOCATION:-2A400}
+DATE=${DATE:-2026-04-22}
+PROCESSES=${PROCESSES:-8}
+
+echo "=== STARTING SEA PIPELINE: $LOCATION on $DATE (GPU RTX 6000, workers: $PROCESSES) ==="
+python src/run_date_pipeline.py --location "$LOCATION" --date "$DATE" --processes "$PROCESSES"
+echo "=== FINISHED SEA PIPELINE: $LOCATION on $DATE ==="
