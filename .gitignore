@@ -30,4 +30,7 @@ docs/*
 *.bak-*
 
 # Archived legacy scripts
-archive/
+# archive/ (code tracked)
+archive/legacy_ir_cache/
+archive/legacy_logs/
+archive/legacy_nvvm/
