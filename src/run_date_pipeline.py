@@ -25,6 +25,7 @@ from render_signals import render_single_flac
 from birdnet_infer import run_birdnet_batch
 from extract_detections import process_results_file
 from pair_and_recap import pair_methods, evaluate_threshold_counts, format_markdown_table
+from generate_audit_manifest import generate_date_audit_manifest
 import json
 
 
@@ -140,6 +141,12 @@ def process_date(location: str, date_str: str, max_files: int = 0, processes: in
 
     print(md_table)
     print(f"\n✅ Daily summary saved to: {daily_md_path}")
+
+    # Step 6: Generate Ground-Truth Detection Audit Manifest
+    print("\n" + "=" * 70)
+    print(f"📋 GENERATING DETECTION AUDIT MANIFEST: {location} | {date_str}")
+    generate_date_audit_manifest(location, date_str, min_conf=0.25, out_dir=output_date_dir)
+
     print(f"🏁 Total execution time: {time.time() - t_global:.2f}s")
 
 
