@@ -194,14 +194,34 @@ def process_date(location: str, date_str: str, max_files: int = 0, processes: in
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Run complete SEA pipeline for a given date.")
+    parser = argparse.ArgumentParser(description="Run complete SEA pipeline for a given date or list of dates.")
     parser.add_argument("--location", default="2A400", help="Location code (default: 2A400)")
-    parser.add_argument("--date", default="2026-04-22", help="Date string YYYY-MM-DD")
-    parser.add_argument("--max-files", type=int, default=0, help="Max files to process (0 = all)")
+    parser.add_argument("--date", default=None, help="Single date string YYYY-MM-DD")
+    parser.add_argument("--dates", nargs="+", default=None, help="One or more date strings YYYY-MM-DD")
+    parser.add_argument("--max-files", type=int, default=0, help="Max files to process per date (0 = all)")
     parser.add_argument("--processes", type=int, default=8, help="Number of CPU worker processes")
     args = parser.parse_args()
 
-    process_date(args.location, args.date, max_files=args.max_files, processes=args.processes)
+    date_list = []
+    if args.dates:
+        date_list = args.dates
+    elif args.date:
+        date_list = [args.date]
+    else:
+        date_list = ["2026-04-22"]
+
+    print("Queued dates:", date_list)
+    for d_idx, d in enumerate(date_list, 1):
+        print("=" * 70)
+        print(f"[{d_idx}/{len(date_list)}] PROCESSING DATE: {d} (Location: {args.location})")
+        print("=" * 70)
+        try:
+            process_date(args.location, d, max_files=args.max_files, processes=args.processes)
+        except Exception as e:
+            print(f"ERROR processing date {d}: {e}")
+            import traceback
+            traceback.print_exc()
+            print(f"Skipping date {d} and continuing to next in queue...")
 
 
 if __name__ == "__main__":
