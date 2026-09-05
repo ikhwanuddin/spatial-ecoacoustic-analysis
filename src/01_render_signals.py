@@ -87,8 +87,11 @@ def load_and_verify_flac(flac_path: str, scratch_dir: str) -> Tuple[Optional[np.
     initial_error = None
     try:
         audio_raw, sr = sf.read(flac_path, dtype="float32")
-        if audio_raw.ndim == 2 and audio_raw.shape[1] == 6 and len(audio_raw) > 0:
+        duration_sec = len(audio_raw) / sr if sr > 0 else 0.0
+        if audio_raw.ndim == 2 and audio_raw.shape[1] == 6 and duration_sec >= 3.0:
             return audio_raw, sr, None
+        elif duration_sec < 3.0:
+            initial_error = f"Audio is severely truncated ({duration_sec:.2f}s < 3.0s minimum window)"
         else:
             shape_str = str(getattr(audio_raw, "shape", None))
             initial_error = f"Invalid audio shape: {shape_str} (expected 6 channels)"
@@ -113,12 +116,15 @@ def load_and_verify_flac(flac_path: str, scratch_dir: str) -> Tuple[Optional[np.
         res = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
         if os.path.exists(repaired_path) and os.path.getsize(repaired_path) > 0:
             rep_audio, rep_sr = sf.read(repaired_path, dtype="float32")
-            if rep_audio.ndim == 2 and rep_audio.shape[1] == 6 and len(rep_audio) > 0:
-                print(f"   ⚠️ REPAIRED corrupted FLAC via ffmpeg ({file_size} bytes -> {len(rep_audio)} samples)")
+            rep_dur = len(rep_audio) / rep_sr if rep_sr > 0 else 0.0
+            if rep_audio.ndim == 2 and rep_audio.shape[1] == 6 and rep_dur >= 3.0:
+                print(f"   ⚠️ REPAIRED corrupted FLAC via ffmpeg ({file_size} bytes -> {len(rep_audio)} samples, {rep_dur:.2f}s)")
                 return rep_audio, rep_sr, None
             else:
                 rep_shape_str = str(getattr(rep_audio, "shape", None))
-                repair_details.append(f"ffmpeg produced invalid shape: {rep_shape_str}")
+                repair_details.append(f"ffmpeg produced invalid audio: shape={rep_shape_str}, duration={rep_dur:.2f}s (< 3.0s)")
+                try: os.remove(repaired_path)
+                except Exception: pass
         else:
             repair_details.append(f"ffmpeg failed: {res.stderr.strip()}")
     except Exception as e:
@@ -133,13 +139,16 @@ def load_and_verify_flac(flac_path: str, scratch_dir: str) -> Tuple[Optional[np.
             res_flac = subprocess.run(cmd_flac, capture_output=True, text=True, timeout=30)
             if os.path.exists(wav_temp) and os.path.getsize(wav_temp) > 0:
                 rep_audio, rep_sr = sf.read(wav_temp, dtype="float32")
-                if rep_audio.ndim == 2 and rep_audio.shape[1] == 6 and len(rep_audio) > 0:
-                    print(f"   ⚠️ REPAIRED corrupted FLAC via flac CLI ({file_size} bytes)")
+                rep_dur = len(rep_audio) / rep_sr if rep_sr > 0 else 0.0
+                if rep_audio.ndim == 2 and rep_audio.shape[1] == 6 and rep_dur >= 3.0:
+                    print(f"   ⚠️ REPAIRED corrupted FLAC via flac CLI ({file_size} bytes, {rep_dur:.2f}s)")
                     try: os.remove(wav_temp)
                     except Exception: pass
                     return rep_audio, rep_sr, None
                 else:
-                    repair_details.append(f"flac CLI produced invalid shape: {getattr(rep_audio, shape, None)}")
+                    repair_details.append(f"flac CLI produced invalid audio: shape={getattr(rep_audio, 'shape', None)}, duration={rep_dur:.2f}s (< 3.0s)")
+                    try: os.remove(wav_temp)
+                    except Exception: pass
             else:
                 repair_details.append(f"flac CLI decoding failed: {res_flac.stderr.strip()}")
         except Exception as e:
