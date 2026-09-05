@@ -106,15 +106,20 @@ python src/04_pair_and_recap.py \
 
 ---
 
-## 5. Menjalankan Satu Rekaman Utuh (End-to-End Test)
+## 5. Menjalankan Pipeline Skala Penuh per Tanggal
 
-Untuk menguji satu berkas rekaman secara langsung dari FLAC hingga tabel evaluasi:
+Untuk memproses satu tanggal penuh (atau membatasi jumlah berkas untuk pengujian):
 
 ```bash
-python src/run_single_rec.py \
-    --flac $EPHEM/monitoring_data/RPiID-0000000091668b26/2026-04-22/00-02-33_dur=240secs.flac \
+python src/run_date_pipeline.py \
     --location 2A400 \
-    --date 2026-04-22
+    --date 2026-04-22 \
+    --processes 8
+```
+
+Atau serahkan ke antrean PBS klaster:
+```bash
+qsub sea-jobs/run_date_pipeline.pbs
 ```
 
 ---

@@ -75,7 +75,7 @@ def process_date(location: str, date_str: str, max_files: int = 0, processes: in
 
         # Step 1: Render Signals
         results_json = os.path.join(rec_scratch, "results.json")
-        processed_json = os.path.join(rec_scratch, "processed.json")
+        processed_json = os.path.join(rec_output, "processed.json")
 
         # Check if already rendered
         wav_count = len([f for f in os.listdir(rec_scratch) if f.endswith(".wav")])
@@ -110,6 +110,9 @@ def process_date(location: str, date_str: str, max_files: int = 0, processes: in
         summary = evaluate_threshold_counts(processed, DEFAULT_THRESHOLDS)
         with open(os.path.join(rec_output, "threshold_summary.json"), "w") as f:
             json.dump(summary, f, indent=4)
+        rec_md = format_markdown_table(summary, DEFAULT_THRESHOLDS)
+        with open(os.path.join(rec_output, "threshold_summary.md"), "w") as f:
+            f.write(rec_md + "\n")
 
         # Collate into daily total
         for m in daily_collated:
