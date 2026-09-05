@@ -121,6 +121,15 @@ def run_birdnet_gpu(folder_path: str, batch_size: int = 256, min_conf: float = 0
     n_windows = len(all_clips_arr)
     t_load = time.time() - t0_load
 
+    if n_windows == 0:
+        print(f"⚠️  No valid 3-second windows found in {len(wav_files)} WAV files (audio truncated).")
+        results_dict = {os.path.basename(w): [] for w in wav_files}
+        if out_json is None:
+            out_json = os.path.join(folder_path, "results.json")
+        with open(out_json, "w", encoding="utf-8") as f:
+            json.dump(results_dict, f, indent=4, ensure_ascii=False)
+        return out_json
+
     # Batched inference
     t0_infer = time.time()
     conf_list = []
