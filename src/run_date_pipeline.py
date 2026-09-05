@@ -21,10 +21,10 @@ from config import (
     LOCATION_MAP,
     DEFAULT_THRESHOLDS,
 )
-from src.render_signals import render_single_flac
-from src.birdnet_infer import run_birdnet_batch
-from src.extract_detections import process_results_file
-from src.pair_and_recap import pair_methods, evaluate_threshold_counts, format_markdown_table
+from render_signals import render_single_flac
+from birdnet_infer import run_birdnet_batch
+from extract_detections import process_results_file
+from pair_and_recap import pair_methods, evaluate_threshold_counts, format_markdown_table
 import json
 
 
