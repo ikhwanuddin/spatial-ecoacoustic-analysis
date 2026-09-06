@@ -48,6 +48,11 @@ HAS_GPU = os.path.exists("/dev/nvidia0") and os.path.exists(MODEL_PATH) and os.p
 
 if HAS_GPU:
     import tensorflow as tf
+    try:
+        for _gpu in tf.config.list_physical_devices("GPU"):
+            tf.config.experimental.set_memory_growth(_gpu, True)
+    except Exception:
+        pass
     import soundfile as sf
     import scipy.signal
 
