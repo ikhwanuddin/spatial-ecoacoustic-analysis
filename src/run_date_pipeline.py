@@ -209,7 +209,12 @@ def main():
     parser.add_argument("--dates", nargs="+", default=None, help="One or more date strings YYYY-MM-DD")
     parser.add_argument("--max-files", type=int, default=0, help="Max files to process per date (0 = all)")
     parser.add_argument("--processes", type=int, default=8, help="Number of CPU worker processes")
+    parser.add_argument("--smoke-test", action="store_true", help="Vibe check: fast end-to-end smoke test on 1 recording")
     args = parser.parse_args()
+
+    max_files = 1 if args.smoke_test else args.max_files
+    if args.smoke_test:
+        print("⚡ VIBE SMOKE TEST ACTIVE: Fast 1-recording end-to-end verification (<20s)!")
 
     date_list = []
     if args.dates:
@@ -225,7 +230,7 @@ def main():
         print(f"[{d_idx}/{len(date_list)}] PROCESSING DATE: {d} (Location: {args.location})")
         print("=" * 70)
         try:
-            process_date(args.location, d, max_files=args.max_files, processes=args.processes)
+            process_date(args.location, d, max_files=max_files, processes=args.processes)
         except Exception as e:
             print(f"ERROR processing date {d}: {e}")
             import traceback
