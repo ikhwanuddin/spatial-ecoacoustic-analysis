@@ -19,7 +19,9 @@ pipeline_state.json
 logs/
 nvvm/
 sea-dashboards/
-output/
+output/*
+!output/global_summary.json
+!output/global_summary.md
 
 # Personal project notes & development plan, kept out of the public repo
 docs/*
