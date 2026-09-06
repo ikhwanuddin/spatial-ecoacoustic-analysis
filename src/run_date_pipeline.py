@@ -28,6 +28,7 @@ from birdnet_infer import run_birdnet_batch
 from extract_detections import process_results_file
 from pair_and_recap import pair_methods, evaluate_threshold_counts, format_markdown_table
 from generate_audit_manifest import generate_date_audit_manifest
+from extract_audit_clips import extract_clips_for_date
 import json
 
 
@@ -189,6 +190,14 @@ def process_date(location: str, date_str: str, max_files: int = 0, processes: in
         print(f"⚠️  PERINGATAN: Terdapat {len(corrupted_skipped)} berkas FLAC rusak yang di-skip.")
         print(f"   Laporan lengkap disimpan di: {corr_md_path}")
         print("!" * 70)
+
+    # Step 8: Extract 5-Second Audit Snippets & Reclaim Ephemeral Scratch
+    print("\n" + "=" * 70)
+    print(f"✂️  EXTRACTING 5-SECOND AUDIT SNIPPETS & RECLAIMING SCRATCH: {location} | {date_str}")
+    try:
+        extract_clips_for_date(location, date_str, clean_scratch=True)
+    except Exception as e:
+        print(f"⚠️  Gagal ekstraksi klip audit / pembersihan scratch: {e}")
 
     print(f"🏁 Total execution time: {time.time() - t_global:.2f}s")
 
