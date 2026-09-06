@@ -19,6 +19,8 @@ pipeline_state.json
 logs/
 nvvm/
 sea-dashboards/
+queue/
+telemetry/
 output/*
 !output/global_summary.json
 !output/global_summary.md

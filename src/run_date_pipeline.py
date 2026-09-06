@@ -31,8 +31,13 @@ from generate_audit_manifest import generate_date_audit_manifest
 from extract_audit_clips import extract_clips_for_date
 import json
 
+try:
+    from telemetry import send_heartbeat
+except ImportError:
+    send_heartbeat = None
 
-def process_date(location: str, date_str: str, max_files: int = 0, processes: int = 4):
+
+def process_date(location: str, date_str: str, max_files: int = 0, processes: int = 4, worker_id: str = None, gpu_id: int = 0):
     rpi_id = LOCATION_MAP.get(location, location)
     flac_dir = os.path.join(MONITORING_DATA, rpi_id, date_str)
     flac_files = sorted(glob.glob(os.path.join(flac_dir, "*.flac")))
@@ -135,7 +140,22 @@ def process_date(location: str, date_str: str, max_files: int = 0, processes: in
                 daily_collated[m][sp]["conf_list"].extend(sinfo.get("conf_list", []))
 
         processed_count += 1
-        print(f"  ✓ Recording completed in {time.time() - t_rec:.2f}s")
+        dur = time.time() - t_rec
+        print(f"  ✓ Recording completed in {dur:.2f}s")
+        if send_heartbeat and worker_id:
+            try:
+                send_heartbeat(
+                    worker_id=worker_id,
+                    gpu_id=gpu_id,
+                    location=location,
+                    date_str=date_str,
+                    current_rec=processed_count,
+                    total_recs=len(flac_files),
+                    win_per_sec=0.0,
+                    status="ACTIVE"
+                )
+            except Exception:
+                pass
 
     # Step 5: Generate Daily Summary
     print("\n" + "=" * 70)

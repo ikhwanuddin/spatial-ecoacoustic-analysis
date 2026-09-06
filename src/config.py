@@ -15,6 +15,8 @@ HOME_DIR = f"/rds/general/user/{USER}/home"
 PROJECT_ROOT = os.path.join(HOME_DIR, "spatial-ecoacoustic-analysis")
 IR_BASE_PATH = os.path.join(HOME_DIR, "MAARU-Impulse-Response")
 OUTPUT_DIR = os.path.join(PROJECT_ROOT, "output")
+QUEUE_DIR = os.path.join(PROJECT_ROOT, "queue")
+TELEMETRY_DIR = os.path.join(PROJECT_ROOT, "telemetry")
 
 # Ephemeral storage (30-day purge, Scratch renders & Raw audio)
 EPHEM_DIR = f"/rds/general/user/{USER}/ephemeral"
