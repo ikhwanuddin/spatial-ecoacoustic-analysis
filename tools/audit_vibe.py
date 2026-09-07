@@ -1012,10 +1012,7 @@ def run_audit(manifest_path: str, sample_size: int = 20, sort_by_gain: bool = Tr
                 if idx > 1:
                     close_app_files(app_name=app_name)
 
-                # Open secondary first, then primary second so ocenaudio highlights primary
-                if secondary_clip and os.path.exists(secondary_clip):
-                    open_in_app(secondary_clip, app_name=app_name, background=True)
-                    time.sleep(0.05)
+                # Open only the highest-confidence clip (primary). Mono is available via [m] if needed.
                 if primary_clip and os.path.exists(primary_clip):
                     open_in_app(primary_clip, app_name=app_name, background=True)
                     time.sleep(0.05)
@@ -1035,7 +1032,7 @@ def run_audit(manifest_path: str, sample_size: int = 20, sort_by_gain: bool = Tr
                 print(f"🔇 Visual-only mode (--no-play). Press [Space] in {app_name} to play.")
 
             while True:
-                prompt_opts = "1=Bird, 0=Noise, b=Beam, m=Mono"
+                prompt_opts = "1=Bird, 0=Noise, b=load Beam, m=load Mono"
                 if use_app:
                     prompt_opts += ", o=Focus App"
                 prompt_opts += ", s=Skip, q=Quit"
