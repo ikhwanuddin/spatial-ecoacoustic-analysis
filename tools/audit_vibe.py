@@ -8,6 +8,8 @@ and label avian vocalization ground-truth [1/0] with single keystrokes.
 Works seamlessly on macOS (native speaker playback via SMB) and on CX3 Linux.
 """
 
+from __future__ import annotations
+
 import os
 import sys
 import json
@@ -18,7 +20,7 @@ import shutil
 import argparse
 import subprocess
 from pathlib import Path
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, Tuple
 
 DEFAULT_SMB_BASE = "/Volumes/ri322/home/spatial-ecoacoustic-analysis/output"
 DEFAULT_CX3_BASE = "/rds/general/user/ri322/home/spatial-ecoacoustic-analysis/output"
@@ -82,7 +84,7 @@ def find_available_dates(base_dir: str) -> List[Dict[str, str]]:
     return results
 
 
-def resolve_audio_paths(item: Dict[str, Any], date_dir: str) -> tuple[Optional[str], Optional[str]]:
+def resolve_audio_paths(item: Dict[str, Any], date_dir: str) -> Tuple[Optional[str], Optional[str]]:
     """Resolves local/remote audio paths for both beam and mono clips."""
     audio_paths = item.get("audio_paths", {})
     beam_clip = None
