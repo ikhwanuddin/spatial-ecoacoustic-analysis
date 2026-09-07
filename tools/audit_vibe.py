@@ -303,6 +303,55 @@ def find_available_dates(base_dir: str) -> List[Dict[str, str]]:
     return results
 
 
+def get_prioritized_dates(base_dir: str, location: str) -> List[Dict[str, Any]]:
+    """
+    Ranks dates for a given location by audit priority:
+    1. Dates with 0 audited windows (sorted chronologically).
+    2. Dates with fewest audited windows that still have remaining unaudited candidates.
+    """
+    results = []
+    use_ssh = False
+    if sys.platform == "darwin":
+        try:
+            res = subprocess.run(["ssh", "-o", "ConnectTimeout=2", "-q", "cx3", "true"], check=False)
+            if res.returncode == 0:
+                use_ssh = True
+        except Exception:
+            use_ssh = False
+
+    if use_ssh:
+        try:
+            cx3_cmd = "python3 -c '\''import os, json; loc = \"" + location + "\"; base = \"/rds/general/user/ri322/home/spatial-ecoacoustic-analysis/output/\" + loc; res = []; [res.append({\"location\": loc, \"date\": d, \"audited_count\": len(json.load(open(os.path.join(base, d, \"audit_ground_truth.json\")))) if os.path.exists(os.path.join(base, d, \"audit_ground_truth.json\")) else 0}) for d in sorted(os.listdir(base)) if os.path.exists(os.path.join(base, d, \"detection_audit_manifest.json\"))]; print(json.dumps(res))'\''"
+            out = subprocess.check_output(["ssh", "-q", "cx3", cx3_cmd], timeout=5.0).decode().strip()
+            raw_dates = json.loads(out)
+            for item in raw_dates:
+                mf_path = os.path.join(base_dir, location, item["date"], "detection_audit_manifest.json")
+                item["manifest"] = mf_path
+                results.append(item)
+        except Exception:
+            results = []
+
+    if not results:
+        loc_dir = os.path.join(base_dir, location)
+        if os.path.isdir(loc_dir):
+            for d in sorted(os.listdir(loc_dir)):
+                mf = os.path.join(loc_dir, d, "detection_audit_manifest.json")
+                if not os.path.exists(mf):
+                    continue
+                gt = os.path.join(loc_dir, d, "audit_ground_truth.json")
+                aud = 0
+                if os.path.exists(gt):
+                    try:
+                        with open(gt, "r", encoding="utf-8") as f:
+                            aud = len(json.load(f))
+                    except Exception:
+                        aud = 0
+                results.append({"location": location, "date": d, "audited_count": aud, "manifest": mf})
+
+    results.sort(key=lambda x: (x.get("audited_count", 0), x.get("date", "")))
+    return results
+
+
 def resolve_audio_paths(item: Dict[str, Any], date_dir: str) -> Tuple[Optional[str], Optional[str]]:
     """Resolves local/remote audio paths for both beam and mono clips."""
     audio_paths = item.get("audio_paths", {})
@@ -452,6 +501,9 @@ def load_existing_annotations(gt_path: str) -> Dict[str, Dict[str, Any]]:
 
 def save_annotations(gt_json_path: str, gt_csv_path: str, annotations: List[Dict[str, Any]]):
     """Saves ground-truth annotations to both JSON and CSV."""
+    if not annotations and not os.path.exists(gt_json_path):
+        return
+
     with open(gt_json_path, "w", encoding="utf-8") as f:
         json.dump(annotations, f, indent=2)
 
@@ -608,7 +660,7 @@ def run_audit(manifest_path: str, sample_size: int = 20, sort_by_gain: bool = Tr
 
     if total_to_audit == 0:
         print("✅ All candidates for this date have already been audited!")
-        return
+        return "completed"
 
     # Pre-cache sampled audio clips to local /tmp SSD concurrently
     cached_paths_map = precache_clips(targets, date_dir)
@@ -762,7 +814,7 @@ def run_audit(manifest_path: str, sample_size: int = 20, sort_by_gain: bool = Tr
                 elif choice == "q":
                     stop_audio(app_name=app_name)
                     print("\n💾 Saving annotations and exiting...")
-                    return
+                    return "quit"
                 else:
                     valid_keys = "1, 0, b, m, o, s, or q" if use_app else "1, 0, b, m, s, or q"
                     print(f"   ⚠️  Unrecognized option. Enter {valid_keys}.")
@@ -770,6 +822,7 @@ def run_audit(manifest_path: str, sample_size: int = 20, sort_by_gain: bool = Tr
     except (KeyboardInterrupt, EOFError):
         stop_audio(app_name=app_name)
         print("\n\n⚠️  Session interrupted. Saving progress...")
+        return "interrupted"
     finally:
         stop_audio(app_name=app_name)
         if use_app:
@@ -787,6 +840,64 @@ def run_audit(manifest_path: str, sample_size: int = 20, sort_by_gain: bool = Tr
         print(f"   • Saved Annotation File  : {gt_json_path}")
         print(f"   • Updated Manifest       : {md_path}")
         print("=" * 70)
+
+    return "completed"
+
+
+def run_auto_audit_loop(base_dir: str, location: str, args: argparse.Namespace, app_name: str, play_sound: bool):
+    """Continuously audits prioritized dates for a location (0 audited dates first, then least audited)."""
+    while True:
+        prioritized = get_prioritized_dates(base_dir, location)
+        if not prioritized:
+            print(f"❌ No valid audit manifests found for location: {location}")
+            sys.exit(1)
+
+        # Pick top prioritized date
+        target = prioritized[0]
+        date_str = target["date"]
+
+        print("\n" + "=" * 70)
+        print(f"🎯 AUTO-PRIORITIZED DATE QUEUE: {location}")
+        for idx, item in enumerate(prioritized[:5], 1):
+            marker = " ◀ TARGET" if idx == 1 else ""
+            status_text = "0 audited" if item["audited_count"] == 0 else f"{item['audited_count']} audited"
+            print(f"   [{idx}] {item['date']} ({status_text}){marker}")
+        print("=" * 70)
+
+        if args.reset:
+            reset_audit(target["manifest"])
+            return
+
+        status = run_audit(
+            target["manifest"],
+            sample_size=args.sample,
+            sort_by_gain=not args.random,
+            min_conf=args.min_conf,
+            app_name=app_name,
+            play_sound=play_sound
+        )
+
+        if status != "completed":
+            break
+
+        # Re-fetch priority queue to check next target
+        next_queue = get_prioritized_dates(base_dir, location)
+        if not next_queue:
+            print(f"\n🎉 All dates for {location} have been audited!")
+            break
+
+        next_target = next_queue[0]
+        next_date_str = next_target["date"]
+        next_status = "0 audited" if next_target["audited_count"] == 0 else f"{next_target['audited_count']} audited"
+        prompt = f"\n👉 Continue to next prioritized date [{next_date_str} - {next_status}]? [Enter=Yes / q=Exit]: "
+        try:
+            ans = input(prompt).strip().lower()
+            if ans in ["q", "n", "exit"]:
+                print("Exiting audit session.")
+                break
+        except (KeyboardInterrupt, EOFError):
+            print("\nExiting.")
+            break
 
 
 def main():
@@ -815,30 +926,33 @@ def main():
             reset_audit(manifest)
             return
         run_audit(manifest, sample_size=args.sample, sort_by_gain=not args.random, min_conf=args.min_conf, app_name=app_name, play_sound=play_sound)
+    elif args.location:
+        run_auto_audit_loop(base_dir, args.location.upper(), args, app_name, play_sound)
     else:
-        available = find_available_dates(base_dir)
-        if not available:
-            print(f"❌ No completed dates found in {base_dir}")
-            sys.exit(1)
-
-        action_title = "RESET AUDIT ANNOTATIONS" if args.reset else "SELECT DATE TO AUDIT"
-        print(f"\n📅 {action_title}:")
-        for idx, item in enumerate(available[-15:], 1):
-            print(f"  [{idx:2d}] {item['location']} | {item['date']}")
-        print("  [0 ] Exit")
+        # Prompt for location, then auto-prioritize
+        locations = ["2A400", "2B400", "2D400", "S0", "Q0", "O0"]
+        print("\n📍 SELECT LOCATION TO AUDIT:")
+        for idx, loc in enumerate(locations, 1):
+            print(f"  [{idx}] {loc}")
+        print("  [0] Exit")
 
         try:
-            choice = int(input("\nEnter selection number (default: 15 / latest date): ") or "15")
-            if choice == 0 or choice > len(available[-15:]):
-                print("Exiting.")
+            choice = input("\nEnter selection number (default: 1 / 2A400): ").strip()
+            if not choice:
+                chosen_loc = "2A400"
+            elif choice == "0":
                 return
-            target = available[-15:][choice - 1]
-            if args.reset:
-                reset_audit(target["manifest"])
-                return
-            run_audit(target["manifest"], sample_size=args.sample, sort_by_gain=not args.random, min_conf=args.min_conf, app_name=app_name, play_sound=play_sound)
-        except (ValueError, IndexError):
-            print("Invalid choice.")
+            else:
+                idx = int(choice) - 1
+                if 0 <= idx < len(locations):
+                    chosen_loc = locations[idx]
+                else:
+                    print("Invalid choice.")
+                    return
+        except Exception:
+            return
+
+        run_auto_audit_loop(base_dir, chosen_loc, args, app_name, play_sound)
 
 
 if __name__ == "__main__":
