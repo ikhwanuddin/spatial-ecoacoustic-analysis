@@ -155,44 +155,25 @@ def open_in_app_multi(audio_paths: List[str], app_name: str = "ocenaudio", backg
 
 
 def close_app_files(app_name: str = "ocenaudio") -> bool:
-    """Safely closes open files in the visual application via verified frontmost Opt+Cmd+W shortcut."""
+    """Safely closes open files in the visual application via targeted AX menu click without any keystrokes."""
     if sys.platform != "darwin" or not app_name or app_name.lower() == "none":
         return False
 
     script = f'''
     tell application "System Events"
         if not (exists process "{app_name}") then return
-        set origProc to first application process whose frontmost is true
-        set origName to name of origProc
+        tell process "{app_name}"
+            try
+                tell menu bar 1
+                    tell menu bar item "File"
+                        tell menu "File"
+                            click menu item "Close All"
+                        end tell
+                    end tell
+                end tell
+            end try
+        end tell
     end tell
-
-    -- Activate ocenaudio specifically
-    tell application "{app_name}" to activate
-
-    tell application "System Events"
-        -- Strictly verify ocenaudio is frontmost before emitting keystroke
-        set isReady to false
-        repeat 20 times
-            if frontmost of process "{app_name}" then
-                set isReady to true
-                exit repeat
-            end if
-            delay 0.03
-        end repeat
-
-        -- ONLY send Opt+Cmd+W if ocenaudio is 100% verified frontmost.
-        -- Ghostty/terminal tabs are completely protected if focus hasn't switched.
-        if isReady then
-            delay 0.04
-            keystroke "w" using {{command down, option down}}
-            delay 0.04
-        end if
-    end tell
-
-    -- Restore focus back to original terminal (e.g. Ghostty)
-    if origName is not "" and origName is not "{app_name}" then
-        tell application origName to activate
-    end if
     '''
     try:
         subprocess.run(
@@ -203,6 +184,8 @@ def close_app_files(app_name: str = "ocenaudio") -> bool:
             timeout=2.0
         )
         return True
+    except Exception:
+        return False
     except Exception:
         return False
     except Exception:
@@ -589,8 +572,9 @@ def run_audit(manifest_path: str, sample_size: int = 20, sort_by_gain: bool = Tr
 
             # Audiovisual inspection in ocenaudio
             if use_app:
-                # Close previous candidate clips in ocenaudio
-                close_app_files(app_name=app_name)
+                # Close previous candidate clips in ocenaudio (only after first candidate)
+                if idx > 1:
+                    close_app_files(app_name=app_name)
 
                 clips_to_open = []
                 if mono_clip and os.path.exists(mono_clip):
