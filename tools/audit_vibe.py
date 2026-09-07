@@ -162,18 +162,33 @@ def close_app_files(app_name: str = "ocenaudio") -> bool:
     script = f'''
     tell application "System Events"
         if not (exists process "{app_name}") then return
-        tell process "{app_name}"
-            try
-                tell menu bar 1
-                    tell menu bar item "File"
-                        tell menu "File"
-                            click menu item "Close All"
-                        end tell
+        set origProc to first application process whose frontmost is true
+        set origName to name of origProc
+    end tell
+
+    -- Activate ocenaudio briefly so Qt menu bar is responsive
+    tell application "{app_name}" to activate
+    delay 0.15
+
+    -- Targeted menu click only. Never use keystroke to keep terminal tabs safe.
+    tell application "System Events" to tell process "{app_name}"
+        try
+            tell menu bar 1
+                tell menu bar item "File"
+                    tell menu "File"
+                        click menu item "Close All"
                     end tell
                 end tell
-            end try
-        end tell
+            end tell
+        end try
     end tell
+
+    delay 0.05
+
+    -- Restore focus back to original terminal (e.g. Ghostty)
+    if origName is not "" and origName is not "{app_name}" then
+        tell application origName to activate
+    end if
     '''
     try:
         subprocess.run(
@@ -184,10 +199,6 @@ def close_app_files(app_name: str = "ocenaudio") -> bool:
             timeout=2.0
         )
         return True
-    except Exception:
-        return False
-    except Exception:
-        return False
     except Exception:
         return False
 
