@@ -151,6 +151,7 @@ def close_app_files(app_name: str = "ocenaudio") -> bool:
 
     script = f'''
     tell application "System Events"
+        if not (exists process "{app_name}") then return
         set origProc to first application process whose frontmost is true
         set origName to name of origProc
     end tell
@@ -539,10 +540,7 @@ def run_audit(manifest_path: str, sample_size: int = 20, sort_by_gain: bool = Tr
                     break
                 elif choice == "q":
                     stop_audio()
-                    print("\n💾 Saving annotations before exit...")
-                    save_annotations(gt_json_path, gt_csv_path, list(results_dict.values()))
-                    update_markdown_manifest(md_path, labels_patch_dict)
-                    print(f"✅ Done! {len(results_dict)} total windows saved.")
+                    print("\n💾 Saving annotations and exiting...")
                     return
                 else:
                     valid_keys = "1, 0, b, m, o, s, or q" if use_app else "1, 0, b, m, s, or q"
@@ -553,6 +551,8 @@ def run_audit(manifest_path: str, sample_size: int = 20, sort_by_gain: bool = Tr
         print("\n\n⚠️  Interrupt detected. Saving progress...")
     finally:
         stop_audio()
+        if use_app:
+            close_app_files(app_name=app_name)
         save_annotations(gt_json_path, gt_csv_path, list(results_dict.values()))
         update_markdown_manifest(md_path, labels_patch_dict)
         print("\n" + "=" * 70)
