@@ -37,15 +37,39 @@ def get_base_dir(custom_path: Optional[str] = None) -> str:
     return "."
 
 
-def play_audio(audio_path: Optional[str]) -> bool:
+current_player_process: Optional[subprocess.Popen] = None
+
+
+def stop_audio():
+    """Stops any currently playing background audio process."""
+    global current_player_process
+    if current_player_process and current_player_process.poll() is None:
+        try:
+            current_player_process.terminate()
+            current_player_process.wait(timeout=0.2)
+        except Exception:
+            pass
+        current_player_process = None
+
+
+def play_audio(audio_path: Optional[str], blocking: bool = False) -> bool:
     """Plays audio via macOS afplay or available Linux players."""
+    global current_player_process
+    stop_audio()
     if not audio_path or not os.path.exists(audio_path):
         print(f"⚠️  File audio tidak ditemukan: {audio_path}")
         return False
 
     if sys.platform == "darwin":
         try:
-            subprocess.run(["afplay", audio_path], check=False)
+            if blocking:
+                subprocess.run(["afplay", audio_path], check=False)
+            else:
+                current_player_process = subprocess.Popen(
+                    ["afplay", audio_path],
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL
+                )
             return True
         except Exception as e:
             print(f"⚠️  Gagal memutar audio via afplay: {e}")
@@ -56,15 +80,67 @@ def play_audio(audio_path: Optional[str]) -> bool:
             if shutil.which(player):
                 try:
                     if player == "ffplay":
-                        subprocess.run([player, "-nodisp", "-autoexit", audio_path], stderr=subprocess.DEVNULL, check=False)
+                        cmd = [player, "-nodisp", "-autoexit", audio_path]
                     else:
-                        subprocess.run([player, audio_path], stderr=subprocess.DEVNULL, check=False)
+                        cmd = [player, audio_path]
+                    if blocking:
+                        subprocess.run(cmd, stderr=subprocess.DEVNULL, check=False)
+                    else:
+                        current_player_process = subprocess.Popen(
+                            cmd,
+                            stdout=subprocess.DEVNULL,
+                            stderr=subprocess.DEVNULL
+                        )
                     return True
                 except Exception:
                     pass
         print(f"🔈 [Audio File]: {audio_path}")
         print("💡 TIPS: Jalankan audit_vibe.py di Terminal Mac mini agar audio otomatis berputar di speaker/headphone!")
         return False
+
+
+def open_in_app(audio_path: Optional[str], app_name: str = "ocenaudio", background: bool = True) -> bool:
+    """Opens audio file in the specified visual application (e.g., ocenaudio on macOS)."""
+    if not audio_path or not os.path.exists(audio_path):
+        return False
+    if sys.platform == "darwin":
+        try:
+            cmd = ["open"]
+            if background:
+                cmd.append("-g")
+            cmd.extend(["-a", app_name, audio_path])
+            subprocess.run(cmd, check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            return True
+        except Exception as e:
+            print(f"⚠️  Gagal membuka di {app_name}: {e}")
+            return False
+    else:
+        if "DISPLAY" in os.environ and shutil.which("xdg-open"):
+            try:
+                subprocess.Popen(["xdg-open", audio_path], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                return True
+            except Exception:
+                pass
+        return False
+
+
+def open_in_app_multi(audio_paths: List[str], app_name: str = "ocenaudio", background: bool = True) -> bool:
+    """Opens multiple audio files in the specified visual application."""
+    valid_paths = [p for p in audio_paths if p and os.path.exists(p)]
+    if not valid_paths:
+        return False
+    if sys.platform == "darwin":
+        try:
+            cmd = ["open"]
+            if background:
+                cmd.append("-g")
+            cmd.extend(["-a", app_name] + valid_paths)
+            subprocess.run(cmd, check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            return True
+        except Exception as e:
+            print(f"⚠️  Gagal membuka di {app_name}: {e}")
+            return False
+    return False
 
 
 def find_available_dates(base_dir: str) -> List[Dict[str, str]]:
@@ -167,7 +243,7 @@ def update_markdown_manifest(md_path: str, annotations_dict: Dict[str, int]):
         print(f"⚠️  Gagal memperbarui Markdown manifest: {e}")
 
 
-def run_audit(manifest_path: str, sample_size: int = 20, sort_by_gain: bool = True, min_conf: float = 0.30):
+def run_audit(manifest_path: str, sample_size: int = 20, sort_by_gain: bool = True, min_conf: float = 0.30, app_name: str = "ocenaudio", play_sound: bool = True):
     date_dir = os.path.dirname(manifest_path)
     gt_json_path = os.path.join(date_dir, "audit_ground_truth.json")
     gt_csv_path = os.path.join(date_dir, "audit_ground_truth.csv")
@@ -234,16 +310,22 @@ def run_audit(manifest_path: str, sample_size: int = 20, sort_by_gain: bool = Tr
         print("✅ Seluruh kandidat pada tanggal ini sudah diaudit sebelumnya!")
         return
 
+    use_app = bool(app_name and app_name.lower() != "none")
+
     print("=" * 70)
     print(f"🎧 SEA VIBE AUDIT: {loc_name} | {date_name}")
     print(f"📁 Manifest: {manifest_path}")
     print(f"🎯 Sampel audit: {total_to_audit} windows (dari total {len(candidates)} kandidat, {len(filtered)} di atas conf {min_conf})")
+    if use_app:
+        print(f"🖥️  Aplikasi Visual: {app_name} (spektrogram & gelombang)")
     print("=" * 70)
     print("Petunjuk Navigasi:")
     print("  [1] / [y]  : Present (Kicau/panggilan burung asli terkonfirmasi)")
     print("  [0] / [n]  : Absent (Derau/serangga/hujan/angin/false positive)")
-    print("  [b]        : Replay audio Best Beam (SPIR / SA / LabIR)")
-    print("  [m]        : Play audio Mono asli untuk perbandingan")
+    print("  [b]        : Replay & tampilkan audio Best Beam (SPIR / SA / LabIR)")
+    print("  [m]        : Play & tampilkan audio Mono asli untuk perbandingan")
+    if use_app:
+        print(f"  [o]        : Fokuskan jendela {app_name} ke depan")
     print("  [s]        : Skip jendela ini")
     print("  [q]        : Simpan & Keluar")
     print("=" * 70)
@@ -276,15 +358,34 @@ def run_audit(manifest_path: str, sample_size: int = 20, sort_by_gain: bool = Tr
             print(f"🐦 Species : {species}")
             print(f"📡 Channel : {best_ch}")
             print(f"📊 Conf    : Mono {mono_c_val:.2f}  ──▶  Beam {best_c_val:.2f}  (Delta: +{gain_val:.2f})")
-            print(f"🔊 Playing Beam Audio...")
 
-            play_audio(beam_clip)
+            # Audiovisual inspection in ocenaudio
+            if use_app:
+                clips_to_open = []
+                if mono_clip and os.path.exists(mono_clip):
+                    clips_to_open.append(mono_clip)
+                if beam_clip and os.path.exists(beam_clip):
+                    clips_to_open.append(beam_clip)
+                if clips_to_open:
+                    open_in_app_multi(clips_to_open, app_name=app_name, background=True)
+                    print(f"🖥️  Dibuka di {app_name} (waveform/spectrogram)")
+
+            if play_sound and beam_clip:
+                print(f"🔊 Memutar audio Beam...")
+                play_audio(beam_clip, blocking=False)
+            elif not play_sound:
+                print(f"🔇 Mode visual murni (--no-play). Tekan [Space] di ocenaudio untuk memutar.")
 
             while True:
-                prompt_text = "   Keputusan [1=Burung, 0=Derau, b=Replay Beam, m=Play Mono, s=Skip, q=Quit]: "
+                prompt_opts = "1=Burung, 0=Derau, b=Beam, m=Mono"
+                if use_app:
+                    prompt_opts += ", o=Fokus App"
+                prompt_opts += ", s=Skip, q=Quit"
+                prompt_text = f"   Keputusan [{prompt_opts}]: "
                 choice = input(prompt_text).strip().lower()
 
                 if choice in ["1", "y"]:
+                    stop_audio()
                     item_record = dict(item)
                     item_record["candidate_key"] = cand_key
                     item_record["ground_truth"] = 1
@@ -295,6 +396,7 @@ def run_audit(manifest_path: str, sample_size: int = 20, sort_by_gain: bool = Tr
                     print("   ✅ DITANDAI: 1 (True Avian Presence)")
                     break
                 elif choice in ["0", "n"]:
+                    stop_audio()
                     item_record = dict(item)
                     item_record["candidate_key"] = cand_key
                     item_record["ground_truth"] = 0
@@ -306,25 +408,42 @@ def run_audit(manifest_path: str, sample_size: int = 20, sort_by_gain: bool = Tr
                     break
                 elif choice == "b":
                     print("   🔊 Replaying Beam...")
-                    play_audio(beam_clip)
+                    if use_app and beam_clip:
+                        open_in_app(beam_clip, app_name=app_name, background=True)
+                    if play_sound and beam_clip:
+                        play_audio(beam_clip, blocking=False)
                 elif choice == "m":
                     print("   🔊 Playing Mono Channel...")
-                    play_audio(mono_clip)
+                    if use_app and mono_clip:
+                        open_in_app(mono_clip, app_name=app_name, background=True)
+                    if play_sound and mono_clip:
+                        play_audio(mono_clip, blocking=False)
+                elif choice == "o" and use_app:
+                    print(f"   🖥️  Memfokuskan {app_name} ke depan...")
+                    active_clip = beam_clip or mono_clip
+                    if active_clip:
+                        open_in_app(active_clip, app_name=app_name, background=False)
+                    print("   💡 Tips: Klik kembali ke jendela Terminal untuk mengetik label [1/0].")
                 elif choice == "s":
+                    stop_audio()
                     print("   ⏩ Skipped.")
                     break
                 elif choice == "q":
+                    stop_audio()
                     print("\n💾 Menyimpan anotasi sebelum keluar...")
                     save_annotations(gt_json_path, gt_csv_path, list(results_dict.values()))
                     update_markdown_manifest(md_path, labels_patch_dict)
                     print(f"✅ Selesai! {len(results_dict)} total jendela tersimpan.")
                     return
                 else:
-                    print("   ⚠️  Pilihan tidak dikenali. Ketik 1, 0, b, m, s, atau q.")
+                    valid_keys = "1, 0, b, m, o, s, atau q" if use_app else "1, 0, b, m, s, atau q"
+                    print(f"   ⚠️  Pilihan tidak dikenali. Ketik {valid_keys}.")
 
     except KeyboardInterrupt:
+        stop_audio()
         print("\n\n⚠️  Interupsi terdeteksi. Menyimpan progres...")
     finally:
+        stop_audio()
         save_annotations(gt_json_path, gt_csv_path, list(results_dict.values()))
         update_markdown_manifest(md_path, labels_patch_dict)
         print("\n" + "=" * 70)
@@ -347,16 +466,20 @@ def main():
     parser.add_argument("--sample", type=int, default=20, help="Jumlah sampel per sesi (default: 20)")
     parser.add_argument("--min-conf", type=float, default=0.30, help="Confidence threshold minimum (default: 0.30)")
     parser.add_argument("--random", action="store_true", help="Acak urutan kandidat (default: urutkan gain tertinggi)")
+    parser.add_argument("--app", type=str, default="ocenaudio", help="Aplikasi visual audio (default: ocenaudio, 'none' untuk terminal saja)")
+    parser.add_argument("--no-play", action="store_true", help="Nonaktifkan pemutaran audio otomatis di latar belakang (inspeksi visual ocenaudio saja)")
 
     args = parser.parse_args()
     base_dir = get_base_dir(args.base_dir)
+    play_sound = not args.no_play
+    app_name = args.app
 
     if args.location and args.date:
         manifest = os.path.join(base_dir, args.location, args.date, "detection_audit_manifest.json")
         if not os.path.exists(manifest):
             print(f"❌ Manifest tidak ditemukan di: {manifest}")
             sys.exit(1)
-        run_audit(manifest, sample_size=args.sample, sort_by_gain=not args.random, min_conf=args.min_conf)
+        run_audit(manifest, sample_size=args.sample, sort_by_gain=not args.random, min_conf=args.min_conf, app_name=app_name, play_sound=play_sound)
     else:
         available = find_available_dates(base_dir)
         if not available:
@@ -374,7 +497,7 @@ def main():
                 print("Keluar.")
                 return
             target = available[-15:][choice - 1]
-            run_audit(target["manifest"], sample_size=args.sample, sort_by_gain=not args.random, min_conf=args.min_conf)
+            run_audit(target["manifest"], sample_size=args.sample, sort_by_gain=not args.random, min_conf=args.min_conf, app_name=app_name, play_sound=play_sound)
         except (ValueError, IndexError):
             print("Pilihan tidak valid.")
 
