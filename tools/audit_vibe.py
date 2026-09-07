@@ -20,7 +20,9 @@ import argparse
 import subprocess
 from pathlib import Path
 from typing import List, Dict, Any, Optional, Tuple
+from concurrent.futures import ThreadPoolExecutor
 
+LOCAL_CACHE_DIR = "/tmp/sea_audit_cache"
 DEFAULT_SMB_BASE = "/Volumes/ri322/home/spatial-ecoacoustic-analysis/output"
 DEFAULT_CX3_BASE = "/rds/general/user/ri322/home/spatial-ecoacoustic-analysis/output"
 DEFAULT_LOCAL_BASE = "./output"
@@ -255,6 +257,70 @@ def resolve_audio_paths(item: Dict[str, Any], date_dir: str) -> Tuple[Optional[s
     return beam_clip, mono_clip
 
 
+def clean_local_cache():
+    """Removes temporary local audio cache immediately."""
+    if os.path.exists(LOCAL_CACHE_DIR):
+        try:
+            shutil.rmtree(LOCAL_CACHE_DIR, ignore_errors=True)
+            print(f"🧹 Cleaned up local cache ({LOCAL_CACHE_DIR})")
+        except Exception:
+            pass
+
+
+def precache_clips(targets: List[Dict[str, Any]], date_dir: str) -> Dict[str, Tuple[Optional[str], Optional[str]]]:
+    """Copies all sampled audio clips to local /tmp SSD concurrently for zero-latency inspection."""
+    if os.path.exists(LOCAL_CACHE_DIR):
+        shutil.rmtree(LOCAL_CACHE_DIR, ignore_errors=True)
+    os.makedirs(LOCAL_CACHE_DIR, exist_ok=True)
+
+    cache_map = {}
+    copy_tasks = []
+
+    for item in targets:
+        rec_id = item.get("recording_id", "")
+        win_str = item.get("time_str") or str(item.get("window", ""))
+        key = f"{rec_id}_{win_str}"
+
+        beam_src, mono_src = resolve_audio_paths(item, date_dir)
+        beam_cached = None
+        mono_cached = None
+
+        if beam_src and os.path.exists(beam_src):
+            dst = os.path.join(LOCAL_CACHE_DIR, os.path.basename(beam_src))
+            copy_tasks.append((beam_src, dst))
+            beam_cached = dst
+        else:
+            beam_cached = beam_src
+
+        if mono_src and os.path.exists(mono_src):
+            dst = os.path.join(LOCAL_CACHE_DIR, os.path.basename(mono_src))
+            copy_tasks.append((mono_src, dst))
+            mono_cached = dst
+        else:
+            mono_cached = mono_src
+
+        cache_map[key] = (beam_cached, mono_cached)
+
+    if copy_tasks:
+        unique_tasks = list({src: dst for src, dst in copy_tasks}.items())
+        print(f"⚡ Pre-caching {len(unique_tasks)} audio clips to local /tmp SSD...")
+        t0 = time.time()
+        try:
+            def _copy(pair):
+                src, dst = pair
+                if not os.path.exists(dst):
+                    shutil.copyfile(src, dst)
+
+            with ThreadPoolExecutor(max_workers=8) as executor:
+                list(executor.map(_copy, unique_tasks))
+            elapsed = time.time() - t0
+            print(f"✅ Ready! {len(unique_tasks)} clips cached in {elapsed:.1f}s (zero SMB latency).")
+        except Exception as e:
+            print(f"⚠️  Pre-caching note: {e}")
+
+    return cache_map
+
+
 def load_existing_annotations(gt_path: str) -> Dict[str, Dict[str, Any]]:
     """Loads existing ground-truth labels if present."""
     if not os.path.exists(gt_path):
@@ -427,6 +493,9 @@ def run_audit(manifest_path: str, sample_size: int = 20, sort_by_gain: bool = Tr
         print("✅ All candidates for this date have already been audited!")
         return
 
+    # Pre-cache sampled audio clips to local /tmp SSD concurrently
+    cached_paths_map = precache_clips(targets, date_dir)
+
     use_app = bool(app_name and app_name.lower() != "none")
 
     print("=" * 70)
@@ -464,7 +533,10 @@ def run_audit(manifest_path: str, sample_size: int = 20, sort_by_gain: bool = Tr
             best_c = item.get("best_conf") if item.get("best_conf") is not None else item.get("best_beam_conf", 0.0)
             gain = item.get("conf_delta") if item.get("conf_delta") is not None else item.get("gain", 0.0)
 
-            beam_clip, mono_clip = resolve_audio_paths(item, date_dir)
+            if cand_key in cached_paths_map:
+                beam_clip, mono_clip = cached_paths_map[cand_key]
+            else:
+                beam_clip, mono_clip = resolve_audio_paths(item, date_dir)
 
             mono_c_val = float(mono_c) if mono_c is not None else 0.0
             best_c_val = float(best_c) if best_c is not None else 0.0
@@ -563,6 +635,7 @@ def run_audit(manifest_path: str, sample_size: int = 20, sort_by_gain: bool = Tr
         stop_audio()
         if use_app:
             close_app_files(app_name=app_name)
+        clean_local_cache()
         save_annotations(gt_json_path, gt_csv_path, list(results_dict.values()))
         update_markdown_manifest(md_path, labels_patch_dict)
         print("\n" + "=" * 70)
