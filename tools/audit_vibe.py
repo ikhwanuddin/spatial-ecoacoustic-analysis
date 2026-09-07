@@ -260,12 +260,15 @@ def update_markdown_manifest(md_path: str, annotations_dict: Dict[str, int]):
             if line.startswith("|") and not line.startswith("| #") and not line.startswith("|---"):
                 parts = [p.strip() for p in line.split("|")]
                 if len(parts) >= 11:
-                    window = parts[2]
-                    rec_id = parts[3]
-                    key = f"{rec_id}_{window}"
-                    if key in annotations_dict:
-                        label = str(annotations_dict[key])
-                        parts[9] = f" `{label}` "
+                    win_clean = parts[2].replace("`", "").strip()
+                    rec_clean = parts[3].replace("`", "").strip()
+                    match_label = None
+                    for k, lbl in annotations_dict.items():
+                        if rec_clean in k and win_clean in k:
+                            match_label = lbl
+                            break
+                    if match_label is not None:
+                        parts[9] = f" `{match_label}` "
                         line = "| " + " | ".join(parts[1:-1]) + " |\n"
             updated_lines.append(line)
 
