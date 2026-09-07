@@ -297,7 +297,7 @@ def precache_clips(targets: List[Dict[str, Any]], date_dir: str) -> Dict[str, Tu
 
     if copy_tasks:
         unique_tasks = list({src: dst for src, dst in copy_tasks}.items())
-        print(f"⚡ Pre-caching {len(unique_tasks)} audio clips to local /tmp SSD...")
+        print(f"⚡ Pre-caching audio for {len(targets)} windows ({len(unique_tasks)} clips: Mono & Beam pairs) to local /tmp SSD...")
         t0 = time.time()
 
         use_rsync_ssh = False
@@ -332,7 +332,7 @@ def precache_clips(targets: List[Dict[str, Any]], date_dir: str) -> Dict[str, Tu
                     if os.path.exists(list_file):
                         os.remove(list_file)
                     elapsed = time.time() - t0
-                    print(f"✅ Ready! {len(unique_tasks)} clips transferred via SSH in {elapsed:.1f}s (zero SMB latency).")
+                    print(f"✅ Ready! {len(unique_tasks)} clips for {len(targets)} windows transferred via SSH in {elapsed:.1f}s (zero SMB latency).")
                     return cache_map
                 except Exception:
                     pass
@@ -347,7 +347,7 @@ def precache_clips(targets: List[Dict[str, Any]], date_dir: str) -> Dict[str, Tu
             with ThreadPoolExecutor(max_workers=8) as executor:
                 list(executor.map(_copy, unique_tasks))
             elapsed = time.time() - t0
-            print(f"✅ Ready! {len(unique_tasks)} clips cached in {elapsed:.1f}s.")
+            print(f"✅ Ready! {len(unique_tasks)} clips for {len(targets)} windows cached in {elapsed:.1f}s.")
         except Exception as e:
             print(f"⚠️  Pre-caching note: {e}")
 
