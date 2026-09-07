@@ -151,14 +151,18 @@ def close_app_files(app_name: str = "ocenaudio") -> bool:
 
     script = f'''
     tell application "System Events"
+        set origApp to name of first application process whose frontmost is true
         if exists (process "{app_name}") then
             tell process "{app_name}"
-                try
-                    tell menu "File" of menu bar 1
-                        click menu item "Close All"
-                    end tell
-                end try
+                set frontmost to true
+                keystroke "w" using {{command down, option down}}
             end tell
+            delay 0.08
+            if origApp is not "" and origApp is not "{app_name}" and exists (process origApp) then
+                tell process origApp
+                    set frontmost to true
+                end tell
+            end if
         end if
     end tell
     '''
@@ -169,6 +173,29 @@ def close_app_files(app_name: str = "ocenaudio") -> bool:
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL
         )
+        # Verify and wait until ocenaudio clears its playlist (max 0.35s)
+        check_script = f'''
+        tell application "System Events"
+            tell process "{app_name}"
+                try
+                    return count of rows of list 1 of window 1
+                on error
+                    return 0
+                end try
+            end tell
+        end tell
+        '''
+        for _ in range(7):
+            res = subprocess.run(
+                ["osascript", "-e", check_script],
+                capture_output=True,
+                text=True,
+                check=False
+            )
+            val = res.stdout.strip()
+            if val == "0" or not val:
+                break
+            time.sleep(0.05)
         return True
     except Exception:
         return False
@@ -447,7 +474,6 @@ def run_audit(manifest_path: str, sample_size: int = 20, sort_by_gain: bool = Tr
             if use_app:
                 # Close previous candidate clips in ocenaudio
                 close_app_files(app_name=app_name)
-                time.sleep(0.08)
 
                 clips_to_open = []
                 if mono_clip and os.path.exists(mono_clip):
