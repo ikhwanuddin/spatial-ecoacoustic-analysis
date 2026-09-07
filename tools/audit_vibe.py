@@ -8,8 +8,6 @@ and label avian vocalization ground-truth [1/0] with single keystrokes.
 Works seamlessly on macOS (native speaker playback via SMB) and on CX3 Linux.
 """
 
-from __future__ import annotations
-
 import os
 import sys
 import json
