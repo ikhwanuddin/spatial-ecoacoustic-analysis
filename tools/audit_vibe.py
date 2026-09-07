@@ -1123,36 +1123,100 @@ def run_audit(manifest_path: str, sample_size: int = 20, sort_by_gain: bool = Tr
     return "completed"
 
 
-def run_auto_audit_loop(base_dir: str, location: str, args: argparse.Namespace, app_name: str, play_sound: bool, species_filter: Optional[List[str]] = None, exclude_filter: Optional[List[str]] = None):
-    """Continuously audits prioritized dates for a location (0 audited dates first, then least audited)."""
-    visited_dates = set()
+def _count_gt_for_species(manifest_path: str, species_name: str) -> int:
+    """Count GT-annotated windows matching species_name in one date directory (local only, fast)."""
+    gt_path = manifest_path.replace("detection_audit_manifest.json", "audit_ground_truth.json")
+    if not os.path.exists(gt_path) or not os.path.exists(manifest_path):
+        return 0
+    try:
+        with open(manifest_path) as f:
+            data = json.load(f)
+        cands = data if isinstance(data, list) else data.get("candidates", [])
+        key_to_sp: Dict[str, str] = {}
+        for c in cands:
+            sp  = c.get("tentative_label") or c.get("tentative_species", "")
+            rec = c.get("recording_id", "")
+            win = c.get("time_str") or str(c.get("window", ""))
+            key_to_sp[f"{rec}_{win}"] = sp
+        with open(gt_path) as f:
+            gt_entries = json.load(f)
+        return sum(1 for e in gt_entries if key_to_sp.get(e.get("candidate_key")) == species_name)
+    except Exception:
+        return 0
+
+
+def run_auto_audit_loop(
+    base_dir: str,
+    location: str,
+    args: argparse.Namespace,
+    app_name: str,
+    play_sound: bool,
+    species_filter: Optional[List[str]] = None,
+    exclude_filter: Optional[List[str]] = None,
+    auto_advance: bool = False,
+    session_budget: Optional[int] = None,
+):
+    """
+    Continuously audits prioritized dates for a location.
+
+    auto_advance=True  : skip between-date prompt (used by stratified mode)
+    session_budget=N   : stop after N new windows are audited for species_filter[0]
+    """
+    visited_dates: set = set()
+    session_count: int = 0
+    budget_species: Optional[str] = (species_filter[0] if session_budget and species_filter else None)
 
     while True:
+        # Budget check (fast local GT read)
+        if session_budget is not None and budget_species:
+            if session_count >= session_budget:
+                print(f"\n✅ Session budget of {session_budget} windows reached for [{budget_species}].")
+                break
+
         prioritized = get_prioritized_dates(base_dir, location)
         remaining = [p for p in prioritized if p["date"] not in visited_dates]
         if not remaining:
-            print(f"\n🎉 All dates for {location} have been audited or checked against filters in this session!")
+            if auto_advance:
+                print(f"   ⏹  All dates exhausted for [{budget_species or location}].")
+            else:
+                print(f"\n🎉 All dates for {location} have been audited or checked against filters in this session!")
             break
 
-        # Pick top prioritized date
-        target = remaining[0]
-        date_str = target["date"]
+        target_date = remaining[0]
+        date_str = target_date["date"]
 
-        print("\n" + "=" * 70)
-        print(f"🎯 AUTO-PRIORITIZED DATE QUEUE: {location}")
-        for idx, item in enumerate(remaining[:5], 1):
-            marker = " ◀ TARGET" if idx == 1 else ""
-            status_text = "0 audited" if item["audited_count"] == 0 else f"{item['audited_count']} audited"
-            print(f"   [{idx}] {item['date']} ({status_text}){marker}")
-        print("=" * 70)
+        if auto_advance:
+            # Compact one-liner in stratified mode instead of the full date-queue banner
+            remaining_budget = (session_budget - session_count) if session_budget else "?"
+            print(f"\n   📅 [{date_str}] auditing [{budget_species}] — {remaining_budget} windows still needed ...")
+        else:
+            print("\n" + "=" * 70)
+            sp_ctx = f" · filter: {', '.join(species_filter)}" if species_filter else ""
+            print(f"🎯 AUTO-PRIORITIZED DATE QUEUE: {location}{sp_ctx}")
+            for idx, item in enumerate(remaining[:5], 1):
+                marker = " ◀ TARGET" if idx == 1 else ""
+                status_text = "0 audited" if item["audited_count"] == 0 else f"{item['audited_count']} audited"
+                print(f"   [{idx}] {item['date']} ({status_text}){marker}")
+            print("=" * 70)
 
         if args.reset:
-            reset_audit(target["manifest"])
+            reset_audit(target_date["manifest"])
             return "reset"
 
+        # How many windows of this species are audited BEFORE this run
+        before = (_count_gt_for_species(target_date["manifest"], budget_species)
+                  if budget_species else 0)
+
+        # Cap sample_size to avoid over-auditing past the budget
+        effective_sample = args.sample
+        if session_budget is not None:
+            effective_sample = min(args.sample, session_budget - session_count)
+            if effective_sample <= 0:
+                break
+
         status = run_audit(
-            target["manifest"],
-            sample_size=args.sample,
+            target_date["manifest"],
+            sample_size=effective_sample,
             sort_by_gain=not args.random,
             min_conf=args.min_conf,
             app_name=app_name,
@@ -1163,23 +1227,42 @@ def run_auto_audit_loop(base_dir: str, location: str, args: argparse.Namespace, 
 
         visited_dates.add(date_str)
 
+        # Count newly audited for budget tracking
+        if budget_species:
+            after = _count_gt_for_species(target_date["manifest"], budget_species)
+            newly = max(0, after - before)
+            session_count += newly
+
         if status == "no_candidates":
-            print(f"⏩ Skipping {date_str} (no candidates matching filter); advancing to next date...")
+            if auto_advance:
+                print(f"   ⏩ No [{budget_species}] candidates on {date_str}, trying next date...")
+            else:
+                print(f"⏩ Skipping {date_str} (no candidates matching filter); advancing to next date...")
             continue
 
         if status != "completed":
             return status
 
-        # Re-fetch priority queue to check next target
+        # Budget check after this date
+        if session_budget is not None and session_count >= session_budget:
+            print(f"\n✅ Session budget of {session_budget} windows reached for [{budget_species}].")
+            break
+
+        if auto_advance:
+            # No prompt — silently advance to next date for this species
+            continue
+
+        # Normal mode: prompt before next date
         next_queue = [p for p in get_prioritized_dates(base_dir, location) if p["date"] not in visited_dates]
         if not next_queue:
             print(f"\n🎉 All dates for {location} have been completed!")
             break
 
-        next_target = next_queue[0]
-        next_date_str = next_target["date"]
+        next_target    = next_queue[0]
+        next_date_str  = next_target["date"]
         next_status_text = "0 audited" if next_target["audited_count"] == 0 else f"{next_target['audited_count']} audited"
-        prompt = f"\n👉 Continue to next prioritized date [{next_date_str} - {next_status_text}]? [Enter=Yes / q=Exit]: "
+        sp_hint = f" [{', '.join(species_filter)}]" if species_filter else ""
+        prompt = f"\n👉 Continue{sp_hint} → next date [{next_date_str} — {next_status_text}]? [Enter=Yes / q=Exit]: "
         try:
             ans = input(prompt).strip().lower()
             if ans in ["q", "n", "exit"]:
@@ -1299,7 +1382,9 @@ def run_stratified_audit_loop(base_dir: str, location: str, args: argparse.Names
         loop_status = run_auto_audit_loop(
             base_dir, location, args, app_name, play_sound,
             species_filter=[sp_name],
-            exclude_filter=None
+            exclude_filter=None,
+            auto_advance=True,
+            session_budget=gap,
         )
 
         visited_species.add(sp_name)
