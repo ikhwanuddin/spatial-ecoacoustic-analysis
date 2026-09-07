@@ -43,8 +43,8 @@ def get_base_dir(custom_path: Optional[str] = None) -> str:
 current_player_process: Optional[subprocess.Popen] = None
 
 
-def stop_audio():
-    """Stops any currently playing background audio process."""
+def stop_audio(app_name: Optional[str] = "ocenaudio"):
+    """Stops any currently playing background audio process or visual app playback."""
     global current_player_process
     if current_player_process and current_player_process.poll() is None:
         try:
@@ -53,6 +53,12 @@ def stop_audio():
         except Exception:
             pass
         current_player_process = None
+
+    if app_name and app_name.lower() != "none":
+        try:
+            stop_app_audio(app_name)
+        except Exception:
+            pass
 
 
 def play_audio(audio_path: Optional[str], blocking: bool = False) -> bool:
@@ -197,6 +203,84 @@ def close_app_files(app_name: str = "ocenaudio") -> bool:
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
             timeout=2.0
+        )
+        return True
+    except Exception:
+        return False
+
+
+def play_app_audio(app_name: str = "ocenaudio") -> bool:
+    """Triggers playback in the visual application (e.g., ocenaudio) while keeping terminal focus."""
+    if sys.platform != "darwin" or not app_name or app_name.lower() == "none":
+        return False
+
+    script = f'''
+    tell application "System Events"
+        if not (exists process "{app_name}") then return
+        set origProc to first application process whose frontmost is true
+        set origName to name of origProc
+    end tell
+
+    tell application "{app_name}" to activate
+    delay 0.12
+
+    tell application "System Events" to tell process "{app_name}"
+        try
+            tell menu bar 1 to tell menu bar item "Controls" to tell menu "Controls"
+                set firstItem to name of menu item 1
+                if firstItem is "Pause" then
+                    click menu item "Stop"
+                    delay 0.05
+                end if
+                click menu item "Play"
+            end tell
+        end try
+    end tell
+
+    delay 0.05
+    if origName is not "" and origName is not "{app_name}" then
+        tell application origName to activate
+    end if
+    '''
+    try:
+        subprocess.run(
+            ["osascript", "-e", script],
+            check=False,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            timeout=2.0
+        )
+        return True
+    except Exception:
+        return False
+
+
+def stop_app_audio(app_name: str = "ocenaudio") -> bool:
+    """Stops playback in the visual application from background without activating the app."""
+    if sys.platform != "darwin" or not app_name or app_name.lower() == "none":
+        return False
+
+    script = f'''
+    tell application "System Events"
+        if not (exists process "{app_name}") then return
+        tell process "{app_name}"
+            try
+                tell menu bar 1 to tell menu bar item "Controls" to tell menu "Controls"
+                    if name of menu item 1 is "Pause" then
+                        click menu item "Stop"
+                    end if
+                end tell
+            end try
+        end tell
+    end tell
+    '''
+    try:
+        subprocess.run(
+            ["osascript", "-e", script],
+            check=False,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            timeout=1.0
         )
         return True
     except Exception:
@@ -582,24 +666,41 @@ def run_audit(manifest_path: str, sample_size: int = 20, sort_by_gain: bool = Tr
             print(f"📊 Conf    : Mono {mono_c_val:.2f}  ──▶  Beam {best_c_val:.2f}  (Delta: +{gain_val:.2f})")
 
             # Audiovisual inspection in ocenaudio
+            # Determine which clip has higher confidence
+            if best_c_val >= mono_c_val:
+                primary_clip = beam_clip
+                secondary_clip = mono_clip
+                active_label = f"Beam ({best_c_val:.2f})"
+            else:
+                primary_clip = mono_clip
+                secondary_clip = beam_clip
+                active_label = f"Mono ({mono_c_val:.2f})"
+
             if use_app:
                 # Close previous candidate clips in ocenaudio (only after first candidate)
                 if idx > 1:
                     close_app_files(app_name=app_name)
 
-                clips_to_open = []
-                if mono_clip and os.path.exists(mono_clip):
-                    clips_to_open.append(mono_clip)
-                if beam_clip and os.path.exists(beam_clip):
-                    clips_to_open.append(beam_clip)
-                if clips_to_open:
-                    open_in_app_multi(clips_to_open, app_name=app_name, background=True)
-                    print(f"🖥️  Opened in {app_name} (waveform/spectrogram)")
+                # Open secondary first, then primary second so ocenaudio highlights primary
+                if secondary_clip and os.path.exists(secondary_clip):
+                    open_in_app(secondary_clip, app_name=app_name, background=True)
+                    time.sleep(0.05)
+                if primary_clip and os.path.exists(primary_clip):
+                    open_in_app(primary_clip, app_name=app_name, background=True)
+                    time.sleep(0.05)
 
-            if play_sound and beam_clip:
-                print(f"🔊 Playing Beam audio...")
-                play_audio(beam_clip, blocking=False)
-            elif not play_sound:
+                print(f"🖥️  Opened in {app_name} [Highlighted: {active_label}]")
+            else:
+                primary_clip = beam_clip or mono_clip
+
+            if play_sound:
+                if use_app and app_name.lower() == "ocenaudio":
+                    print(f"🔊 Auto-playing in {app_name} [{active_label}]...")
+                    play_app_audio(app_name=app_name)
+                elif primary_clip:
+                    print(f"🔊 Playing audio ({active_label})...")
+                    play_audio(primary_clip, blocking=False)
+            else:
                 print(f"🔇 Visual-only mode (--no-play). Press [Space] in {app_name} to play.")
 
             while True:
@@ -611,7 +712,7 @@ def run_audit(manifest_path: str, sample_size: int = 20, sort_by_gain: bool = Tr
                 choice = input(prompt_text).strip().lower()
 
                 if choice in ["1", "y"]:
-                    stop_audio()
+                    stop_audio(app_name=app_name)
                     item_record = dict(item)
                     item_record["candidate_key"] = cand_key
                     item_record["ground_truth"] = 1
@@ -622,7 +723,7 @@ def run_audit(manifest_path: str, sample_size: int = 20, sort_by_gain: bool = Tr
                     print("   ✅ LABELED: 1 (True Avian Presence)")
                     break
                 elif choice in ["0", "n"]:
-                    stop_audio()
+                    stop_audio(app_name=app_name)
                     item_record = dict(item)
                     item_record["candidate_key"] = cand_key
                     item_record["ground_truth"] = 0
@@ -633,29 +734,33 @@ def run_audit(manifest_path: str, sample_size: int = 20, sort_by_gain: bool = Tr
                     print("   ❌ LABELED: 0 (False Positive / Noise)")
                     break
                 elif choice == "b":
-                    print("   🔊 Replaying Beam...")
+                    print("   🔊 Switching to Beam & Playing...")
                     if use_app and beam_clip:
                         open_in_app(beam_clip, app_name=app_name, background=True)
-                    if play_sound and beam_clip:
+                        if play_sound:
+                            play_app_audio(app_name=app_name)
+                    elif play_sound and beam_clip:
                         play_audio(beam_clip, blocking=False)
                 elif choice == "m":
-                    print("   🔊 Playing Mono Channel...")
+                    print("   🔊 Switching to Mono & Playing...")
                     if use_app and mono_clip:
                         open_in_app(mono_clip, app_name=app_name, background=True)
-                    if play_sound and mono_clip:
+                        if play_sound:
+                            play_app_audio(app_name=app_name)
+                    elif play_sound and mono_clip:
                         play_audio(mono_clip, blocking=False)
                 elif choice == "o" and use_app:
                     print(f"   🖥️  Focusing {app_name} to front...")
-                    active_clip = beam_clip or mono_clip
+                    active_clip = primary_clip or beam_clip or mono_clip
                     if active_clip:
                         open_in_app(active_clip, app_name=app_name, background=False)
                     print("   💡 Tip: Click back to the terminal window to enter label [1/0].")
                 elif choice == "s":
-                    stop_audio()
+                    stop_audio(app_name=app_name)
                     print("   ⏩ Skipped.")
                     break
                 elif choice == "q":
-                    stop_audio()
+                    stop_audio(app_name=app_name)
                     print("\n💾 Saving annotations and exiting...")
                     return
                 else:
@@ -663,10 +768,10 @@ def run_audit(manifest_path: str, sample_size: int = 20, sort_by_gain: bool = Tr
                     print(f"   ⚠️  Unrecognized option. Enter {valid_keys}.")
 
     except (KeyboardInterrupt, EOFError):
-        stop_audio()
+        stop_audio(app_name=app_name)
         print("\n\n⚠️  Session interrupted. Saving progress...")
     finally:
-        stop_audio()
+        stop_audio(app_name=app_name)
         if use_app:
             close_app_files(app_name=app_name)
         clean_local_cache()
