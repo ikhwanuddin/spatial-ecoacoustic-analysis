@@ -305,16 +305,55 @@ def precache_clips(targets: List[Dict[str, Any]], date_dir: str) -> Dict[str, Tu
         unique_tasks = list({src: dst for src, dst in copy_tasks}.items())
         print(f"⚡ Pre-caching {len(unique_tasks)} audio clips to local /tmp SSD...")
         t0 = time.time()
+
+        use_rsync_ssh = False
+        if sys.platform == "darwin":
+            try:
+                res = subprocess.run(["ssh", "-o", "ConnectTimeout=2", "-q", "cx3", "true"], check=False)
+                if res.returncode == 0:
+                    use_rsync_ssh = True
+            except Exception:
+                use_rsync_ssh = False
+
+        if use_rsync_ssh:
+            cx3_prefix = "/rds/general/user/ri322/home/spatial-ecoacoustic-analysis/"
+            file_list = []
+            for src, _ in unique_tasks:
+                if "/output/" in src:
+                    rel = "output/" + src.split("/output/", 1)[1]
+                    file_list.append(rel)
+
+            if file_list:
+                list_file = os.path.join(LOCAL_CACHE_DIR, "_rsync_files.txt")
+                try:
+                    with open(list_file, "w") as f:
+                        f.write("\n".join(file_list) + "\n")
+                    cmd = [
+                        "rsync", "-a", "--no-relative",
+                        f"--files-from={list_file}",
+                        f"cx3:{cx3_prefix}",
+                        LOCAL_CACHE_DIR + "/"
+                    ]
+                    subprocess.run(cmd, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=15.0)
+                    if os.path.exists(list_file):
+                        os.remove(list_file)
+                    elapsed = time.time() - t0
+                    print(f"✅ Ready! {len(unique_tasks)} clips transferred via SSH in {elapsed:.1f}s (zero SMB latency).")
+                    return cache_map
+                except Exception:
+                    pass
+
+        # Fallback: multi-threaded local/SMB copy
         try:
             def _copy(pair):
                 src, dst = pair
-                if not os.path.exists(dst):
+                if os.path.exists(src) and not os.path.exists(dst):
                     shutil.copyfile(src, dst)
 
             with ThreadPoolExecutor(max_workers=8) as executor:
                 list(executor.map(_copy, unique_tasks))
             elapsed = time.time() - t0
-            print(f"✅ Ready! {len(unique_tasks)} clips cached in {elapsed:.1f}s (zero SMB latency).")
+            print(f"✅ Ready! {len(unique_tasks)} clips cached in {elapsed:.1f}s.")
         except Exception as e:
             print(f"⚠️  Pre-caching note: {e}")
 
@@ -628,9 +667,9 @@ def run_audit(manifest_path: str, sample_size: int = 20, sort_by_gain: bool = Tr
                     valid_keys = "1, 0, b, m, o, s, or q" if use_app else "1, 0, b, m, s, or q"
                     print(f"   ⚠️  Unrecognized option. Enter {valid_keys}.")
 
-    except KeyboardInterrupt:
+    except (KeyboardInterrupt, EOFError):
         stop_audio()
-        print("\n\n⚠️  Interrupt detected. Saving progress...")
+        print("\n\n⚠️  Session interrupted. Saving progress...")
     finally:
         stop_audio()
         if use_app:
