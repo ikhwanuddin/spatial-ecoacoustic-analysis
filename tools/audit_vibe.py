@@ -145,26 +145,44 @@ def open_in_app_multi(audio_paths: List[str], app_name: str = "ocenaudio", backg
 
 
 def close_app_files(app_name: str = "ocenaudio") -> bool:
-    """Closes all currently open files in the visual application (macOS AppleScript)."""
+    """Safely closes open files in the visual application via targeted menu action without keystrokes."""
     if sys.platform != "darwin" or not app_name or app_name.lower() == "none":
         return False
 
     script = f'''
     tell application "System Events"
-        set origApp to name of first application process whose frontmost is true
-        if exists (process "{app_name}") then
+        set origProc to first application process whose frontmost is true
+        set origName to name of origProc
+    end tell
+
+    -- Activate ocenaudio specifically
+    tell application "{app_name}" to activate
+
+    tell application "System Events"
+        -- Wait until ocenaudio is confirmed frontmost (NEVER proceed if terminal/ghostty is still frontmost)
+        repeat with i from 1 to 20
+            if frontmost of process "{app_name}" then exit repeat
+            delay 0.03
+        end repeat
+
+        -- Targeted menu item click only. Never use keystroke to avoid hitting terminal tabs.
+        if frontmost of process "{app_name}" then
             tell process "{app_name}"
-                set frontmost to true
-                keystroke "w" using {{command down, option down}}
+                try
+                    tell menu "File" of menu bar item "File" of menu bar 1
+                        click menu item "Close All"
+                    end tell
+                end try
             end tell
-            delay 0.08
-            if origApp is not "" and origApp is not "{app_name}" and exists (process origApp) then
-                tell process origApp
-                    set frontmost to true
-                end tell
-            end if
         end if
     end tell
+
+    delay 0.1
+
+    -- Restore focus back to original terminal (e.g. Ghostty)
+    if origName is not "" and origName is not "{app_name}" then
+        tell application origName to activate
+    end if
     '''
     try:
         subprocess.run(
@@ -173,29 +191,6 @@ def close_app_files(app_name: str = "ocenaudio") -> bool:
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL
         )
-        # Verify and wait until ocenaudio clears its playlist (max 0.35s)
-        check_script = f'''
-        tell application "System Events"
-            tell process "{app_name}"
-                try
-                    return count of rows of list 1 of window 1
-                on error
-                    return 0
-                end try
-            end tell
-        end tell
-        '''
-        for _ in range(7):
-            res = subprocess.run(
-                ["osascript", "-e", check_script],
-                capture_output=True,
-                text=True,
-                check=False
-            )
-            val = res.stdout.strip()
-            if val == "0" or not val:
-                break
-            time.sleep(0.05)
         return True
     except Exception:
         return False
