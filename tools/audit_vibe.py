@@ -110,7 +110,11 @@ def open_in_app(audio_path: Optional[str], app_name: str = "ocenaudio", backgrou
             if background:
                 cmd.append("-g")
             cmd.extend(["-a", app_name, audio_path])
-            subprocess.run(cmd, check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            p = subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            try:
+                p.wait(timeout=1.0)
+            except subprocess.TimeoutExpired:
+                pass
             return True
         except Exception as e:
             print(f"⚠️  Failed to open in {app_name}: {e}")
@@ -136,7 +140,11 @@ def open_in_app_multi(audio_paths: List[str], app_name: str = "ocenaudio", backg
             if background:
                 cmd.append("-g")
             cmd.extend(["-a", app_name] + valid_paths)
-            subprocess.run(cmd, check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            p = subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            try:
+                p.wait(timeout=1.0)
+            except subprocess.TimeoutExpired:
+                pass
             return True
         except Exception as e:
             print(f"⚠️  Failed to open in {app_name}: {e}")
@@ -145,7 +153,7 @@ def open_in_app_multi(audio_paths: List[str], app_name: str = "ocenaudio", backg
 
 
 def close_app_files(app_name: str = "ocenaudio") -> bool:
-    """Safely closes open files in the visual application via targeted menu action without keystrokes."""
+    """Safely closes open files in the visual application via verified frontmost Opt+Cmd+W shortcut."""
     if sys.platform != "darwin" or not app_name or app_name.lower() == "none":
         return False
 
@@ -160,25 +168,24 @@ def close_app_files(app_name: str = "ocenaudio") -> bool:
     tell application "{app_name}" to activate
 
     tell application "System Events"
-        -- Wait until ocenaudio is confirmed frontmost (NEVER proceed if terminal/ghostty is still frontmost)
-        repeat with i from 1 to 20
-            if frontmost of process "{app_name}" then exit repeat
+        -- Strictly verify ocenaudio is frontmost before emitting keystroke
+        set isReady to false
+        repeat 20 times
+            if frontmost of process "{app_name}" then
+                set isReady to true
+                exit repeat
+            end if
             delay 0.03
         end repeat
 
-        -- Targeted menu item click only. Never use keystroke to avoid hitting terminal tabs.
-        if frontmost of process "{app_name}" then
-            tell process "{app_name}"
-                try
-                    tell menu "File" of menu bar item "File" of menu bar 1
-                        click menu item "Close All"
-                    end tell
-                end try
-            end tell
+        -- ONLY send Opt+Cmd+W if ocenaudio is 100% verified frontmost.
+        -- Ghostty/terminal tabs are completely protected if focus hasn't switched.
+        if isReady then
+            delay 0.04
+            keystroke "w" using {{command down, option down}}
+            delay 0.04
         end if
     end tell
-
-    delay 0.1
 
     -- Restore focus back to original terminal (e.g. Ghostty)
     if origName is not "" and origName is not "{app_name}" then
@@ -190,9 +197,12 @@ def close_app_files(app_name: str = "ocenaudio") -> bool:
             ["osascript", "-e", script],
             check=False,
             stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL
+            stderr=subprocess.DEVNULL,
+            timeout=2.0
         )
         return True
+    except Exception:
+        return False
     except Exception:
         return False
 
