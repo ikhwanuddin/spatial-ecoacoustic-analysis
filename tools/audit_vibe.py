@@ -1148,7 +1148,7 @@ def run_auto_audit_loop(base_dir: str, location: str, args: argparse.Namespace, 
 
         if args.reset:
             reset_audit(target["manifest"])
-            return
+            return "reset"
 
         status = run_audit(
             target["manifest"],
@@ -1168,7 +1168,7 @@ def run_auto_audit_loop(base_dir: str, location: str, args: argparse.Namespace, 
             continue
 
         if status != "completed":
-            break
+            return status
 
         # Re-fetch priority queue to check next target
         next_queue = [p for p in get_prioritized_dates(base_dir, location) if p["date"] not in visited_dates]
@@ -1178,12 +1178,161 @@ def run_auto_audit_loop(base_dir: str, location: str, args: argparse.Namespace, 
 
         next_target = next_queue[0]
         next_date_str = next_target["date"]
-        next_status = "0 audited" if next_target["audited_count"] == 0 else f"{next_target['audited_count']} audited"
-        prompt = f"\n👉 Continue to next prioritized date [{next_date_str} - {next_status}]? [Enter=Yes / q=Exit]: "
+        next_status_text = "0 audited" if next_target["audited_count"] == 0 else f"{next_target['audited_count']} audited"
+        prompt = f"\n👉 Continue to next prioritized date [{next_date_str} - {next_status_text}]? [Enter=Yes / q=Exit]: "
         try:
             ans = input(prompt).strip().lower()
             if ans in ["q", "n", "exit"]:
                 print("Exiting audit session.")
+                return "quit"
+        except (KeyboardInterrupt, EOFError):
+            print("\nExiting.")
+            return "interrupted"
+
+    return "completed"
+
+
+def build_stratified_queue(base_dir: str, location: str, target: int = 30, min_cands: int = 200) -> List[Dict[str, Any]]:
+    """
+    Computes a stratified audit queue sorted by audit gap (most under-sampled species first).
+    Only includes species with at least min_cands total candidate detections.
+    """
+    summary = get_species_summary(base_dir, location)
+    species_list = summary.get("species", [])
+
+    queue = []
+    for item in species_list:
+        if item["count"] < min_cands:
+            continue
+        gap = max(0, target - item["audited"])
+        row = dict(item)
+        row["gap"] = gap
+        row["target"] = target
+        queue.append(row)
+
+    # Most needed first (gap desc), then largest species first as tiebreaker
+    queue.sort(key=lambda x: (-x["gap"], -x["count"]))
+    return queue
+
+
+def show_stratified_queue(queue: List[Dict[str, Any]], limit: int = 20):
+    """Prints the stratified audit queue with per-species status."""
+    pending = [q for q in queue if q["gap"] > 0]
+    done    = [q for q in queue if q["gap"] == 0]
+
+    print("\n" + "=" * 108)
+    print(f"📋 STRATIFIED AUDIT QUEUE — Pending: {len(pending)} species | Completed: {len(done)} species")
+    print("=" * 108)
+    print(" %-3s | %-40s | %8s | %7s | %6s | %9s | %10s" % (
+        "#", "Species Label", "Total", "Audited", "Gap", "Progress", "Precision"))
+    print("-" * 108)
+
+    for idx, item in enumerate(queue[:limit], 1):
+        sp       = item["species"][:40]
+        total    = item["count"]
+        aud      = item["audited"]
+        gap      = item["gap"]
+        tgt      = item["target"]
+        prec     = item.get("precision")
+        gap_str  = "✅" if gap == 0 else f"-{gap}"
+        prec_str = ("%.1f%%" % prec) if prec is not None else "-"
+        progress = "%d/%d" % (aud, tgt)
+        marker   = " ◀ NEXT" if idx == 1 and gap > 0 else ""
+        print(" %-3d | %-40s | %8s | %7d | %6s | %9s | %10s%s" % (
+            idx, sp, f"{total:,}", aud, gap_str, progress, prec_str, marker))
+
+    remaining = len(queue) - limit
+    if remaining > 0:
+        print(f"     ... {remaining} more species not shown (use --top-species for full list) ...")
+    print("=" * 108)
+
+
+def run_stratified_audit_loop(base_dir: str, location: str, args: argparse.Namespace, app_name: str, play_sound: bool):
+    """
+    Stratified audit mode: cycles through species labels in priority order
+    (most under-sampled first) until each reaches its per-label target sample count.
+
+    Progress is persistent: running --stratify again will resume from the current gap.
+    """
+    strat_target    = getattr(args, "stratify_target", 30)
+    strat_min_cands = getattr(args, "stratify_min_cands", 200)
+    approx_moe      = 1.96 / (strat_target ** 0.5) / 0.5 * 100
+
+    print(f"\n🔬 STRATIFIED AUDIT MODE — {location}")
+    print(f"   Per-label target : {strat_target} windows  (MoE ≈ ±{approx_moe:.0f}% at 95% CI, p=0.5)")
+    print(f"   Min candidates   : {strat_min_cands}  (species below this threshold are excluded)")
+
+    visited_species: set = set()   # fully-exhausted-dates species in this session
+
+    while True:
+        print("\n⏳ Computing stratified audit queue (scanning all manifests)...")
+        queue   = build_stratified_queue(base_dir, location, target=strat_target, min_cands=strat_min_cands)
+        pending = [q for q in queue if q["gap"] > 0 and q["species"] not in visited_species]
+
+        if not queue:
+            print(f"❌ No species with ≥{strat_min_cands} candidates found for {location}.")
+            break
+
+        show_stratified_queue(queue, limit=20)
+
+        if not pending:
+            done_sp  = sum(1 for q in queue if q["gap"] == 0)
+            total_sp = len(queue)
+            print(f"\n🎉 All {done_sp}/{total_sp} included species have met their audit targets!")
+            break
+
+        # Select next species
+        next_item  = pending[0]
+        sp_name    = next_item["species"]
+        gap        = next_item["gap"]
+        sp_total   = next_item["count"]
+        sp_audited = next_item["audited"]
+        prec       = next_item.get("precision")
+        prec_label = ("%.1f%%" % prec) if prec is not None else "not yet measured"
+
+        print(f"\n🎯 NEXT SPECIES: {sp_name}")
+        print(f"   Total candidates : {sp_total:,}")
+        print(f"   Audited so far   : {sp_audited} / {strat_target}")
+        print(f"   Still needed     : {gap} more windows")
+        print(f"   Current precision: {prec_label}")
+
+        loop_status = run_auto_audit_loop(
+            base_dir, location, args, app_name, play_sound,
+            species_filter=[sp_name],
+            exclude_filter=None
+        )
+
+        visited_species.add(sp_name)
+
+        if loop_status in ("quit", "interrupted"):
+            print("\n💾 Stratified session saved. Run --stratify again to resume from where you left off.")
+            break
+
+        # Refresh and report how much was collected
+        refreshed = build_stratified_queue(base_dir, location, target=strat_target, min_cands=strat_min_cands)
+        updated   = next((q for q in refreshed if q["species"] == sp_name), None)
+        if updated:
+            new_aud = updated["audited"]
+            new_gap = updated["gap"]
+            if new_gap == 0:
+                print(f"\n✅ {sp_name}: Target of {strat_target} reached! ({new_aud} windows audited)")
+            else:
+                print(f"\n⚠️  {sp_name}: Only {new_aud}/{strat_target} audited (gap={new_gap}).")
+                print("   This species likely has fewer than the target candidates spread across remaining unaudited dates.")
+
+        # Find next species
+        remaining_pending = [q for q in refreshed if q["gap"] > 0 and q["species"] not in visited_species]
+        if not remaining_pending:
+            print(f"\n🎉 All available species targets met in this session!")
+            break
+
+        next_sp  = remaining_pending[0]["species"]
+        next_gap = remaining_pending[0]["gap"]
+        prompt   = f"\n👉 Continue to next species [{next_sp} — {next_gap} more windows needed]? [Enter=Yes / q=Exit]: "
+        try:
+            ans = input(prompt).strip().lower()
+            if ans in ["q", "n", "exit"]:
+                print("Exiting stratified audit session.")
                 break
         except (KeyboardInterrupt, EOFError):
             print("\nExiting.")
@@ -1195,11 +1344,14 @@ def main():
     parser.add_argument("--base-dir", type=str, default=None, help="Root SEA output directory (default: /Volumes/ri322/home/...)")
     parser.add_argument("--location", type=str, default=None, help="Deployment unit (e.g. 2D400, 2A400, S0, Q0, O0)")
     parser.add_argument("--date", type=str, default=None, help="Specific date (e.g. 2026-07-16)")
-    parser.add_argument("--sample", type=int, default=20, help="Number of samples per session (default: 20)")
+    parser.add_argument("--sample", type=int, default=20, help="Number of samples per date session (default: 20)")
     parser.add_argument("--min-conf", type=float, default=0.30, help="Minimum confidence threshold (default: 0.30)")
     parser.add_argument("--species", type=str, default=None, help="Filter by species keywords, comma-separated (e.g. 'Pitta,Babbler,Barbet')")
     parser.add_argument("--exclude", type=str, default=None, help="Exclude species keywords, comma-separated (e.g. 'Toad,Kingfisher')")
     parser.add_argument("--top-species", action="store_true", help="Display top detected species ranking table with audit metrics and exit")
+    parser.add_argument("--stratify", action="store_true", help="Stratified audit: cycle through species labels in priority order until each reaches the target sample count")
+    parser.add_argument("--stratify-target", type=int, default=30, help="Target windows per species label in stratified mode (default: 30, MoE approx 18%% at 95%% CI)")
+    parser.add_argument("--stratify-min-cands", type=int, default=200, help="Minimum candidate count for a species to be included in stratified audit (default: 200)")
     parser.add_argument("--random", action="store_true", help="Randomize candidate order (default: sort by highest gain)")
     parser.add_argument("--app", type=str, default="ocenaudio", help="Audio visual application (default: ocenaudio, 'none' for terminal only)")
     parser.add_argument("--no-play", action="store_true", help="Disable background audio playback (visual inspection in app only)")
@@ -1216,6 +1368,11 @@ def main():
     if args.top_species:
         loc = (args.location or "2A400").upper()
         show_top_species(base_dir, location=loc, date=args.date)
+        return
+
+    if args.stratify:
+        loc = (args.location or "2A400").upper()
+        run_stratified_audit_loop(base_dir, loc, args, app_name, play_sound)
         return
 
     if args.location and args.date:
