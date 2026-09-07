@@ -275,6 +275,55 @@ def update_markdown_manifest(md_path: str, annotations_dict: Dict[str, int]):
         print(f"⚠️  Gagal memperbarui Markdown manifest: {e}")
 
 
+def reset_audit(manifest_path: str):
+    """Resets all ground-truth audit annotations for the given manifest."""
+    date_dir = os.path.dirname(manifest_path)
+    gt_json_path = os.path.join(date_dir, "audit_ground_truth.json")
+    gt_csv_path = os.path.join(date_dir, "audit_ground_truth.csv")
+    md_path = os.path.join(date_dir, "detection_audit_manifest.md")
+
+    removed = []
+    if os.path.exists(gt_json_path):
+        try:
+            os.remove(gt_json_path)
+            removed.append("audit_ground_truth.json (dihapus)")
+        except Exception as e:
+            print(f"⚠️  Gagal menghapus {gt_json_path}: {e}")
+
+    if os.path.exists(gt_csv_path):
+        try:
+            os.remove(gt_csv_path)
+            removed.append("audit_ground_truth.csv (dihapus)")
+        except Exception as e:
+            print(f"⚠️  Gagal menghapus {gt_csv_path}: {e}")
+
+    if os.path.exists(md_path):
+        try:
+            with open(md_path, "r", encoding="utf-8") as f:
+                lines = f.readlines()
+            updated_lines = []
+            for line in lines:
+                if line.startswith("|") and not line.startswith("| #") and not line.startswith("|---"):
+                    parts = [p.strip() for p in line.split("|")]
+                    if len(parts) >= 11:
+                        parts[9] = " ` ` "
+                        line = "| " + " | ".join(parts[1:-1]) + " |\n"
+                updated_lines.append(line)
+            with open(md_path, "w", encoding="utf-8") as f:
+                f.writelines(updated_lines)
+            removed.append("detection_audit_manifest.md (kolom Present? dikosongkan)")
+        except Exception as e:
+            print(f"⚠️  Gagal mereset markdown manifest: {e}")
+
+    if removed:
+        print(f"🔄 Berhasil mereset progres audit di: {date_dir}")
+        for r in removed:
+            print(f"   • {r}")
+    else:
+        print(f"ℹ️  Tidak ada data audit sebelumnya yang tersimpan di: {date_dir}")
+
+
+
 def run_audit(manifest_path: str, sample_size: int = 20, sort_by_gain: bool = True, min_conf: float = 0.30, app_name: str = "ocenaudio", play_sound: bool = True):
     date_dir = os.path.dirname(manifest_path)
     gt_json_path = os.path.join(date_dir, "audit_ground_truth.json")
@@ -504,6 +553,7 @@ def main():
     parser.add_argument("--random", action="store_true", help="Acak urutan kandidat (default: urutkan gain tertinggi)")
     parser.add_argument("--app", type=str, default="ocenaudio", help="Aplikasi visual audio (default: ocenaudio, 'none' untuk terminal saja)")
     parser.add_argument("--no-play", action="store_true", help="Nonaktifkan pemutaran audio otomatis di latar belakang (inspeksi visual ocenaudio saja)")
+    parser.add_argument("--reset", action="store_true", help="Reset/hapus seluruh hasil anotasi audit pada tanggal/lokasi yang dipilih")
 
     args = parser.parse_args()
     base_dir = get_base_dir(args.base_dir)
@@ -515,6 +565,9 @@ def main():
         if not os.path.exists(manifest):
             print(f"❌ Manifest tidak ditemukan di: {manifest}")
             sys.exit(1)
+        if args.reset:
+            reset_audit(manifest)
+            return
         run_audit(manifest, sample_size=args.sample, sort_by_gain=not args.random, min_conf=args.min_conf, app_name=app_name, play_sound=play_sound)
     else:
         available = find_available_dates(base_dir)
@@ -522,7 +575,8 @@ def main():
             print(f"❌ Tidak ditemukan tanggal yang selesai di {base_dir}")
             sys.exit(1)
 
-        print("\n📅 PILIH TANGGAL UNTUK DIAUDIT:")
+        action_title = "RESET ANOTASI AUDIT" if args.reset else "PILIH TANGGAL UNTUK DIAUDIT"
+        print(f"\n📅 {action_title}:")
         for idx, item in enumerate(available[-15:], 1):
             print(f"  [{idx:2d}] {item['location']} | {item['date']}")
         print("  [0 ] Keluar")
@@ -533,6 +587,9 @@ def main():
                 print("Keluar.")
                 return
             target = available[-15:][choice - 1]
+            if args.reset:
+                reset_audit(target["manifest"])
+                return
             run_audit(target["manifest"], sample_size=args.sample, sort_by_gain=not args.random, min_conf=args.min_conf, app_name=app_name, play_sound=play_sound)
         except (ValueError, IndexError):
             print("Pilihan tidak valid.")
