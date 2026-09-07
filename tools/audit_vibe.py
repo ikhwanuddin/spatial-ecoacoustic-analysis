@@ -15,6 +15,7 @@ import csv
 import glob
 import random
 import shutil
+import time
 import argparse
 import subprocess
 from pathlib import Path
@@ -141,6 +142,37 @@ def open_in_app_multi(audio_paths: List[str], app_name: str = "ocenaudio", backg
             print(f"⚠️  Gagal membuka di {app_name}: {e}")
             return False
     return False
+
+
+def close_app_files(app_name: str = "ocenaudio") -> bool:
+    """Closes all currently open files in the visual application (macOS AppleScript)."""
+    if sys.platform != "darwin" or not app_name or app_name.lower() == "none":
+        return False
+
+    script = f'''
+    tell application "System Events"
+        if exists (process "{app_name}") then
+            tell process "{app_name}"
+                try
+                    tell menu "File" of menu bar 1
+                        click menu item "Close All"
+                    end tell
+                end try
+            end tell
+        end if
+    end tell
+    '''
+    try:
+        subprocess.run(
+            ["osascript", "-e", script],
+            check=False,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL
+        )
+        return True
+    except Exception:
+        return False
+
 
 
 def find_available_dates(base_dir: str) -> List[Dict[str, str]]:
@@ -361,6 +393,10 @@ def run_audit(manifest_path: str, sample_size: int = 20, sort_by_gain: bool = Tr
 
             # Audiovisual inspection in ocenaudio
             if use_app:
+                # Close previous candidate clips in ocenaudio
+                close_app_files(app_name=app_name)
+                time.sleep(0.08)
+
                 clips_to_open = []
                 if mono_clip and os.path.exists(mono_clip):
                     clips_to_open.append(mono_clip)
