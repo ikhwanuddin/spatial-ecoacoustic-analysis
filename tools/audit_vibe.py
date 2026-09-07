@@ -18,6 +18,8 @@ import shutil
 import time
 import argparse
 import subprocess
+import base64
+from collections import defaultdict
 from pathlib import Path
 from typing import List, Dict, Any, Optional, Tuple
 from concurrent.futures import ThreadPoolExecutor
@@ -352,6 +354,259 @@ def get_prioritized_dates(base_dir: str, location: str) -> List[Dict[str, Any]]:
     return results
 
 
+def get_species_summary(base_dir: str, location: str, date: Optional[str] = None) -> Dict[str, Any]:
+    """
+    Aggregates candidate counts, average beam confidence, average gain,
+    and ground-truth verification stats (audited, TP, FP, precision) per species.
+    Uses fast CX3 SSH execution if available, with robust local fallback.
+    """
+    use_ssh = False
+    if sys.platform == "darwin":
+        try:
+            res = subprocess.run(["ssh", "-o", "ConnectTimeout=2", "-q", "cx3", "true"], check=False)
+            if res.returncode == 0:
+                use_ssh = True
+        except Exception:
+            use_ssh = False
+
+    if use_ssh:
+        try:
+            remote_script = f"""
+import os, json, glob
+from collections import defaultdict
+
+loc = "{location}"
+target_date = "{date or ''}"
+base = f"/rds/general/user/ri322/home/spatial-ecoacoustic-analysis/output/{{loc}}"
+if target_date:
+    mfs = [os.path.join(base, target_date, "detection_audit_manifest.json")]
+else:
+    mfs = sorted(glob.glob(f"{{base}}/*/detection_audit_manifest.json"))
+
+species_data = defaultdict(lambda: {{
+    "count": 0, "sum_beam": 0.0, "sum_gain": 0.0, "audited": 0, "tp": 0, "fp": 0
+}})
+
+total_cands = 0
+valid_mfs = 0
+
+for mf in mfs:
+    if not os.path.isfile(mf):
+        continue
+    valid_mfs += 1
+    d_dir = os.path.dirname(mf)
+    gt_file = os.path.join(d_dir, "audit_ground_truth.json")
+    gt_map = {{}}
+    if os.path.exists(gt_file):
+        try:
+            with open(gt_file, "r", encoding="utf-8") as f:
+                for row in json.load(f):
+                    gt_map[row.get("candidate_key")] = row.get("ground_truth")
+        except Exception:
+            pass
+
+    try:
+        with open(mf, "r", encoding="utf-8") as f:
+            data = json.load(f)
+            cands = data if isinstance(data, list) else data.get("candidates", [])
+            for c in cands:
+                sp = c.get("tentative_label") or c.get("tentative_species", "Unknown")
+                rec_id = c.get("recording_id", "")
+                win_str = c.get("time_str") or str(c.get("window", ""))
+                key = f"{{rec_id}}_{{win_str}}"
+
+                b_conf = c.get("best_conf") if c.get("best_conf") is not None else c.get("best_beam_conf", 0.0)
+                m_conf = c.get("mono_conf", 0.0) or 0.0
+                gain = c.get("conf_delta") if c.get("conf_delta") is not None else (((b_conf or 0.0)) - ((m_conf or 0.0)))
+
+                entry = species_data[sp]
+                entry["count"] += 1
+                entry["sum_beam"] += float(b_conf or 0.0)
+                entry["sum_gain"] += float(gain or 0.0)
+                total_cands += 1
+
+                if key in gt_map:
+                    entry["audited"] += 1
+                    if gt_map[key] == 1:
+                        entry["tp"] += 1
+                    elif gt_map[key] == 0:
+                        entry["fp"] += 1
+    except Exception:
+        pass
+
+species_list = []
+for sp, v in species_data.items():
+    cnt = v["count"]
+    aud = v["audited"]
+    prec = (v["tp"] / aud * 100) if aud > 0 else None
+    species_list.append({{
+        "species": sp,
+        "count": cnt,
+        "pct": (cnt / total_cands * 100) if total_cands > 0 else 0,
+        "avg_beam": (v["sum_beam"] / cnt) if cnt > 0 else 0,
+        "avg_gain": (v["sum_gain"] / cnt) if cnt > 0 else 0,
+        "audited": aud,
+        "tp": v["tp"],
+        "fp": v["fp"],
+        "precision": prec
+    }})
+
+print(json.dumps({{
+    "location": loc,
+    "date": target_date,
+    "manifest_count": valid_mfs,
+    "total_candidates": total_cands,
+    "species": species_list
+}}))
+"""
+            b64 = base64.b64encode(remote_script.encode("utf-8")).decode("ascii")
+            cmd = ["ssh", "-q", "cx3", f'python3 -c "import base64; exec(base64.b64decode(\'{b64}\'))"']
+            out = subprocess.check_output(cmd, timeout=15.0).decode().strip()
+            return json.loads(out)
+        except Exception:
+            pass
+
+    # Local fallback (SMB or local filesystem)
+    if date:
+        mfs = [os.path.join(base_dir, location, date, "detection_audit_manifest.json")]
+    else:
+        mfs = sorted(glob.glob(os.path.join(base_dir, location, "*", "detection_audit_manifest.json")))
+
+    species_data = defaultdict(lambda: {
+        "count": 0, "sum_beam": 0.0, "sum_gain": 0.0, "audited": 0, "tp": 0, "fp": 0
+    })
+    total_cands = 0
+    valid_mfs = 0
+
+    for mf in mfs:
+        if not os.path.isfile(mf):
+            continue
+        valid_mfs += 1
+        d_dir = os.path.dirname(mf)
+        gt_file = os.path.join(d_dir, "audit_ground_truth.json")
+        gt_map = {}
+        if os.path.exists(gt_file):
+            try:
+                with open(gt_file, "r", encoding="utf-8") as f:
+                    for row in json.load(f):
+                        gt_map[row.get("candidate_key")] = row.get("ground_truth")
+            except Exception:
+                pass
+
+        try:
+            with open(mf, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                cands = data if isinstance(data, list) else data.get("candidates", [])
+                for c in cands:
+                    sp = c.get("tentative_label") or c.get("tentative_species", "Unknown")
+                    rec_id = c.get("recording_id", "")
+                    win_str = c.get("time_str") or str(c.get("window", ""))
+                    key = f"{rec_id}_{win_str}"
+
+                    b_conf = c.get("best_conf") if c.get("best_conf") is not None else c.get("best_beam_conf", 0.0)
+                    m_conf = c.get("mono_conf", 0.0) or 0.0
+                    gain = c.get("conf_delta") if c.get("conf_delta") is not None else (((b_conf or 0.0)) - ((m_conf or 0.0)))
+
+                    entry = species_data[sp]
+                    entry["count"] += 1
+                    entry["sum_beam"] += float(b_conf or 0.0)
+                    entry["sum_gain"] += float(gain or 0.0)
+                    total_cands += 1
+
+                    if key in gt_map:
+                        entry["audited"] += 1
+                        if gt_map[key] == 1:
+                            entry["tp"] += 1
+                        elif gt_map[key] == 0:
+                            entry["fp"] += 1
+        except Exception:
+            pass
+
+    species_list = []
+    for sp, v in species_data.items():
+        cnt = v["count"]
+        aud = v["audited"]
+        prec = (v["tp"] / aud * 100) if aud > 0 else None
+        species_list.append({
+            "species": sp,
+            "count": cnt,
+            "pct": (cnt / total_cands * 100) if total_cands > 0 else 0,
+            "avg_beam": (v["sum_beam"] / cnt) if cnt > 0 else 0,
+            "avg_gain": (v["sum_gain"] / cnt) if cnt > 0 else 0,
+            "audited": aud,
+            "tp": v["tp"],
+            "fp": v["fp"],
+            "precision": prec
+        })
+
+    return {
+        "location": location,
+        "date": date or "",
+        "manifest_count": valid_mfs,
+        "total_candidates": total_cands,
+        "species": species_list
+    }
+
+
+def show_top_species(base_dir: str, location: str, date: Optional[str] = None, limit: int = 35):
+    """Prints a clean, formatted species ranking table with audit metrics."""
+    print(f"🔍 Aggregating species detection statistics for {location}" + (f" on {date}..." if date else "..."))
+    summary = get_species_summary(base_dir, location, date)
+    species_list = summary.get("species", [])
+    total_cands = summary.get("total_candidates", 0)
+    mfs_cnt = summary.get("manifest_count", 0)
+
+    if not species_list:
+        print(f"❌ No species detection data found for {location}.")
+        return
+
+    # Sort species: primarily by candidate count descending
+    species_list.sort(key=lambda x: x["count"], reverse=True)
+
+    # Compute overall verification stats
+    total_audited = sum(x["audited"] for x in species_list)
+    total_tp = sum(x["tp"] for x in species_list)
+    total_fp = sum(x["fp"] for x in species_list)
+    overall_prec = (total_tp / total_audited * 100) if total_audited > 0 else 0.0
+
+    # Non-toad stats
+    non_toad = [x for x in species_list if "toad" not in x["species"].lower()]
+    non_toad_aud = sum(x["audited"] for x in non_toad)
+    non_toad_tp = sum(x["tp"] for x in non_toad)
+    non_toad_fp = sum(x["fp"] for x in non_toad)
+    non_toad_prec = (non_toad_tp / non_toad_aud * 100) if non_toad_aud > 0 else 0.0
+
+    date_label = f"Date: {date}" if date else f"{mfs_cnt} dates"
+    print("\n" + "=" * 110)
+    print(f"🏆 SPECIES DETECTION & AUDIT BREAKDOWN: {location} ({date_label}, {total_cands:,} total candidates)")
+    print("=" * 110)
+    print(f" {'#':<3} | {'Species Label':<35} | {'Candidates':<11} | {'Share':<6} | {'Avg Beam':<8} | {'Avg Gain':<8} | {'Audited':<7} | {'TP':<4} | {'FP':<4} | {'Precision':<9}")
+    print("-" * 110)
+
+    for idx, item in enumerate(species_list[:limit], 1):
+        sp_name = item["species"]
+        cnt_str = f"{item['count']:,}"
+        pct_str = f"{item['pct']:.1f}%"
+        beam_str = f"{item['avg_beam']:.2f}"
+        gain_str = f"+{item['avg_gain']:.2f}" if item['avg_gain'] >= 0 else f"{item['avg_gain']:.2f}"
+        aud_str = f"{item['audited']}" if item['audited'] > 0 else "-"
+        tp_str = f"{item['tp']}" if item['audited'] > 0 else "-"
+        fp_str = f"{item['fp']}" if item['audited'] > 0 else "-"
+        prec_str = f"{item['precision']:.1f}%" if item['precision'] is not None else "-"
+
+        print(f" {idx:2d}  | {sp_name[:35]:<35} | {cnt_str:>11} | {pct_str:>6} | {beam_str:>8} | {gain_str:>8} | {aud_str:>7} | {tp_str:>4} | {fp_str:>4} | {prec_str:>9}")
+
+    print("-" * 110)
+    print(f"📊 SUMMARY AUDIT VERIFICATION:")
+    print(f"   • Total Audited Windows : {total_audited} windows (Precision: {overall_prec:.1f}% | {total_tp} TP / {total_fp} FP)")
+    print(f"   • Excl. 'Toad' Noise    : {non_toad_aud} windows (Precision: {non_toad_prec:.1f}% | {non_toad_tp} TP / {non_toad_fp} FP)")
+    print("=" * 110)
+    print("💡 TIPS FOR TARGETED AUDITING:")
+    print(f"   • Filter out false toad noise : python3 tools/audit_vibe.py --location {location} --exclude Toad")
+    print(f"   • Focus on target native birds: python3 tools/audit_vibe.py --location {location} --species \"Pitta,Babbler,Barbet,Bulbul,Argus\"")
+    print("=" * 110 + "\n")
+
+
 def resolve_audio_paths(item: Dict[str, Any], date_dir: str) -> Tuple[Optional[str], Optional[str]]:
     """Resolves local/remote audio paths for both beam and mono clips."""
     audio_paths = item.get("audio_paths", {})
@@ -595,7 +850,7 @@ def reset_audit(manifest_path: str):
 
 
 
-def run_audit(manifest_path: str, sample_size: int = 20, sort_by_gain: bool = True, min_conf: float = 0.30, app_name: str = "ocenaudio", play_sound: bool = True):
+def run_audit(manifest_path: str, sample_size: int = 20, sort_by_gain: bool = True, min_conf: float = 0.30, app_name: str = "ocenaudio", play_sound: bool = True, species_filter: Optional[List[str]] = None, exclude_filter: Optional[List[str]] = None):
     date_dir = os.path.dirname(manifest_path)
     gt_json_path = os.path.join(date_dir, "audit_ground_truth.json")
     gt_csv_path = os.path.join(date_dir, "audit_ground_truth.csv")
@@ -620,14 +875,32 @@ def run_audit(manifest_path: str, sample_size: int = 20, sort_by_gain: bool = Tr
 
     if not candidates:
         print("❌ No detection candidates found in this manifest.")
-        return
+        return "no_candidates"
 
-    # Filter by minimum confidence
+    # Filter by minimum confidence, species inclusion, and exclusion
     filtered = []
     for c in candidates:
         b_conf = c.get("best_conf") if c.get("best_conf") is not None else c.get("best_beam_conf", 0.0)
-        if b_conf is not None and b_conf >= min_conf:
-            filtered.append(c)
+        if b_conf is None or b_conf < min_conf:
+            continue
+
+        sp = (c.get("tentative_label") or c.get("tentative_species") or "").lower()
+        if exclude_filter and any(ex.lower() in sp for ex in exclude_filter):
+            continue
+        if species_filter and not any(inc.lower() in sp for inc in species_filter):
+            continue
+
+        filtered.append(c)
+
+    if not filtered:
+        filter_desc = []
+        if species_filter:
+            filter_desc.append(f"species={species_filter}")
+        if exclude_filter:
+            filter_desc.append(f"exclude={exclude_filter}")
+        f_str = f" matching {', '.join(filter_desc)}" if filter_desc else ""
+        print(f"ℹ️  No candidates{f_str} found in this manifest (min_conf={min_conf}).")
+        return "no_candidates"
 
     # Sort by confidence delta (gain) or shuffle
     if sort_by_gain:
@@ -655,11 +928,11 @@ def run_audit(manifest_path: str, sample_size: int = 20, sort_by_gain: bool = Tr
         if key not in existing_annotations:
             unannotated.append(c)
 
-    targets = unannotated[:sample_size] if unannotated else filtered[:sample_size]
+    targets = unannotated[:sample_size]
     total_to_audit = len(targets)
 
     if total_to_audit == 0:
-        print("✅ All candidates for this date have already been audited!")
+        print(f"✅ All matching candidates ({len(filtered)}) for this date have already been audited!")
         return "completed"
 
     # Pre-cache sampled audio clips to local /tmp SSD concurrently
@@ -670,7 +943,13 @@ def run_audit(manifest_path: str, sample_size: int = 20, sort_by_gain: bool = Tr
     print("=" * 70)
     print(f"🎧 SEA VIBE AUDIT: {loc_name} | {date_name}")
     print(f"📁 Manifest: {manifest_path}")
-    print(f"🎯 Audit sample: {total_to_audit} windows (out of {len(candidates)} candidates, {len(filtered)} above conf {min_conf})")
+    filter_desc = []
+    if species_filter:
+        filter_desc.append(f"species={species_filter}")
+    if exclude_filter:
+        filter_desc.append(f"exclude={exclude_filter}")
+    filter_str = f" [{', '.join(filter_desc)}]" if filter_desc else ""
+    print(f"🎯 Audit sample: {total_to_audit} windows (out of {len(candidates)} candidates, {len(filtered)} matching above conf {min_conf}){filter_str}")
     if use_app:
         print(f"🖥️  Visual App: {app_name} (waveform & spectrogram)")
     print("=" * 70)
@@ -844,21 +1123,24 @@ def run_audit(manifest_path: str, sample_size: int = 20, sort_by_gain: bool = Tr
     return "completed"
 
 
-def run_auto_audit_loop(base_dir: str, location: str, args: argparse.Namespace, app_name: str, play_sound: bool):
+def run_auto_audit_loop(base_dir: str, location: str, args: argparse.Namespace, app_name: str, play_sound: bool, species_filter: Optional[List[str]] = None, exclude_filter: Optional[List[str]] = None):
     """Continuously audits prioritized dates for a location (0 audited dates first, then least audited)."""
+    visited_dates = set()
+
     while True:
         prioritized = get_prioritized_dates(base_dir, location)
-        if not prioritized:
-            print(f"❌ No valid audit manifests found for location: {location}")
-            sys.exit(1)
+        remaining = [p for p in prioritized if p["date"] not in visited_dates]
+        if not remaining:
+            print(f"\n🎉 All dates for {location} have been audited or checked against filters in this session!")
+            break
 
         # Pick top prioritized date
-        target = prioritized[0]
+        target = remaining[0]
         date_str = target["date"]
 
         print("\n" + "=" * 70)
         print(f"🎯 AUTO-PRIORITIZED DATE QUEUE: {location}")
-        for idx, item in enumerate(prioritized[:5], 1):
+        for idx, item in enumerate(remaining[:5], 1):
             marker = " ◀ TARGET" if idx == 1 else ""
             status_text = "0 audited" if item["audited_count"] == 0 else f"{item['audited_count']} audited"
             print(f"   [{idx}] {item['date']} ({status_text}){marker}")
@@ -874,16 +1156,24 @@ def run_auto_audit_loop(base_dir: str, location: str, args: argparse.Namespace, 
             sort_by_gain=not args.random,
             min_conf=args.min_conf,
             app_name=app_name,
-            play_sound=play_sound
+            play_sound=play_sound,
+            species_filter=species_filter,
+            exclude_filter=exclude_filter
         )
+
+        visited_dates.add(date_str)
+
+        if status == "no_candidates":
+            print(f"⏩ Skipping {date_str} (no candidates matching filter); advancing to next date...")
+            continue
 
         if status != "completed":
             break
 
         # Re-fetch priority queue to check next target
-        next_queue = get_prioritized_dates(base_dir, location)
+        next_queue = [p for p in get_prioritized_dates(base_dir, location) if p["date"] not in visited_dates]
         if not next_queue:
-            print(f"\n🎉 All dates for {location} have been audited!")
+            print(f"\n🎉 All dates for {location} have been completed!")
             break
 
         next_target = next_queue[0]
@@ -907,6 +1197,9 @@ def main():
     parser.add_argument("--date", type=str, default=None, help="Specific date (e.g. 2026-07-16)")
     parser.add_argument("--sample", type=int, default=20, help="Number of samples per session (default: 20)")
     parser.add_argument("--min-conf", type=float, default=0.30, help="Minimum confidence threshold (default: 0.30)")
+    parser.add_argument("--species", type=str, default=None, help="Filter by species keywords, comma-separated (e.g. 'Pitta,Babbler,Barbet')")
+    parser.add_argument("--exclude", type=str, default=None, help="Exclude species keywords, comma-separated (e.g. 'Toad,Kingfisher')")
+    parser.add_argument("--top-species", action="store_true", help="Display top detected species ranking table with audit metrics and exit")
     parser.add_argument("--random", action="store_true", help="Randomize candidate order (default: sort by highest gain)")
     parser.add_argument("--app", type=str, default="ocenaudio", help="Audio visual application (default: ocenaudio, 'none' for terminal only)")
     parser.add_argument("--no-play", action="store_true", help="Disable background audio playback (visual inspection in app only)")
@@ -917,6 +1210,14 @@ def main():
     play_sound = not args.no_play
     app_name = args.app
 
+    species_filter = [s.strip() for s in args.species.split(",") if s.strip()] if args.species else None
+    exclude_filter = [s.strip() for s in args.exclude.split(",") if s.strip()] if args.exclude else None
+
+    if args.top_species:
+        loc = (args.location or "2A400").upper()
+        show_top_species(base_dir, location=loc, date=args.date)
+        return
+
     if args.location and args.date:
         manifest = os.path.join(base_dir, args.location, args.date, "detection_audit_manifest.json")
         if not os.path.exists(manifest):
@@ -925,9 +1226,26 @@ def main():
         if args.reset:
             reset_audit(manifest)
             return
-        run_audit(manifest, sample_size=args.sample, sort_by_gain=not args.random, min_conf=args.min_conf, app_name=app_name, play_sound=play_sound)
+        run_audit(
+            manifest,
+            sample_size=args.sample,
+            sort_by_gain=not args.random,
+            min_conf=args.min_conf,
+            app_name=app_name,
+            play_sound=play_sound,
+            species_filter=species_filter,
+            exclude_filter=exclude_filter
+        )
     elif args.location:
-        run_auto_audit_loop(base_dir, args.location.upper(), args, app_name, play_sound)
+        run_auto_audit_loop(
+            base_dir,
+            args.location.upper(),
+            args,
+            app_name,
+            play_sound,
+            species_filter=species_filter,
+            exclude_filter=exclude_filter
+        )
     else:
         # Prompt for location, then auto-prioritize
         locations = ["2A400", "2B400", "2D400", "S0", "Q0", "O0"]
@@ -952,7 +1270,15 @@ def main():
         except Exception:
             return
 
-        run_auto_audit_loop(base_dir, chosen_loc, args, app_name, play_sound)
+        run_auto_audit_loop(
+            base_dir,
+            chosen_loc,
+            args,
+            app_name,
+            play_sound,
+            species_filter=species_filter,
+            exclude_filter=exclude_filter
+        )
 
 
 if __name__ == "__main__":
