@@ -1,7 +1,7 @@
 """
 Module 1: Signal Processing & Multidirectional Beamforming.
-Renders raw 6-channel FLAC recordings into Mono, Signal Averaging (SA),
-and Onset-Aligned Filter-and-Sum Beamforming (LabIR and SPIR).
+Renders raw multi-channel FLAC recordings into Mono, Signal Averaging (SA),
+and matched-filter beamforming steered by measured RTFs (LabIR, SPIR, WCIR).
 
 Vectorized matrix contraction (einsum) & multi-core parallel ISTFT (KISS).
 Includes automatic FLAC integrity verification and repair with graceful skip reporting.
@@ -24,25 +24,19 @@ from config import (
     HIGH_PASS_CUTOFF,
     FRAME_LEN,
     HOP_LEN,
-    IR_WINDOW_LEN,
-    IR_PRE_PEAK_SAMPLES,
-    IR_BASE_PATH,
+    RTF_BASE_PATH,
     MONITORING_DATA,
     SCRATCH_DIR,
     LABIR_SPEAKERS,
     LABIR_DEGREES,
-    SPIR1_DISTANCES,
-    SPIR1_DEGREES,
     SPIR2_DISTANCES,
-    SPIR2_DEGREES,
     SPIR2_REP,
     LOCATION_MAP,
+    MIC_CHANNELS,
 )
 
 # In-memory steering vector cache for fast reuse across files
-_IR_WEIGHTS_CACHE = {}
-_BEAM_CATALOG = None
-_W_TENSOR = None
+_BEAMS = {}   # location -> (catalog, W tensor)
 
 
 def format_size(num_bytes: int) -> str:
@@ -54,9 +48,9 @@ def format_size(num_bytes: int) -> str:
     return f"{val:.1f} TB"
 
 
-def load_and_verify_flac(flac_path: str, scratch_dir: str) -> Tuple[Optional[np.ndarray], Optional[int], Optional[Dict[str, Any]]]:
+def load_and_verify_flac(flac_path: str, scratch_dir: str, n_channels: int = 6) -> Tuple[Optional[np.ndarray], Optional[int], Optional[Dict[str, Any]]]:
     """
-    Loads 6-channel FLAC audio, attempting automatic repair if corrupted.
+    Loads n_channels FLAC audio, attempting automatic repair if corrupted.
     Returns:
         (audio_array, sample_rate, None) if successful
         (None, None, error_info_dict) if unrecoverable and must be skipped.
@@ -88,13 +82,13 @@ def load_and_verify_flac(flac_path: str, scratch_dir: str) -> Tuple[Optional[np.
     try:
         audio_raw, sr = sf.read(flac_path, dtype="float32")
         duration_sec = len(audio_raw) / sr if sr > 0 else 0.0
-        if audio_raw.ndim == 2 and audio_raw.shape[1] == 6 and duration_sec >= 3.0:
+        if audio_raw.ndim == 2 and audio_raw.shape[1] == n_channels and duration_sec >= 3.0:
             return audio_raw, sr, None
         elif duration_sec < 3.0:
             initial_error = f"Audio is severely truncated ({duration_sec:.2f}s < 3.0s minimum window)"
         else:
             shape_str = str(getattr(audio_raw, "shape", None))
-            initial_error = f"Invalid audio shape: {shape_str} (expected 6 channels)"
+            initial_error = f"Invalid audio shape: {shape_str} (expected {n_channels} channels)"
     except Exception as e:
         initial_error = str(e)
 
@@ -117,7 +111,7 @@ def load_and_verify_flac(flac_path: str, scratch_dir: str) -> Tuple[Optional[np.
         if os.path.exists(repaired_path) and os.path.getsize(repaired_path) > 0:
             rep_audio, rep_sr = sf.read(repaired_path, dtype="float32")
             rep_dur = len(rep_audio) / rep_sr if rep_sr > 0 else 0.0
-            if rep_audio.ndim == 2 and rep_audio.shape[1] == 6 and rep_dur >= 3.0:
+            if rep_audio.ndim == 2 and rep_audio.shape[1] == n_channels and rep_dur >= 3.0:
                 print(f"   ⚠️ REPAIRED corrupted FLAC via ffmpeg ({file_size} bytes -> {len(rep_audio)} samples, {rep_dur:.2f}s)")
                 return rep_audio, rep_sr, None
             else:
@@ -140,7 +134,7 @@ def load_and_verify_flac(flac_path: str, scratch_dir: str) -> Tuple[Optional[np.
             if os.path.exists(wav_temp) and os.path.getsize(wav_temp) > 0:
                 rep_audio, rep_sr = sf.read(wav_temp, dtype="float32")
                 rep_dur = len(rep_audio) / rep_sr if rep_sr > 0 else 0.0
-                if rep_audio.ndim == 2 and rep_audio.shape[1] == 6 and rep_dur >= 3.0:
+                if rep_audio.ndim == 2 and rep_audio.shape[1] == n_channels and rep_dur >= 3.0:
                     print(f"   ⚠️ REPAIRED corrupted FLAC via flac CLI ({file_size} bytes, {rep_dur:.2f}s)")
                     try: os.remove(wav_temp)
                     except Exception: pass
@@ -173,98 +167,60 @@ def butter_highpass_filter(data: np.ndarray, cutoff: float = HIGH_PASS_CUTOFF, f
     return signal.filtfilt(b, a, data, axis=0)
 
 
-def get_onset_steering_weights(ir_path: str) -> np.ndarray:
+def get_rtf_weights(npz_path: str, channels: list) -> np.ndarray:
     """
-    Load raw IR, align exactly on direct arrival peak, and compute matched-filter weights.
+    Matched-filter weights from a measured RTF (relative to CH0, 161 bins on the STFT grid).
     Returns:
-        W: complex128 array of shape (6, n_freq_bins)
+        W: complex128 array of shape (n_channels, n_freq_bins)
     """
-    if ir_path in _IR_WEIGHTS_CACHE:
-        return _IR_WEIGHTS_CACHE[ir_path]
+    d = np.load(npz_path)
+    assert int(d["fs"]) == FS_TARGET and int(d["nfft"]) == FRAME_LEN, npz_path
+    rtf = d["rtf"][channels].astype(np.complex128)
 
-    if not os.path.exists(ir_path):
-        raise FileNotFoundError(f"IR file not found: {ir_path}")
-
-    # Load multi-channel IR
-    ir_raw, sr = sf.read(ir_path)
-    if ir_raw.shape[0] < ir_raw.shape[1]:
-        ir_raw = ir_raw.T
-
-    # Resample to 16 kHz if necessary
-    if sr != FS_TARGET:
-        ir_resampled = librosa.resample(ir_raw.T, orig_sr=sr, target_sr=FS_TARGET).T
-    else:
-        ir_resampled = ir_raw
-
-    # Find direct arrival peak on reference channel (channel 0)
-    peak_idx = int(np.argmax(np.abs(ir_resampled[:, 0])))
-
-    # Align window centered/starting at direct arrival
-    start_idx = max(0, peak_idx - IR_PRE_PEAK_SAMPLES)
-    end_idx = start_idx + IR_WINDOW_LEN
-    ir_window = ir_resampled[start_idx:end_idx, :]
-
-    if ir_window.shape[0] < IR_WINDOW_LEN:
-        pad_width = IR_WINDOW_LEN - ir_window.shape[0]
-        ir_window = np.pad(ir_window, ((0, pad_width), (0, 0)), mode='constant')
-
-    # Apply half-Hann taper to avoid hard truncation edge
-    taper = signal.windows.tukey(IR_WINDOW_LEN, alpha=0.25)[:, None]
-    ir_tapered = ir_window * taper
-
-    # FFT zero-padded to STFT frame length (FRAME_LEN = 320)
-    IR = np.fft.rfft(ir_tapered.T, n=FRAME_LEN, axis=-1)
-
-    # Relative steering vector normalized by reference channel
-    IRR = IR / (IR[0:1, :] + 1e-12)
-
-    # Matched filter weights: W = conj(IRR) / sum|IRR|^2
-    power = np.sum(np.abs(IRR)**2, axis=0, keepdims=True) + 1e-12
-    W = np.conj(IRR) / power
-
-    _IR_WEIGHTS_CACHE[ir_path] = W.astype(np.complex128)
-    return _IR_WEIGHTS_CACHE[ir_path]
+    # Matched filter weights: W = conj(RTF) / sum|RTF|^2 (bins without sweep content are all 0 -> W = 0)
+    power = np.sum(np.abs(rtf) ** 2, axis=0, keepdims=True) + 1e-12
+    return np.conj(rtf) / power
 
 
-def build_beam_catalog():
-    """Build list of (output_filename, ir_filepath) for all canonical 50 beams."""
+def build_beam_catalog(location: str):
+    """List of (output_filename, rtf_path) for a location.
+    LabIR and SPIR were measured with the ReSpeaker 6-Mic, so only ReSpeaker locations get them."""
     beams = []
 
-    # 1. LabIR (19 beams)
-    labir_folder = os.path.join(IR_BASE_PATH, "Lab_IR")
-    for spk in LABIR_SPEAKERS:
-        degrees_list = [0] if spk == 12 else LABIR_DEGREES
-        for deg in degrees_list:
-            fname = f"LabIR(S{spk:02d}_{deg:03d}).wav"
-            ir_file = f"Lab_IR_S{spk:02d}_{deg:03d}.wav"
-            beams.append((fname, os.path.join(labir_folder, ir_file)))
+    if location not in MIC_CHANNELS:
+        # 1. LabIR (19 beams)
+        for spk in LABIR_SPEAKERS:
+            degrees_list = [0] if spk == 12 else LABIR_DEGREES
+            for deg in degrees_list:
+                beams.append((f"LabIR(S{spk:02d}_{deg:03d}).wav",
+                              f"{RTF_BASE_PATH}/Lab/RTF/LAB_RTF_S{spk:02d}_{deg:03d}.npz"))
 
-    # 2. SPIR1 (24 beams)
-    spir1_folder = os.path.join(IR_BASE_PATH, "SP_IR1")
-    for dist in SPIR1_DISTANCES:
-        for deg in SPIR1_DEGREES:
-            fname = f"SPIR1({dist:02d}m_{deg:03d}).wav"
-            ir_file = f"SP_IR_{dist:02d}m_{deg:03d}.wav"
-            beams.append((fname, os.path.join(spir1_folder, ir_file)))
+        # 2. SPIR1 (23 beams, every measured position)
+        for path in sorted(glob.glob(f"{RTF_BASE_PATH}/SilwoodPark/SP1/RTF/SP_RTF_*.npz")):
+            pos = os.path.basename(path)[len("SP_RTF_"):-len(".npz")]
+            beams.append((f"SPIR1({pos}).wav", path))
 
-    # 3. SPIR2 (7 beams)
-    spir2_folder = os.path.join(IR_BASE_PATH, "SP_IR2")
-    for dist in SPIR2_DISTANCES:
-        fname = f"SPIR2({dist:02d}m_180_r{SPIR2_REP}).wav"
-        ir_file = f"{dist:02d}m_180_{SPIR2_REP}.wav"
-        beams.append((fname, os.path.join(spir2_folder, ir_file)))
+        # 3. SPIR2 (7 beams)
+        for dist in SPIR2_DISTANCES:
+            beams.append((f"SPIR2({dist:02d}m_180_r{SPIR2_REP}).wav",
+                          f"{RTF_BASE_PATH}/SilwoodPark/SP2/RTF/SP_RTF_{dist:02d}m_180_{SPIR2_REP}.npz"))
+
+    # 4. WCIR: Way Canguk RTFs of this location (12 per set)
+    for path in sorted(glob.glob(f"{RTF_BASE_PATH}/WayCanguk/RTF/WC_RTF_{location}_*.npz")):
+        pos = os.path.basename(path)[len(f"WC_RTF_{location}_"):-len(".npz")].split("_", 1)[1]   # drop device
+        beams.append((f"WCIR({pos}).wav", path))
 
     return beams
 
 
-def get_beam_weights_tensor():
-    """Retrieve or build the stacked steering weights tensor (50, 6, 161)."""
-    global _BEAM_CATALOG, _W_TENSOR
-    if _W_TENSOR is None:
-        _BEAM_CATALOG = build_beam_catalog()
-        weights = [get_onset_steering_weights(ir_path) for _, ir_path in _BEAM_CATALOG]
-        _W_TENSOR = np.stack(weights, axis=0)
-    return _BEAM_CATALOG, _W_TENSOR
+def get_beam_weights_tensor(location: str):
+    """Retrieve or build the stacked steering weights tensor (n_beams, n_channels, 161)."""
+    if location not in _BEAMS:
+        channels = MIC_CHANNELS.get(location, list(range(6)))
+        catalog = build_beam_catalog(location)
+        W = np.stack([get_rtf_weights(path, channels) for _, path in catalog], axis=0)
+        _BEAMS[location] = (catalog, W)
+    return _BEAMS[location]
 
 
 def _worker_istft_save(task):
@@ -275,9 +231,9 @@ def _worker_istft_save(task):
     sf.write(out_path, z.astype(np.float32), fs)
 
 
-def render_single_flac(flac_path: str, output_dir: str, render_beams: bool = True, workers: int = 8) -> Tuple[bool, Optional[Dict[str, Any]]]:
+def render_single_flac(flac_path: str, output_dir: str, location: str, render_beams: bool = True, workers: int = 8) -> Tuple[bool, Optional[Dict[str, Any]]]:
     """
-    Render a single 6-channel FLAC file into Mono, SA, and Beamformed WAV files.
+    Render a single multi-channel FLAC file into Mono, SA, and Beamformed WAV files.
     Uses vectorized matrix contraction (einsum) and multi-core parallel ISTFT.
     Returns:
         (True, None) if successful.
@@ -286,9 +242,12 @@ def render_single_flac(flac_path: str, output_dir: str, render_beams: bool = Tru
     os.makedirs(output_dir, exist_ok=True)
 
     # 1. Load and verify multi-channel audio (with automatic repair if corrupted)
-    audio_raw, sr, error_info = load_and_verify_flac(flac_path, output_dir)
+    channels = MIC_CHANNELS.get(location, list(range(6)))
+    n_file_channels = 8 if location in MIC_CHANNELS else 6
+    audio_raw, sr, error_info = load_and_verify_flac(flac_path, output_dir, n_file_channels)
     if audio_raw is None:
         return False, error_info
+    audio_raw = audio_raw[:, channels]
 
     if sr != FS_TARGET:
         audio_raw = librosa.resample(audio_raw.T, orig_sr=sr, target_sr=FS_TARGET).T
@@ -302,7 +261,7 @@ def render_single_flac(flac_path: str, output_dir: str, render_beams: bool = Tru
     mono_path = os.path.join(output_dir, "mono.wav")
     sf.write(mono_path, mono_audio.astype(np.float32), FS_TARGET)
 
-    # 4. Render Signal Averaging (SA: mean of 6 channels)
+    # 4. Render Signal Averaging (SA: mean of all mic channels)
     sa_audio = np.mean(audio_filt, axis=1)
     sa_audio = sa_audio / (np.max(np.abs(sa_audio)) + 1e-12)
     sa_path = os.path.join(output_dir, "sa.wav")
@@ -312,12 +271,12 @@ def render_single_flac(flac_path: str, output_dir: str, render_beams: bool = Tru
         return True, None
 
     # 5. Multidirectional Beamforming in STFT domain
-    catalog, W_tensor = get_beam_weights_tensor()
+    catalog, W_tensor = get_beam_weights_tensor(location)
 
-    # Compute STFT for each channel: shape (6, n_freq, n_frames)
+    # Compute STFT for each channel: shape (n_channels, n_freq, n_frames)
     X = np.stack([
         librosa.stft(audio_filt[:, ch], n_fft=FRAME_LEN, hop_length=HOP_LEN, window='hamming')
-        for ch in range(6)
+        for ch in range(audio_filt.shape[1])
     ], axis=0)
 
     # Vectorized matrix contraction: Z[k, f, t] = sum_c W[k, c, f] * X[c, f, t]
@@ -370,7 +329,7 @@ def main():
         out_folder = os.path.join(target_scratch, rec_name)
         print(f"[{idx}/{len(flac_files)}] Rendering {rec_name}...")
         t_start = time.time()
-        ok, err = render_single_flac(flac, out_folder, render_beams=True, workers=args.workers)
+        ok, err = render_single_flac(flac, out_folder, args.location, render_beams=True, workers=args.workers)
         if ok:
             print(f"    ✓ Done in {time.time() - t_start:.2f}s ({len(os.listdir(out_folder))} WAV files created)")
         else:

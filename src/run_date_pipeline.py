@@ -23,7 +23,7 @@ from config import (
     LOCATION_MAP,
     DEFAULT_THRESHOLDS,
 )
-from render_signals import render_single_flac
+from render_signals import render_single_flac, get_beam_weights_tensor
 from birdnet_infer import run_birdnet_batch
 from extract_detections import process_results_file
 from pair_and_recap import pair_methods, evaluate_threshold_counts, format_markdown_table
@@ -69,10 +69,12 @@ def process_date(location: str, date_str: str, max_files: int = 0, processes: in
         "sa_channel": {},
         "beamformed_LabIR": {},
         "beamformed_SPIR": {},
+        "beamformed_WCIR": {},
         "beamformed_all": {},
     }
     corrupted_skipped = []
     processed_count = 0
+    n_streams = 2 + len(get_beam_weights_tensor(location)[0])   # mono + sa + beams
 
     for idx, flac in enumerate(flac_files, 1):
         rec_name = os.path.splitext(os.path.basename(flac))[0]
@@ -89,9 +91,9 @@ def process_date(location: str, date_str: str, max_files: int = 0, processes: in
         processed_json = os.path.join(rec_output, "processed.json")
 
         wav_count = len([f for f in os.listdir(rec_scratch) if f.endswith(".wav")])
-        if wav_count < 52:
-            print("  1️⃣  Rendering 52 audio streams (Mono, SA, LabIR, SPIR)...")
-            ok, err_info = render_single_flac(flac, rec_scratch, render_beams=True, workers=processes)
+        if wav_count < n_streams:
+            print(f"  1️⃣  Rendering {n_streams} audio streams (Mono, SA, beams)...")
+            ok, err_info = render_single_flac(flac, rec_scratch, location, render_beams=True, workers=processes)
             if not ok:
                 print(f"  ❌ GAGAL OLAH: Berkas FLAC rusak dan tidak dapat dipulihkan.")
                 print(f"     Berkas   : {err_info['file_name']}")
@@ -101,7 +103,7 @@ def process_date(location: str, date_str: str, max_files: int = 0, processes: in
                 corrupted_skipped.append(err_info)
                 continue
         else:
-            print("  1️⃣  [Skipped] 52 WAV streams already exist.")
+            print(f"  1️⃣  [Skipped] {n_streams} WAV streams already exist.")
 
         # Step 2: BirdNET Batch Inference
         if not os.path.exists(results_json):
@@ -120,10 +122,12 @@ def process_date(location: str, date_str: str, max_files: int = 0, processes: in
         print("  4️⃣  Pairing detections and evaluating thresholds...")
         paired_labir = pair_methods(processed.get("mono_channel", {}), processed.get("beamformed_LabIR", {}))
         paired_spir = pair_methods(processed.get("mono_channel", {}), processed.get("beamformed_SPIR", {}))
+        paired_wcir = pair_methods(processed.get("mono_channel", {}), processed.get("beamformed_WCIR", {}))
 
         paired_file = os.path.join(rec_output, "paired_detections.json")
         with open(paired_file, "w") as f:
-            json.dump({"mono_vs_LabIR": paired_labir, "mono_vs_SPIR": paired_spir}, f, indent=4, ensure_ascii=False)
+            json.dump({"mono_vs_LabIR": paired_labir, "mono_vs_SPIR": paired_spir, "mono_vs_WCIR": paired_wcir},
+                      f, indent=4, ensure_ascii=False)
 
         summary = evaluate_threshold_counts(processed, DEFAULT_THRESHOLDS)
         with open(os.path.join(rec_output, "threshold_summary.json"), "w") as f:
