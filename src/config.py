@@ -60,9 +60,9 @@ MIC_CHANNELS = {
 # ============================================================
 # CANON BEAM SUBSETS (Standard Grids)
 # ============================================================
-# LabIR: 19 beams (S01, S05, S09 x 6 azimuths + S12 zenith x 1)
-LABIR_SPEAKERS = [1, 5, 9, 12]
-LABIR_DEGREES = [0, 60, 120, 180, 240, 300]
+# LabIR: 133 beams (S01-S11 = 11 elevations -45..75 deg x 12 azimuths every 30 deg + S12 zenith x 1)
+LABIR_SPEAKERS = list(range(1, 13))
+LABIR_DEGREES = list(range(0, 360, 30))
 
 # SPIR: 30 beams (SPIR1 all 23 measured positions, 4 distances x 6 azimuths without 8 m / 60 deg;
 # SPIR2 7 distances x 1 azimuth = 7)

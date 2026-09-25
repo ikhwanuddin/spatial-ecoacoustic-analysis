@@ -188,7 +188,7 @@ def build_beam_catalog(location: str):
     beams = []
 
     if location not in MIC_CHANNELS:
-        # 1. LabIR (19 beams)
+        # 1. LabIR (133 beams)
         for spk in LABIR_SPEAKERS:
             degrees_list = [0] if spk == 12 else LABIR_DEGREES
             for deg in degrees_list:
