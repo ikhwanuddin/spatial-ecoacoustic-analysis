@@ -21,6 +21,7 @@ from config import (
     SCRATCH_DIR,
     OUTPUT_DIR,
     LOCATION_MAP,
+    SKIP_LOCATIONS,
     DEFAULT_THRESHOLDS,
 )
 from render_signals import render_single_flac, get_beam_weights_tensor
@@ -40,6 +41,10 @@ except ImportError:
 
 
 def process_date(location: str, date_str: str, max_files: int = 0, processes: int = 4, worker_id: str = None, gpu_id: int = 0):
+    if location in SKIP_LOCATIONS:
+        print(f"⏭️  {location} is excluded from SEA (see SKIP_LOCATIONS in config.py)")
+        return 1
+
     rpi_id = LOCATION_MAP.get(location, location)
     flac_dir = os.path.join(MONITORING_DATA, rpi_id, date_str)
     flac_files = sorted(glob.glob(os.path.join(flac_dir, "*.flac")))

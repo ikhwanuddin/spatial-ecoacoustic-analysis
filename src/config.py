@@ -51,6 +51,9 @@ LOCATION_MAP = {
 }
 RPIID_TO_LOCATION = {v: k for k, v in LOCATION_MAP.items()}
 
+# O0: every recording is empty (mic cable came loose), so it is left out of SEA / beamforming.
+SKIP_LOCATIONS = {"O0"}
+
 # Microphones: every array has a 6-mic hexagonal ring on CH0-5 (default: ReSpeaker 6-Mic, 6 ch FLAC).
 # 2B400 is a Sipeed 6+1 (8 ch FLAC): CH6 is the on-board beamformed output, CH7 the centre mic.
 # Any FLAC can be steered with any RTF using the 6 ring mics; only an 8 ch FLAC with an 8 ch (Sipeed)

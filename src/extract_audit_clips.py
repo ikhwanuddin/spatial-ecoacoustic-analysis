@@ -148,7 +148,7 @@ def main():
         print(f"Done: {args.location} {args.date} -> {res}")
     elif args.all_completed:
         from multiprocessing import Pool
-        locations = ["2A400", "2B400", "2D400", "O0", "Q0", "S0"]
+        locations = ["2A400", "2B400", "2D400", "Q0", "S0"]
         tasks = []
         for loc in locations:
             loc_scratch = os.path.join(SCRATCH_DIR, loc)

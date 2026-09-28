@@ -3,7 +3,7 @@
 generate_global_rollup.py - Global Rollup and Aggregation for Spatial Ecoacoustics (SEA).
 
 Aggregates all daily_summary.json files across all 6 deployment units (2A400, 2B400,
-2D400, S0, O0, Q0) into a single unified global manifest:
+2D400, S0, Q0) into a single unified global manifest:
   - output/global_summary.json
   - output/global_summary.md
 """
@@ -18,7 +18,7 @@ from typing import Dict, Any, List
 DEFAULT_OUTPUT_DIR = "/rds/general/user/ri322/home/spatial-ecoacoustic-analysis/output"
 FALLBACK_OUTPUT_DIR = "./output"
 
-LOCATION_ORDER = ["2A400", "2B400", "2D400", "S0", "O0", "Q0"]
+LOCATION_ORDER = ["2A400", "2B400", "2D400", "S0", "Q0"]
 THRESHOLDS = ["0.30", "0.40", "0.50", "0.60", "0.65", "0.70", "0.80"]
 
 

@@ -293,7 +293,7 @@ def stop_app_audio(app_name: str = "ocenaudio") -> bool:
 def find_available_dates(base_dir: str) -> List[Dict[str, str]]:
     """Finds all dates that have detection_audit_manifest.json."""
     results = []
-    locations = ["2A400", "2B400", "2D400", "S0", "Q0", "O0"]
+    locations = ["2A400", "2B400", "2D400", "S0", "Q0"]
     for loc in locations:
         loc_dir = os.path.join(base_dir, loc)
         if not os.path.isdir(loc_dir):
@@ -1424,7 +1424,7 @@ def run_stratified_audit_loop(base_dir: str, location: str, args: argparse.Names
 def main():
     parser = argparse.ArgumentParser(description="SEA Fast-Feedback Audio Auditing CLI (Vibe Coding)")
     parser.add_argument("--base-dir", type=str, default=None, help="Root SEA output directory (default: /Volumes/ri322/home/...)")
-    parser.add_argument("--location", type=str, default=None, help="Deployment unit (e.g. 2D400, 2A400, S0, Q0, O0)")
+    parser.add_argument("--location", type=str, default=None, help="Deployment unit (e.g. 2D400, 2A400, S0, Q0)")
     parser.add_argument("--date", type=str, default=None, help="Specific date (e.g. 2026-07-16)")
     parser.add_argument("--sample", type=int, default=20, help="Number of samples per date session (default: 20)")
     parser.add_argument("--min-conf", type=float, default=0.30, help="Minimum confidence threshold (default: 0.30)")
@@ -1487,7 +1487,7 @@ def main():
         )
     else:
         # Prompt for location, then auto-prioritize
-        locations = ["2A400", "2B400", "2D400", "S0", "Q0", "O0"]
+        locations = ["2A400", "2B400", "2D400", "S0", "Q0"]
         print("\n📍 SELECT LOCATION TO AUDIT:")
         for idx, loc in enumerate(locations, 1):
             print(f"  [{idx}] {loc}")
