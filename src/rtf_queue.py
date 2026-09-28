@@ -1,14 +1,17 @@
 """
 RTF rerun queue: tasks of up to 5 FLACs from one location-date, shared by every GPU node.
 
-  python src/rtf_queue.py enqueue [LOC DATE] # one task file per 5 FLACs (skips tasks already known)
+  python src/rtf_queue.py enqueue TAG HH:MM-HH:MM[,...] [LOC DATE]
+                                             # one task per 5 FLACs whose start time is in the windows
+  python src/rtf_queue.py hold               # pending -> hold (kept, not processed)
   python src/rtf_queue.py worker             # claim tasks until the queue is empty (one per GPU)
   python src/rtf_queue.py status             # short progress report
   python src/rtf_queue.py finalize LOC DATE  # daily summary + audit manifest (workers do this themselves)
+  python src/rtf_queue.py sweep              # finalize every (date, loc, tag) whose tasks are all done
   python src/rtf_queue.py requeue            # active tasks of a worker silent > 20 min -> pending
 
 Files under output_rtf/:
-  _queue/{pending,active,done,failed}/<date>_<loc>_<k>.json   (claim = atomic rename)
+  _queue/{pending,active,done,failed,hold}/<date>_<loc>_<tag>_<k>.json   (claim = atomic rename)
   _status/<worker>.json                                        (heartbeat, written after every recording)
   <loc>/<date>/<rec>/{results,processed,paired_detections,threshold_summary,audit_clips}.json
   <loc>/<date>/{daily_summary,detection_audit_manifest}.{json,md}, corrupted_files.json
@@ -31,17 +34,19 @@ from config import (OUTPUT_RTF_DIR, MONITORING_DATA, LOCATION_MAP, SKIP_LOCATION
 TASK_SIZE = 5
 Q = os.path.join(OUTPUT_RTF_DIR, "_queue")
 STATUS = os.path.join(OUTPUT_RTF_DIR, "_status")
-STATES = ["pending", "active", "done", "failed"]
+STATES = ["pending", "active", "done", "failed", "hold"]
 
 
 def task_files(state, prefix=""):
     return sorted(glob.glob(os.path.join(Q, state, f"{prefix}*.json")))
 
 
-def enqueue(only_loc=None, only_date=None):
+def enqueue(tag, windows, only_loc=None, only_date=None):
+    """windows: 'HH:MM-HH:MM,...' on the FLAC start time (file name HH-MM-SS_...)."""
+    spans = [w.split("-") for w in windows.split(",")]
     for s in STATES:
         os.makedirs(os.path.join(Q, s), exist_ok=True)
-    known = {os.path.basename(p) for s in STATES for p in task_files(s)}
+    known = {os.path.basename(p).split(".")[0] for s in STATES for p in task_files(s)}
     n_new = 0
     for loc, rpi in LOCATION_MAP.items():
         if loc in SKIP_LOCATIONS or (only_loc and loc != only_loc):
@@ -51,15 +56,24 @@ def enqueue(only_loc=None, only_date=None):
             if only_date and date != only_date:
                 continue
             flacs = sorted(os.path.basename(f) for f in glob.glob(os.path.join(date_dir, "*.flac")))
+            flacs = [f for f in flacs if any(a <= f[:5].replace("-", ":") < b for a, b in spans)]
             chunks = [flacs[i:i + TASK_SIZE] for i in range(0, len(flacs), TASK_SIZE)]
             for k, chunk in enumerate(chunks):
-                name = f"{date}_{loc}_{k:03d}.json"
+                name = f"{date}_{loc}_{tag}_{k:03d}"
                 if name in known:
                     continue
-                with open(os.path.join(Q, "pending", name), "w") as f:
-                    json.dump({"location": loc, "date": date, "flacs": chunk, "n_tasks_date": len(chunks)}, f)
+                with open(os.path.join(Q, "pending", name + ".json"), "w") as f:
+                    json.dump({"location": loc, "date": date, "tag": tag, "flacs": chunk,
+                               "n_tasks_date": len(chunks)}, f)
                 n_new += 1
-    print(f"enqueued {n_new} new tasks")
+    print(f"enqueued {n_new} new tasks ({tag}: {windows})")
+
+
+def hold():
+    os.makedirs(os.path.join(Q, "hold"), exist_ok=True)
+    for p in task_files("pending"):
+        os.rename(p, os.path.join(Q, "hold", os.path.basename(p)))
+    print(f"hold: {len(task_files('hold'))} tasks")
 
 
 def claim(worker):
@@ -166,21 +180,37 @@ def worker():
             os.remove(task)
             continue
 
-        # last task of this location-date -> finalize once (mkdir is atomic)
-        left = task_files("pending", f"{date}_{loc}_") + task_files("active", f"{date}_{loc}_")
-        if not left and len(task_files("done", f"{date}_{loc}_")) == t["n_tasks_date"]:
-            try:
-                os.mkdir(os.path.join(OUTPUT_RTF_DIR, loc, date, ".finalized"))
-                finalize(loc, date)
-            except FileExistsError:
-                pass
+        try_finalize(loc, date, t.get("tag"))
+
+
+def try_finalize(loc, date, tag):
+    """Finalize (date, loc) once all tasks of this tag are done; mkdir lock per tag is atomic."""
+    if tag is None:
+        return
+    prefix = f"{date}_{loc}_{tag}_"
+    done = task_files("done", prefix)
+    if task_files("pending", prefix) or task_files("active", prefix) or not done:
+        return
+    if len(done) != json.load(open(done[0]))["n_tasks_date"]:
+        return
+    try:
+        os.mkdir(os.path.join(OUTPUT_RTF_DIR, loc, date, f".finalized_{tag}"))
+    except FileExistsError:
+        return
+    finalize(loc, date)
+
+
+def sweep():
+    for p in task_files("done"):
+        t = json.load(open(p))
+        try_finalize(t["location"], t["date"], t.get("tag"))
 
 
 def status():
     counts = {s: len(task_files(s)) for s in STATES}
-    total = sum(counts.values())
+    total = sum(counts.values()) - counts["hold"]
     print(f"tasks {counts['done']}/{total} done ({100 * counts['done'] / max(total, 1):.1f}%) | "
-          f"active {counts['active']} | pending {counts['pending']} | failed {counts['failed']}")
+          f"active {counts['active']} | pending {counts['pending']} | failed {counts['failed']} | hold {counts['hold']}")
     per = {}
     for s in ["done", "pending", "active"]:
         for p in task_files(s):
@@ -211,7 +241,11 @@ def requeue():
 if __name__ == "__main__":
     cmd = sys.argv[1]
     if cmd == "enqueue":
-        enqueue(*sys.argv[2:4])
+        enqueue(*sys.argv[2:6])
+    elif cmd == "hold":
+        hold()
+    elif cmd == "sweep":
+        sweep()
     elif cmd == "worker":
         worker()
     elif cmd == "status":
