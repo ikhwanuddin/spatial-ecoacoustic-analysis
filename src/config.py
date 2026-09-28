@@ -51,10 +51,14 @@ LOCATION_MAP = {
 }
 RPIID_TO_LOCATION = {v: k for k, v in LOCATION_MAP.items()}
 
-# Microphone channels used per location (default: ReSpeaker 6-Mic, CH0-5).
-# 2B400 is a Sipeed 6+1 (8 ch): CH6 is the on-board beamformed output, CH7 the centre mic.
-MIC_CHANNELS = {
-    "2B400": [0, 1, 2, 3, 4, 5, 7],
+# Microphones: every array has a 6-mic hexagonal ring on CH0-5 (default: ReSpeaker 6-Mic, 6 ch FLAC).
+# 2B400 is a Sipeed 6+1 (8 ch FLAC): CH6 is the on-board beamformed output, CH7 the centre mic.
+# Any FLAC can be steered with any RTF using the 6 ring mics; only an 8 ch FLAC with an 8 ch (Sipeed)
+# RTF also uses the centre mic (7 mics).
+RING_MICS = [0, 1, 2, 3, 4, 5]
+CENTRE_MIC = 7
+FLAC_CHANNELS = {
+    "2B400": 8,
 }
 
 # ============================================================
@@ -66,8 +70,8 @@ LABIR_DEGREES = list(range(0, 360, 30))
 
 # SPIR: 30 beams (SPIR1 all 23 measured positions, 4 distances x 6 azimuths without 8 m / 60 deg;
 # SPIR2 7 distances x 1 azimuth = 7)
-# LabIR and SPIR are ReSpeaker measurements, so they are only used for ReSpeaker locations.
-# WCIR: the Way Canguk RTFs of the same location (12 per set).
+# WCIRown: the Way Canguk RTFs of the same location (12 per set);
+# WCIRcross: the Way Canguk RTFs of every other location. All locations get all 247 beams.
 SPIR2_DISTANCES = [1, 2, 4, 8, 16, 32, 64]
 SPIR2_DEGREES = [180]
 SPIR2_REP = 2
