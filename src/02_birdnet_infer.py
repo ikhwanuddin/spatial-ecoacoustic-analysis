@@ -35,10 +35,9 @@ for _d in glob.glob(_nv_pattern):
         except Exception: pass
 
 # Checkpoint paths
-CKPT_DIR = os.environ.get(
-    "BIRDNET_CKPT_DIR",
-    "/rds/general/user/ri322/ephemeral/sea-work/bacpipe-checkpoints/birdnet"
-)
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from config import BIRDNET_DIR
+CKPT_DIR = os.environ.get("BIRDNET_CKPT_DIR", BIRDNET_DIR)
 LABEL_PATH = os.path.join(CKPT_DIR, "BirdNET_GLOBAL_6K_V2.4_Labels.txt")
 MODEL_PATH = os.path.join(CKPT_DIR, "birdnetv2.4.keras")
 PREP_PATH = os.path.join(CKPT_DIR, "BirdNET_Preprocessor")
