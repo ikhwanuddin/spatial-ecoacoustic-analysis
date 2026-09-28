@@ -48,7 +48,7 @@ def evaluate_threshold_counts(processed_data: Dict[str, Any], thresholds: List[f
     """
     Compute detection counts and unique species counts across candidate thresholds.
     """
-    methods = ["mono_channel", "sa_channel", "beamformed_LabIR", "beamformed_SPIR", "beamformed_WCIR", "beamformed_all"]
+    methods = ["mono_channel", "sa_channel", "beamformed_LabIR", "beamformed_SPIR", "beamformed_WCIR_own", "beamformed_WCIR_cross", "beamformed_all"]
     summary = {m: {"total_detections": {}, "species_count": {}} for m in methods}
 
     for m in methods:
@@ -73,8 +73,8 @@ def evaluate_threshold_counts(processed_data: Dict[str, Any], thresholds: List[f
 def format_markdown_table(summary: Dict[str, Any], thresholds: List[float]) -> str:
     """Format evaluation summary into a clean GitHub-style Markdown table."""
     lines = [
-        "| Threshold | Mono Detections | SA Detections | LabIR Detections | SPIR Detections | WCIR Detections | BF Gain vs Mono (%) |",
-        "|---|---|---|---|---|---|---|"
+        "| Threshold | Mono Detections | SA Detections | LabIR Detections | SPIR Detections | WCIR own Detections | WCIR cross Detections | BF Gain vs Mono (%) |",
+        "|---|---|---|---|---|---|---|---|"
     ]
     for t in thresholds:
         t_str = f"{t:.2f}"
@@ -82,11 +82,12 @@ def format_markdown_table(summary: Dict[str, Any], thresholds: List[float]) -> s
         sa_n = summary["sa_channel"]["total_detections"][t_str]
         labir_n = summary["beamformed_LabIR"]["total_detections"][t_str]
         spir_n = summary["beamformed_SPIR"]["total_detections"][t_str]
-        wcir_n = summary["beamformed_WCIR"]["total_detections"][t_str]
-        bf_best = max(labir_n, spir_n, wcir_n)
+        own_n = summary["beamformed_WCIR_own"]["total_detections"][t_str]
+        cross_n = summary["beamformed_WCIR_cross"]["total_detections"][t_str]
+        bf_best = max(labir_n, spir_n, own_n, cross_n)
 
         gain_str = f"+{(bf_best - mono_n) / mono_n * 100:.1f}%" if mono_n > 0 else ("N/A" if bf_best == 0 else "∞")
-        lines.append(f"| **{t_str}** | {mono_n} | {sa_n} | {labir_n} | {spir_n} | {wcir_n} | **{gain_str}** |")
+        lines.append(f"| **{t_str}** | {mono_n} | {sa_n} | {labir_n} | {spir_n} | {own_n} | {cross_n} | **{gain_str}** |")
 
     return "\n".join(lines)
 
@@ -109,15 +110,17 @@ def main():
     with open(args.processed_json, "r") as f:
         processed = json.load(f)
 
-    # 1. Pair Mono vs Beamformed (LabIR, SPIR and WCIR)
+    # 1. Pair Mono vs Beamformed (LabIR, SPIR, WCIR own and cross)
     paired_labir = pair_methods(processed.get("mono_channel", {}), processed.get("beamformed_LabIR", {}))
     paired_spir = pair_methods(processed.get("mono_channel", {}), processed.get("beamformed_SPIR", {}))
-    paired_wcir = pair_methods(processed.get("mono_channel", {}), processed.get("beamformed_WCIR", {}))
+    paired_own = pair_methods(processed.get("mono_channel", {}), processed.get("beamformed_WCIR_own", {}))
+    paired_cross = pair_methods(processed.get("mono_channel", {}), processed.get("beamformed_WCIR_cross", {}))
 
     paired_output = {
         "mono_vs_LabIR": paired_labir,
         "mono_vs_SPIR": paired_spir,
-        "mono_vs_WCIR": paired_wcir,
+        "mono_vs_WCIR_own": paired_own,
+        "mono_vs_WCIR_cross": paired_cross,
     }
     paired_file = os.path.join(out_dir, "paired_detections.json")
     with open(paired_file, "w") as f:

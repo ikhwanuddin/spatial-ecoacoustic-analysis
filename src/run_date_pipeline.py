@@ -71,7 +71,8 @@ def process_date(location: str, date_str: str, max_files: int = 0, processes: in
         "sa_channel": {},
         "beamformed_LabIR": {},
         "beamformed_SPIR": {},
-        "beamformed_WCIR": {},
+        "beamformed_WCIR_own": {},
+        "beamformed_WCIR_cross": {},
         "beamformed_all": {},
     }
     corrupted_skipped = []
@@ -132,11 +133,13 @@ def process_date(location: str, date_str: str, max_files: int = 0, processes: in
         print("  4️⃣  Pairing detections and evaluating thresholds...")
         paired_labir = pair_methods(processed.get("mono_channel", {}), processed.get("beamformed_LabIR", {}))
         paired_spir = pair_methods(processed.get("mono_channel", {}), processed.get("beamformed_SPIR", {}))
-        paired_wcir = pair_methods(processed.get("mono_channel", {}), processed.get("beamformed_WCIR", {}))
+        paired_own = pair_methods(processed.get("mono_channel", {}), processed.get("beamformed_WCIR_own", {}))
+        paired_cross = pair_methods(processed.get("mono_channel", {}), processed.get("beamformed_WCIR_cross", {}))
 
         paired_file = os.path.join(rec_output, "paired_detections.json")
         with open(paired_file, "w") as f:
-            json.dump({"mono_vs_LabIR": paired_labir, "mono_vs_SPIR": paired_spir, "mono_vs_WCIR": paired_wcir},
+            json.dump({"mono_vs_LabIR": paired_labir, "mono_vs_SPIR": paired_spir, "mono_vs_WCIR_own": paired_own,
+                       "mono_vs_WCIR_cross": paired_cross},
                       f, indent=4, ensure_ascii=False)
 
         summary = evaluate_threshold_counts(processed, DEFAULT_THRESHOLDS)

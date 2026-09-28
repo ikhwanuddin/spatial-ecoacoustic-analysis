@@ -15,7 +15,7 @@ from typing import Dict, List, Any
 
 def extract_unique_channel_detections(results_dict: Dict, channel_pattern: str, conf_thresh: float = 0.0) -> List[Dict]:
     """
-    Extract unique detections for a channel subset (e.g. 'LabIR', 'SPIR', 'WCIR', 'mono', 'sa').
+    Extract unique detections for a channel subset (e.g. 'LabIR', 'SPIR', 'WCIRown', 'WCIRcross', 'mono', 'sa').
     For each (species_name, start_time), selects the channel yielding the highest confidence.
     """
     conf_detections = {}
@@ -93,8 +93,11 @@ def process_results_file(results_path: str, conf_thresh: float = 0.0) -> Dict[st
         "beamformed_SPIR": collate_species_stats(
             extract_unique_channel_detections(results, "SPIR", conf_thresh)
         ),
-        "beamformed_WCIR": collate_species_stats(
-            extract_unique_channel_detections(results, "WCIR", conf_thresh)
+        "beamformed_WCIR_own": collate_species_stats(
+            extract_unique_channel_detections(results, "WCIRown", conf_thresh)
+        ),
+        "beamformed_WCIR_cross": collate_species_stats(
+            extract_unique_channel_detections(results, "WCIRcross", conf_thresh)
         ),
         "beamformed_all": collate_species_stats(
             extract_unique_channel_detections(results, "IR", conf_thresh)
@@ -125,7 +128,8 @@ def main():
     print(f"   SA species:   {len(processed['sa_channel'])}")
     print(f"   LabIR species: {len(processed['beamformed_LabIR'])}")
     print(f"   SPIR species:  {len(processed['beamformed_SPIR'])}")
-    print(f"   WCIR species:  {len(processed['beamformed_WCIR'])}")
+    print(f"   WCIR own species:   {len(processed['beamformed_WCIR_own'])}")
+    print(f"   WCIR cross species: {len(processed['beamformed_WCIR_cross'])}")
 
 
 if __name__ == "__main__":

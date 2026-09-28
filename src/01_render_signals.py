@@ -1,7 +1,7 @@
 """
 Module 1: Signal Processing & Multidirectional Beamforming.
 Renders raw multi-channel FLAC recordings into Mono, Signal Averaging (SA),
-and matched-filter beamforming steered by measured RTFs (LabIR, SPIR, WCIR).
+and matched-filter beamforming steered by measured RTFs (LabIR, SPIR, WCIRown, WCIRcross).
 
 Vectorized matrix contraction (einsum) & multi-core parallel ISTFT (KISS).
 Includes automatic FLAC integrity verification and repair with graceful skip reporting.
@@ -32,7 +32,9 @@ from config import (
     SPIR2_DISTANCES,
     SPIR2_REP,
     LOCATION_MAP,
-    MIC_CHANNELS,
+    RING_MICS,
+    CENTRE_MIC,
+    FLAC_CHANNELS,
 )
 
 # In-memory steering vector cache for fast reuse across files
@@ -167,58 +169,70 @@ def butter_highpass_filter(data: np.ndarray, cutoff: float = HIGH_PASS_CUTOFF, f
     return signal.filtfilt(b, a, data, axis=0)
 
 
-def get_rtf_weights(npz_path: str, channels: list) -> np.ndarray:
+def mic_channels(location: str) -> list:
+    """FLAC channels used as microphones: the 6 ring mics, plus the centre mic for an 8 ch FLAC."""
+    return RING_MICS + [CENTRE_MIC] if FLAC_CHANNELS.get(location, 6) == 8 else RING_MICS
+
+
+def get_rtf_weights(npz_path: str, n_mics: int) -> np.ndarray:
     """
     Matched-filter weights from a measured RTF (relative to CH0, 161 bins on the STFT grid).
+    7 mics (8 ch FLAC): an 8 ch RTF uses ring + centre; a 6 ch RTF uses the ring, centre weight 0.
+    6 mics: the ring of any RTF.
     Returns:
-        W: complex128 array of shape (n_channels, n_freq_bins)
+        W: complex128 array of shape (n_mics, n_freq_bins)
     """
     d = np.load(npz_path)
     assert int(d["fs"]) == FS_TARGET and int(d["nfft"]) == FRAME_LEN, npz_path
-    rtf = d["rtf"][channels].astype(np.complex128)
+    rtf = d["rtf"].astype(np.complex128)
+    rtf = rtf[RING_MICS + [CENTRE_MIC]] if (n_mics == 7 and rtf.shape[0] == 8) else rtf[RING_MICS]
 
     # Matched filter weights: W = conj(RTF) / sum|RTF|^2 (bins without sweep content are all 0 -> W = 0)
     power = np.sum(np.abs(rtf) ** 2, axis=0, keepdims=True) + 1e-12
-    return np.conj(rtf) / power
+    W = np.conj(rtf) / power
+    if n_mics == 7 and W.shape[0] == 6:
+        W = np.vstack([W, np.zeros((1, W.shape[1]))])
+    return W
 
 
 def build_beam_catalog(location: str):
-    """List of (output_filename, rtf_path) for a location.
-    LabIR and SPIR were measured with the ReSpeaker 6-Mic, so only ReSpeaker locations get them."""
+    """List of (output_filename, rtf_path): the same 247 beams for every location."""
     beams = []
 
-    if location not in MIC_CHANNELS:
-        # 1. LabIR (133 beams)
-        for spk in LABIR_SPEAKERS:
-            degrees_list = [0] if spk == 12 else LABIR_DEGREES
-            for deg in degrees_list:
-                beams.append((f"LabIR(S{spk:02d}_{deg:03d}).wav",
-                              f"{RTF_BASE_PATH}/Lab/RTF/LAB_RTF_S{spk:02d}_{deg:03d}.npz"))
+    # 1. LabIR (133 beams)
+    for spk in LABIR_SPEAKERS:
+        degrees_list = [0] if spk == 12 else LABIR_DEGREES
+        for deg in degrees_list:
+            beams.append((f"LabIR(S{spk:02d}_{deg:03d}).wav",
+                          f"{RTF_BASE_PATH}/Lab/RTF/LAB_RTF_S{spk:02d}_{deg:03d}.npz"))
 
-        # 2. SPIR1 (23 beams, every measured position)
-        for path in sorted(glob.glob(f"{RTF_BASE_PATH}/SilwoodPark/SP1/RTF/SP_RTF_*.npz")):
-            pos = os.path.basename(path)[len("SP_RTF_"):-len(".npz")]
-            beams.append((f"SPIR1({pos}).wav", path))
+    # 2. SPIR1 (23 beams, every measured position)
+    for path in sorted(glob.glob(f"{RTF_BASE_PATH}/SilwoodPark/SP1/RTF/SP_RTF_*.npz")):
+        pos = os.path.basename(path)[len("SP_RTF_"):-len(".npz")]
+        beams.append((f"SPIR1({pos}).wav", path))
 
-        # 3. SPIR2 (7 beams)
-        for dist in SPIR2_DISTANCES:
-            beams.append((f"SPIR2({dist:02d}m_180_r{SPIR2_REP}).wav",
-                          f"{RTF_BASE_PATH}/SilwoodPark/SP2/RTF/SP_RTF_{dist:02d}m_180_{SPIR2_REP}.npz"))
+    # 3. SPIR2 (7 beams)
+    for dist in SPIR2_DISTANCES:
+        beams.append((f"SPIR2({dist:02d}m_180_r{SPIR2_REP}).wav",
+                      f"{RTF_BASE_PATH}/SilwoodPark/SP2/RTF/SP_RTF_{dist:02d}m_180_{SPIR2_REP}.npz"))
 
-    # 4. WCIR: Way Canguk RTFs of this location (12 per set)
-    for path in sorted(glob.glob(f"{RTF_BASE_PATH}/WayCanguk/RTF/WC_RTF_{location}_*.npz")):
-        pos = os.path.basename(path)[len(f"WC_RTF_{location}_"):-len(".npz")].split("_", 1)[1]   # drop device
-        beams.append((f"WCIR({pos}).wav", path))
+    # 4. WCIRown / WCIRcross: all 84 Way Canguk RTFs (WC_RTF_<station>_<device>_<height>_<dist>m_<azi>)
+    for path in sorted(glob.glob(f"{RTF_BASE_PATH}/WayCanguk/RTF/WC_RTF_*.npz")):
+        station, _device, pos = os.path.basename(path)[len("WC_RTF_"):-len(".npz")].split("_", 2)
+        if station == location:
+            beams.append((f"WCIRown({pos}).wav", path))
+        else:
+            beams.append((f"WCIRcross({station}_{pos}).wav", path))
 
     return beams
 
 
 def get_beam_weights_tensor(location: str):
-    """Retrieve or build the stacked steering weights tensor (n_beams, n_channels, 161)."""
+    """Retrieve or build the stacked steering weights tensor (n_beams, n_mics, 161)."""
     if location not in _BEAMS:
-        channels = MIC_CHANNELS.get(location, list(range(6)))
+        n_mics = len(mic_channels(location))
         catalog = build_beam_catalog(location)
-        W = np.stack([get_rtf_weights(path, channels) for _, path in catalog], axis=0)
+        W = np.stack([get_rtf_weights(path, n_mics) for _, path in catalog], axis=0)
         _BEAMS[location] = (catalog, W)
     return _BEAMS[location]
 
@@ -242,12 +256,10 @@ def render_single_flac(flac_path: str, output_dir: str, location: str, render_be
     os.makedirs(output_dir, exist_ok=True)
 
     # 1. Load and verify multi-channel audio (with automatic repair if corrupted)
-    channels = MIC_CHANNELS.get(location, list(range(6)))
-    n_file_channels = 8 if location in MIC_CHANNELS else 6
-    audio_raw, sr, error_info = load_and_verify_flac(flac_path, output_dir, n_file_channels)
+    audio_raw, sr, error_info = load_and_verify_flac(flac_path, output_dir, FLAC_CHANNELS.get(location, 6))
     if audio_raw is None:
         return False, error_info
-    audio_raw = audio_raw[:, channels]
+    audio_raw = audio_raw[:, mic_channels(location)]
 
     if sr != FS_TARGET:
         audio_raw = librosa.resample(audio_raw.T, orig_sr=sr, target_sr=FS_TARGET).T
