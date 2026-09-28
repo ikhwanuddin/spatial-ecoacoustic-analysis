@@ -14,6 +14,8 @@ USER = os.environ.get("USER", "ri322")
 HOME_DIR = f"/rds/general/user/{USER}/home"
 PROJECT_ROOT = os.path.join(HOME_DIR, "spatial-ecoacoustic-analysis")
 RTF_BASE_PATH = os.path.join(HOME_DIR, "MAARU-IR-RTF")   # steering vectors (RTF .npz)
+BIRDNET_DIR = os.path.join(HOME_DIR, "sea-models", "birdnet")   # BirdNET V2.4 Keras + preprocessor (GPU)
+OUTPUT_RTF_DIR = os.environ.get("SEA_OUTPUT_RTF", os.path.join(PROJECT_ROOT, "output_rtf"))   # RTF rerun
 OUTPUT_DIR = os.path.join(PROJECT_ROOT, "output")
 QUEUE_DIR = os.path.join(PROJECT_ROOT, "queue")
 TELEMETRY_DIR = os.path.join(PROJECT_ROOT, "telemetry")
@@ -21,6 +23,7 @@ TELEMETRY_DIR = os.path.join(PROJECT_ROOT, "telemetry")
 # Ephemeral storage (30-day purge, Scratch renders & Raw audio)
 EPHEM_DIR = f"/rds/general/user/{USER}/ephemeral"
 MONITORING_DATA = os.path.join(EPHEM_DIR, "monitoring_data")
+AUDIT_CLIPS_DIR = os.environ.get("SEA_CLIPS", os.path.join(EPHEM_DIR, "sea-scratch"))   # <loc>/<date>/audit_clips/
 SCRATCH_DIR = os.path.join(EPHEM_DIR, "sea-scratch")
 
 # ============================================================
@@ -37,6 +40,9 @@ HOP_LEN = FRAME_LEN // 2                   # 160 samples
 # BirdNET evaluation
 WINDOW_LEN_SEC = 3.0       # 3.0 seconds decision window
 WINDOW_HOP_SEC = 3.0       # Non-overlapping windows (overlap = 0)
+BIRDNET_MIN_CONF = 0.1     # detections below this are not stored
+SPECIES_LAT, SPECIES_LON = -5.6585004, 104.4046997   # Way Canguk station hut, BirdNET location filter
+SPECIES_FILTER_THRESH = 0.03   # BirdNET default; filter applied in processed.json only, results.json stays raw
 
 # ============================================================
 # RECORDER TO LOCATION MAPPING

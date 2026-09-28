@@ -8,15 +8,34 @@ Faithful adaptation of Cell 15 from the Silwood notebook.
 
 import os
 import json
+import sys
 import argparse
+from datetime import datetime
 import numpy as np
 from typing import Dict, List, Any
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from config import SPECIES_LAT, SPECIES_LON, SPECIES_FILTER_THRESH
 
-def extract_unique_channel_detections(results_dict: Dict, channel_pattern: str, conf_thresh: float = 0.0) -> List[Dict]:
+_LOCAL = {}
+
+
+def local_species(date_str: str) -> set:
+    """Common names the BirdNET meta-model expects at Way Canguk in the week of date_str (YYYY-MM-DD)."""
+    if date_str not in _LOCAL:
+        from birdnetlib.species import SpeciesList
+        sp = SpeciesList().return_list(lat=SPECIES_LAT, lon=SPECIES_LON, threshold=SPECIES_FILTER_THRESH,
+                                       date=datetime.strptime(date_str, "%Y-%m-%d"))
+        _LOCAL[date_str] = {s["common_name"] for s in sp}
+    return _LOCAL[date_str]
+
+
+def extract_unique_channel_detections(results_dict: Dict, channel_pattern: str, conf_thresh: float = 0.0,
+                                      allowed: set = None) -> List[Dict]:
     """
     Extract unique detections for a channel subset (e.g. 'LabIR', 'SPIR', 'WCIRown', 'WCIRcross', 'mono', 'sa').
     For each (species_name, start_time), selects the channel yielding the highest confidence.
+    allowed: if given, species outside this set (location filter) are dropped.
     """
     conf_detections = {}
 
@@ -24,8 +43,8 @@ def extract_unique_channel_detections(results_dict: Dict, channel_pattern: str, 
         if channel_pattern.lower() in channel.lower():
             for det in results_dict[channel]:
                 conf = det.get("confidence", 0.0)
-                if conf >= conf_thresh:
-                    species_name = det.get("common_name", "Unknown")
+                species_name = det.get("common_name", "Unknown")
+                if conf >= conf_thresh and (allowed is None or species_name in allowed):
                     start_time = round(float(det.get("start_time", 0.0)), 1)
                     prim_key = f"{species_name}_{start_time}"
 
@@ -75,32 +94,32 @@ def collate_species_stats(detections: List[Dict]) -> Dict[str, Any]:
     return species_dict
 
 
-def process_results_file(results_path: str, conf_thresh: float = 0.0) -> Dict[str, Any]:
-    """Process results.json into processed.json structure."""
+def process_results_file(results_path: str, conf_thresh: float = 0.0, allowed: set = None) -> Dict[str, Any]:
+    """Process results.json into processed.json structure (allowed = location filter, see local_species)."""
     with open(results_path, "r") as f:
         results = json.load(f)
 
     processed = {
         "mono_channel": collate_species_stats(
-            extract_unique_channel_detections(results, "mono.wav", conf_thresh)
+            extract_unique_channel_detections(results, "mono.wav", conf_thresh, allowed)
         ),
         "sa_channel": collate_species_stats(
-            extract_unique_channel_detections(results, "sa.wav", conf_thresh)
+            extract_unique_channel_detections(results, "sa.wav", conf_thresh, allowed)
         ),
         "beamformed_LabIR": collate_species_stats(
-            extract_unique_channel_detections(results, "LabIR", conf_thresh)
+            extract_unique_channel_detections(results, "LabIR", conf_thresh, allowed)
         ),
         "beamformed_SPIR": collate_species_stats(
-            extract_unique_channel_detections(results, "SPIR", conf_thresh)
+            extract_unique_channel_detections(results, "SPIR", conf_thresh, allowed)
         ),
         "beamformed_WCIR_own": collate_species_stats(
-            extract_unique_channel_detections(results, "WCIRown", conf_thresh)
+            extract_unique_channel_detections(results, "WCIRown", conf_thresh, allowed)
         ),
         "beamformed_WCIR_cross": collate_species_stats(
-            extract_unique_channel_detections(results, "WCIRcross", conf_thresh)
+            extract_unique_channel_detections(results, "WCIRcross", conf_thresh, allowed)
         ),
         "beamformed_all": collate_species_stats(
-            extract_unique_channel_detections(results, "IR", conf_thresh)
+            extract_unique_channel_detections(results, "IR", conf_thresh, allowed)
         ),
     }
     return processed
@@ -111,6 +130,7 @@ def main():
     parser.add_argument("results_json", help="Path to results.json")
     parser.add_argument("--conf-thresh", type=float, default=0.0, help="Minimum confidence threshold (default: 0.0)")
     parser.add_argument("--out", default=None, help="Output path for processed.json")
+    parser.add_argument("--date", default=None, help="YYYY-MM-DD: apply the BirdNET location filter for this week")
     args = parser.parse_args()
 
     if not os.path.isfile(args.results_json):
@@ -118,7 +138,8 @@ def main():
         return 1
 
     out_path = args.out or os.path.join(os.path.dirname(args.results_json), "processed.json")
-    processed = process_results_file(args.results_json, conf_thresh=args.conf_thresh)
+    allowed = local_species(args.date) if args.date else None
+    processed = process_results_file(args.results_json, conf_thresh=args.conf_thresh, allowed=allowed)
 
     with open(out_path, "w") as f:
         json.dump(processed, f, indent=4, ensure_ascii=False)
