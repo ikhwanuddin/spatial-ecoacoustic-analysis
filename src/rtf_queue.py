@@ -193,11 +193,16 @@ def try_finalize(loc, date, tag):
         return
     if len(done) != json.load(open(done[0]))["n_tasks_date"]:
         return
+    lock = os.path.join(OUTPUT_RTF_DIR, loc, date, f".finalized_{tag}")
     try:
-        os.mkdir(os.path.join(OUTPUT_RTF_DIR, loc, date, f".finalized_{tag}"))
+        os.mkdir(lock)
     except FileExistsError:
         return
-    finalize(loc, date)
+    try:
+        finalize(loc, date)
+    except Exception:
+        os.rmdir(lock)          # let a later sweep retry
+        raise
 
 
 def sweep():
