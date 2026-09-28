@@ -27,9 +27,11 @@ from render_signals import render_single_flac, get_beam_weights_tensor
 from birdnet_infer import run_birdnet_batch
 from extract_detections import process_results_file
 from pair_and_recap import pair_methods, evaluate_threshold_counts, format_markdown_table
-from generate_audit_manifest import generate_date_audit_manifest
-from extract_audit_clips import extract_clips_for_date
+from generate_audit_manifest import generate_date_audit_manifest, generate_manifest_for_recording
+from extract_audit_clips import extract_clips_for_date, cut_recording_clips
 import json
+
+AUDIT_MIN_CONF = 0.25   # detections at or above this get an audit clip
 
 try:
     from telemetry import send_heartbeat
@@ -91,7 +93,7 @@ def process_date(location: str, date_str: str, max_files: int = 0, processes: in
         processed_json = os.path.join(rec_output, "processed.json")
 
         wav_count = len([f for f in os.listdir(rec_scratch) if f.endswith(".wav")])
-        if wav_count < n_streams:
+        if wav_count < n_streams and not os.path.exists(results_json):
             print(f"  1️⃣  Rendering {n_streams} audio streams (Mono, SA, beams)...")
             ok, err_info = render_single_flac(flac, rec_scratch, location, render_beams=True, workers=processes)
             if not ok:
@@ -111,6 +113,14 @@ def process_date(location: str, date_str: str, max_files: int = 0, processes: in
             run_birdnet_batch(rec_scratch, date_obj=date_obj, processes=processes)
         else:
             print("  2️⃣  [Skipped] results.json already exists.")
+
+        # Cut this recording's audit clips now, then free its scratch WAVs (results.json stays)
+        items = generate_manifest_for_recording(rec_scratch, rec_name, location, date_str, AUDIT_MIN_CONF)
+        cut_recording_clips(rec_scratch, rec_name, items, os.path.join(output_date_dir, "audit_clips"))
+        wavs = [f for f in os.listdir(rec_scratch) if f.endswith(".wav")]
+        for f in wavs:
+            os.remove(os.path.join(rec_scratch, f))
+        print(f"  🗑️  {len(items)} audit clips cut, {len(wavs)} scratch WAVs removed")
 
         # Step 3: Automated Source Selection
         print("  3️⃣  Extracting winning directions (prim_key = species_time)...")
@@ -192,7 +202,7 @@ def process_date(location: str, date_str: str, max_files: int = 0, processes: in
     # Step 6: Generate Ground-Truth Detection Audit Manifest
     print("\n" + "=" * 70)
     print(f"📋 GENERATING DETECTION AUDIT MANIFEST: {location} | {date_str}")
-    generate_date_audit_manifest(location, date_str, min_conf=0.25, out_dir=output_date_dir)
+    generate_date_audit_manifest(location, date_str, min_conf=AUDIT_MIN_CONF, out_dir=output_date_dir)
 
     # Step 7: Save Standalone Corrupted Files Report (if any)
     if corrupted_skipped:
