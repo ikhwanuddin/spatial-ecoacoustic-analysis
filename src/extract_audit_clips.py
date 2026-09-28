@@ -18,6 +18,41 @@ from config import SCRATCH_DIR, OUTPUT_DIR, HOME_DIR
 from generate_audit_manifest import format_manifest_markdown
 
 
+def clip_names(rec_id: str, item: Dict[str, Any]):
+    """File names of the beam clip and the mono clip of one audit window."""
+    st = item["window_seconds"][0]
+    ch_tag = os.path.splitext(item["best_channel"])[0].replace("(", "_").replace(")", "").replace(" ", "_")
+    time_tag = f"{int(st):04d}s"
+    return f"{rec_id}_{time_tag}_{ch_tag}.wav", f"{rec_id}_{time_tag}_mono.wav"
+
+
+def cut_recording_clips(rec_scratch: str, rec_id: str, rec_items: List[Dict[str, Any]], clips_dir: str,
+                        buffer_sec: float = 1.0) -> int:
+    """Cut the beam + mono clip of every audit window of one recording from its scratch WAVs.
+    Clips that already exist are kept. Returns the number of windows handled."""
+    os.makedirs(clips_dir, exist_ok=True)
+
+    # Cache unique needed channels in RAM
+    needed_channels = {"mono.wav"} | {item["best_channel"] for item in rec_items}
+    audio_cache = {}
+    for ch in needed_channels:
+        src_p = os.path.join(rec_scratch, ch)
+        if os.path.isfile(src_p):
+            audio_cache[ch] = sf.read(src_p, dtype='float32')
+
+    for item in rec_items:
+        st, et = item["window_seconds"]
+        clip_st = max(0.0, float(st) - buffer_sec)
+        clip_et = float(et) + buffer_sec
+        bf_name, mono_name = clip_names(rec_id, item)
+        for ch, name in ((item["best_channel"], bf_name), ("mono.wav", mono_name)):
+            dst = os.path.join(clips_dir, name)
+            if ch in audio_cache and not os.path.isfile(dst):
+                data, sr = audio_cache[ch]
+                sf.write(dst, data[int(clip_st * sr):min(len(data), int(clip_et * sr))], sr, subtype='PCM_16')
+    return len(rec_items)
+
+
 def extract_clips_for_date(
     location: str,
     date_str: str,
@@ -50,93 +85,23 @@ def extract_clips_for_date(
     # Group candidate windows by recording_id
     by_rec: Dict[str, List[Dict[str, Any]]] = {}
     for item in manifest_items:
-        rec_id = item["recording_id"]
-        if rec_id not in by_rec:
-            by_rec[rec_id] = []
-        by_rec[rec_id].append(item)
+        by_rec.setdefault(item["recording_id"], []).append(item)
 
     extracted_count = 0
 
     for rec_id, rec_items in by_rec.items():
         rec_scratch = os.path.join(scratch_date_dir, rec_id)
-        if not os.path.isdir(rec_scratch):
-            # Still update paths if clips already exist in clips_dir
-            for item in rec_items:
-                st, et = item["window_seconds"]
-                best_ch = item["best_channel"]
-                ch_tag = os.path.splitext(best_ch)[0].replace("(", "_").replace(")", "").replace(" ", "_")
-                time_tag = f"{int(st):04d}s"
-                clip_bf_name = f"{rec_id}_{time_tag}_{ch_tag}.wav"
-                clip_mono_name = f"{rec_id}_{time_tag}_mono.wav"
-                dst_bf = os.path.join(clips_dir, clip_bf_name)
-                dst_mono = os.path.join(clips_dir, clip_mono_name)
-                mac_bf_path = f"/Volumes/ri322/home/spatial-ecoacoustic-analysis/output/{location}/{date_str}/audit_clips/{clip_bf_name}"
-                mac_mono_path = f"/Volumes/ri322/home/spatial-ecoacoustic-analysis/output/{location}/{date_str}/audit_clips/{clip_mono_name}"
-                if "audio_paths" not in item: item["audio_paths"] = {}
-                item["audio_paths"]["cx3_wav"] = dst_bf
-                item["audio_paths"]["cx3_mono_wav"] = dst_mono
-                item["audio_paths"]["mac_wav"] = mac_bf_path
-                item["audio_paths"]["mac_mono_wav"] = mac_mono_path
-            continue
-
-        # Cache unique needed channels in RAM (only ~11 MB per channel)
-        needed_channels = set(["mono.wav"])
-        for item in rec_items:
-            needed_channels.add(item["best_channel"])
-
-        audio_cache = {}
-        for ch in needed_channels:
-            src_p = os.path.join(rec_scratch, ch)
-            if os.path.isfile(src_p):
-                try:
-                    data, sr = sf.read(src_p, dtype='float32')
-                    audio_cache[ch] = (data, sr)
-                except Exception:
-                    pass
+        if os.path.isdir(rec_scratch):
+            extracted_count += cut_recording_clips(rec_scratch, rec_id, rec_items, clips_dir, buffer_sec)
 
         for item in rec_items:
-            st, et = item["window_seconds"]
-            best_ch = item["best_channel"]
-            clip_st = max(0.0, float(st) - buffer_sec)
-            clip_et = float(et) + buffer_sec
-
-            ch_tag = os.path.splitext(best_ch)[0].replace("(", "_").replace(")", "").replace(" ", "_")
-            time_tag = f"{int(st):04d}s"
-
-            clip_bf_name = f"{rec_id}_{time_tag}_{ch_tag}.wav"
-            clip_mono_name = f"{rec_id}_{time_tag}_mono.wav"
-
-            dst_bf = os.path.join(clips_dir, clip_bf_name)
-            dst_mono = os.path.join(clips_dir, clip_mono_name)
-
-            if best_ch in audio_cache and not os.path.isfile(dst_bf):
-                data, sr = audio_cache[best_ch]
-                start_f = int(clip_st * sr)
-                stop_f = min(len(data), int(clip_et * sr))
-                try:
-                    sf.write(dst_bf, data[start_f:stop_f], sr, subtype='PCM_16')
-                except Exception:
-                    pass
-
-            if "mono.wav" in audio_cache and not os.path.isfile(dst_mono):
-                data, sr = audio_cache["mono.wav"]
-                start_f = int(clip_st * sr)
-                stop_f = min(len(data), int(clip_et * sr))
-                try:
-                    sf.write(dst_mono, data[start_f:stop_f], sr, subtype='PCM_16')
-                except Exception:
-                    pass
-
-            mac_bf_path = f"/Volumes/ri322/home/spatial-ecoacoustic-analysis/output/{location}/{date_str}/audit_clips/{clip_bf_name}"
-            mac_mono_path = f"/Volumes/ri322/home/spatial-ecoacoustic-analysis/output/{location}/{date_str}/audit_clips/{clip_mono_name}"
-
-            if "audio_paths" not in item:
-                item["audio_paths"] = {}
-            item["audio_paths"]["cx3_wav"] = dst_bf
-            item["audio_paths"]["cx3_mono_wav"] = dst_mono
-            item["audio_paths"]["mac_wav"] = mac_bf_path
-            item["audio_paths"]["mac_mono_wav"] = mac_mono_path
-            extracted_count += 1
+            bf_name, mono_name = clip_names(rec_id, item)
+            mac_dir = f"/Volumes/ri322/home/spatial-ecoacoustic-analysis/output/{location}/{date_str}/audit_clips"
+            item.setdefault("audio_paths", {})
+            item["audio_paths"]["cx3_wav"] = os.path.join(clips_dir, bf_name)
+            item["audio_paths"]["cx3_mono_wav"] = os.path.join(clips_dir, mono_name)
+            item["audio_paths"]["mac_wav"] = f"{mac_dir}/{bf_name}"
+            item["audio_paths"]["mac_mono_wav"] = f"{mac_dir}/{mono_name}"
 
     with open(json_path, "w", encoding="utf-8") as f:
         json.dump(manifest_items, f, indent=4, ensure_ascii=False)
