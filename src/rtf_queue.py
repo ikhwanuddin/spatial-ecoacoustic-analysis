@@ -15,7 +15,7 @@ Files under output_rtf/:
   _status/<worker>.json                                        (heartbeat, written after every recording)
   <loc>/<date>/<rec>/{results,processed,paired_detections,threshold_summary,audit_clips}.json
   <loc>/<date>/{daily_summary,detection_audit_manifest}.{json,md}, corrupted_files.json
-Clips: AUDIT_CLIPS_DIR/<loc>/<date>/audit_clips/ (ephemeral)
+Clips: config.clip_dir -> AUDIT_CLIPS_DIR/<loc>/<date>/audit_clips/<rec>/ (ephemeral)
 """
 
 import os
@@ -29,7 +29,7 @@ from datetime import datetime
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from config import (OUTPUT_RTF_DIR, MONITORING_DATA, LOCATION_MAP, SKIP_LOCATIONS, DEFAULT_THRESHOLDS,
-                    AUDIT_CLIPS_DIR, EPHEM_DIR)
+                    AUDIT_CLIPS_DIR, EPHEM_DIR, clip_dir)
 
 TASK_SIZE = 5
 Q = os.path.join(OUTPUT_RTF_DIR, "_queue")
@@ -122,11 +122,12 @@ def finalize(loc, date):
 
     # audit manifest: one row per (group, species, window) claim, pointing at the shared clips
     clips = os.path.join(AUDIT_CLIPS_DIR, loc, date, "audit_clips")
-    mac = f"/Volumes/ri322/ephemeral/{os.path.relpath(clips, EPHEM_DIR)}"
     items = []
     for rec in recs:
+        cx3 = clip_dir(loc, date, rec)
+        mac = f"/Volumes/ri322/ephemeral/{os.path.relpath(cx3, EPHEM_DIR)}"
         for r in json.load(open(os.path.join(out, rec, "audit_clips.json"))):
-            r["audio_paths"] = {"cx3_wav": f"{clips}/{r['clip']}", "cx3_mono_wav": f"{clips}/{r['mono_clip']}",
+            r["audio_paths"] = {"cx3_wav": f"{cx3}/{r['clip']}", "cx3_mono_wav": f"{cx3}/{r['mono_clip']}",
                                 "mac_wav": f"{mac}/{r['clip']}", "mac_mono_wav": f"{mac}/{r['mono_clip']}"}
             items.append(r)
     json.dump(items, open(os.path.join(out, "detection_audit_manifest.json"), "w"), indent=4, ensure_ascii=False)

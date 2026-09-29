@@ -15,7 +15,7 @@ import json
 import argparse
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from config import OUTPUT_RTF_DIR, AUDIT_CLIPS_DIR, MONITORING_DATA, LOCATION_MAP, SKIP_LOCATIONS
+from config import OUTPUT_RTF_DIR, MONITORING_DATA, LOCATION_MAP, SKIP_LOCATIONS, clip_dir
 from rtf_queue import task_files
 
 WINDOWS = {"dd": [("04:30", "08:30"), ("16:00", "19:30")], "night": [("00:00", "01:00")]}   # as enqueued
@@ -92,10 +92,10 @@ for (loc, date), tags in sorted(by_locdate.items()):
     for name in ["daily_summary.json", "detection_audit_manifest.json"]:
         if not os.path.isfile(os.path.join(d, name)):
             bad(f"{loc} {date}: {name} missing")
-    have = set(os.listdir(os.path.join(AUDIT_CLIPS_DIR, loc, date, "audit_clips"))) \
-        if os.path.isdir(os.path.join(AUDIT_CLIPS_DIR, loc, date, "audit_clips")) else set()
     recs = sorted(r for r in os.listdir(d) if os.path.isfile(os.path.join(d, r, "processed.json")))
     for r in recs:
+        cd = clip_dir(loc, date, r)
+        have = set(os.listdir(cd)) if os.path.isdir(cd) else set()
         rows = json.load(open(os.path.join(d, r, "audit_clips.json")))
         n_rows += len(rows)
         for row in rows:

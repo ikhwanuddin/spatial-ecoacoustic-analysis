@@ -18,14 +18,14 @@ import time
 import argparse
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from config import OUTPUT_RTF_DIR, AUDIT_CLIPS_DIR, MONITORING_DATA, LOCATION_MAP
+from config import OUTPUT_RTF_DIR, MONITORING_DATA, LOCATION_MAP, clip_dir
 
 ap = argparse.ArgumentParser()
 ap.add_argument("--check", action="store_true")
 ap.add_argument("--part", default="0/1")
 ap.add_argument("--loc")
 ap.add_argument("--date")
-ap.add_argument("--clips-dir", help="write here instead of AUDIT_CLIPS_DIR/<loc>/<date>/audit_clips (test)")
+ap.add_argument("--clips-dir", help="write here (flat) instead of config.clip_dir (test)")
 args = ap.parse_args()
 
 part, n_parts = map(int, args.part.split("/"))
@@ -40,10 +40,10 @@ if not args.check:
 total_missing = total_written = n_recs = 0
 t0 = time.time()
 for loc, date in locdates:
-    clips_dir = args.clips_dir or os.path.join(AUDIT_CLIPS_DIR, loc, date, "audit_clips")
-    have = set(os.listdir(clips_dir)) if os.path.isdir(clips_dir) else set()
     for rec_json in sorted(glob.glob(os.path.join(OUTPUT_RTF_DIR, loc, date, "*", "audit_clips.json"))):
         rec_dir = os.path.dirname(rec_json)
+        clips_dir = args.clips_dir or clip_dir(loc, date, os.path.basename(rec_dir))
+        have = set(os.listdir(clips_dir)) if os.path.isdir(clips_dir) else set()
         rows = json.load(open(rec_json))
         missing = {c for r in rows for c in (r["clip"], r["mono_clip"]) if c not in have}
         if not missing:

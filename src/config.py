@@ -23,7 +23,13 @@ TELEMETRY_DIR = os.path.join(PROJECT_ROOT, "telemetry")
 # Ephemeral storage (30-day purge, Scratch renders & Raw audio)
 EPHEM_DIR = f"/rds/general/user/{USER}/ephemeral"
 MONITORING_DATA = os.path.join(EPHEM_DIR, "monitoring_data")
-AUDIT_CLIPS_DIR = os.environ.get("SEA_CLIPS", os.path.join(EPHEM_DIR, "sea-scratch"))   # <loc>/<date>/audit_clips/
+AUDIT_CLIPS_DIR = os.environ.get("SEA_CLIPS", os.path.join(EPHEM_DIR, "sea-scratch"))   # <loc>/<date>/audit_clips/<rec>/
+
+
+def clip_dir(loc, date, rec):
+    """Audit clips of one recording (one folder per recording keeps SMB/Finder listings small)."""
+    return os.path.join(AUDIT_CLIPS_DIR, loc, date, "audit_clips", rec)
+
 SCRATCH_DIR = os.path.join(EPHEM_DIR, "sea-scratch")
 
 # ============================================================
