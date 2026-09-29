@@ -4,7 +4,7 @@ RTF rerun: one recording end to end in memory on the GPU, no scratch WAVs.
 FLAC -> mic channels -> HPF -> STFT (CPU)
      -> per group of beams: einsum with RTF weights -> ISTFT -> peak norm -> x3 resample -> BirdNET (GPU)
      -> results.json (raw), processed.json (location filter), threshold_summary, paired_detections,
-        audit clips: every beam processed.json chose + mono, on ephemeral (AUDIT_CLIPS_DIR)
+        audit clips: every beam processed.json chose + mono, on ephemeral (config.clip_dir)
 
 Same maths as render_signals.py + birdnet_infer.run_birdnet_gpu (librosa STFT/ISTFT with a Hamming
 window, scipy resample_poly(3, 1), float32 WAV values); only the device and float precision differ.
@@ -27,7 +27,7 @@ if not birdnet_infer.is_gpu_available():
     raise RuntimeError(f"no GPU or BirdNET GPU model missing in {birdnet_infer.CKPT_DIR}")
 from birdnet_infer import tf, get_birdnet_gpu_model   # loads the CUDA libs first
 from config import (FS_TARGET, FRAME_LEN, HOP_LEN, HIGH_PASS_CUTOFF, BIRDNET_MIN_CONF, DEFAULT_THRESHOLDS,
-                    MONITORING_DATA, LOCATION_MAP, FLAC_CHANNELS, AUDIT_CLIPS_DIR)
+                    MONITORING_DATA, LOCATION_MAP, FLAC_CHANNELS, clip_dir)
 from render_signals import load_and_verify_flac, butter_highpass_filter, get_beam_weights_tensor, mic_channels
 from extract_detections import process_results_file, local_species
 from pair_and_recap import pair_methods, evaluate_threshold_counts, format_markdown_table
@@ -162,7 +162,7 @@ def _write_clips(rows, clips_dir, mono, catalog, render):
 
 def regen_clips(flac_path: str, location: str, date_str: str, out_rec_dir: str, clips_dir: str = None) -> dict:
     """Recreate the audit clips of one recording that are missing (same maths as process_recording)."""
-    clips_dir = clips_dir or os.path.join(AUDIT_CLIPS_DIR, location, date_str, "audit_clips")
+    clips_dir = clips_dir or clip_dir(location, date_str, os.path.basename(out_rec_dir))
     rows = json.load(open(os.path.join(out_rec_dir, "audit_clips.json")))
     rows = [r for r in rows if not (os.path.isfile(os.path.join(clips_dir, r["clip"]))
                                     and os.path.isfile(os.path.join(clips_dir, r["mono_clip"])))]
@@ -176,7 +176,7 @@ def regen_clips(flac_path: str, location: str, date_str: str, out_rec_dir: str, 
 
 
 def process_recording(flac_path: str, location: str, date_str: str, out_rec_dir: str) -> dict:
-    """Run one recording; returns timings. JSON into out_rec_dir, clips into AUDIT_CLIPS_DIR/<loc>/<date>/audit_clips/."""
+    """Run one recording; returns timings. JSON into out_rec_dir, clips into clip_dir(loc, date, rec)."""
     t = {"t0": time.time()}
     os.makedirs(out_rec_dir, exist_ok=True)
     rec_name = os.path.splitext(os.path.basename(flac_path))[0]
@@ -221,7 +221,7 @@ def process_recording(flac_path: str, location: str, date_str: str, out_rec_dir:
     rows = audit_rows(processed, rec_name)
     with open(os.path.join(out_rec_dir, "audit_clips.json"), "w", encoding="utf-8") as f:
         json.dump(rows, f, ensure_ascii=False)
-    _write_clips(rows, os.path.join(AUDIT_CLIPS_DIR, location, date_str, "audit_clips"), mono, catalog, render)
+    _write_clips(rows, clip_dir(location, date_str, rec_name), mono, catalog, render)
     t["out"] = time.time()
     return {"prep_s": round(t["prep"] - t["t0"], 1), "beams_s": round(t["beams"] - t["prep"], 1),
             "out_s": round(t["out"] - t["beams"], 1), "n_beams": len(catalog), "n_clips": len({r["clip"] for r in rows} | {r["mono_clip"] for r in rows}),
