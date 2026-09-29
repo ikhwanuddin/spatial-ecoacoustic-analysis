@@ -48,7 +48,9 @@ n_flac = n_ok = 0
 errors, missing = [], []
 by_locdate = {}
 for t in tasks:
-    by_locdate.setdefault((t["location"], t["date"]), set()).add(t["tag"])
+    by_locdate.setdefault((t["location"], t["date"]), set())
+    if "tag" in t:                     # first tasks (before tags existed) cover all hours, finalized via dd/night
+        by_locdate[(t["location"], t["date"])].add(t["tag"])
     for flac in t["flacs"]:
         n_flac += 1
         rec_dir = os.path.join(OUTPUT_RTF_DIR, t["location"], t["date"], flac[:-5])
