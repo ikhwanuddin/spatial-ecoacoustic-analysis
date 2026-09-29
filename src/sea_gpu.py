@@ -105,16 +105,11 @@ def audit_rows(processed: dict, rec_name: str) -> list:
     return rows
 
 
-def process_recording(flac_path: str, location: str, date_str: str, out_rec_dir: str) -> dict:
-    """Run one recording; returns timings. JSON into out_rec_dir, clips into AUDIT_CLIPS_DIR/<loc>/<date>/audit_clips/."""
-    t = {"t0": time.time()}
-    os.makedirs(out_rec_dir, exist_ok=True)
-    rec_name = os.path.splitext(os.path.basename(flac_path))[0]
-    model, prep_fn, labels = get_birdnet_gpu_model()
-
-    audio, sr, err = load_and_verify_flac(flac_path, out_rec_dir, FLAC_CHANNELS.get(location, 6))
+def _prepare(flac_path: str, location: str, err_dir: str):
+    """FLAC -> (mono, sa, X) exactly as used for BirdNET and the clips, or (None, None, error dict)."""
+    audio, sr, err = load_and_verify_flac(flac_path, err_dir, FLAC_CHANNELS.get(location, 6))
     if audio is None:
-        return {"error": err}
+        return None, None, err
     audio = audio[:, mic_channels(location)]
     if sr != FS_TARGET:
         audio = librosa.resample(audio.T, orig_sr=sr, target_sr=FS_TARGET).T
@@ -124,18 +119,79 @@ def process_recording(flac_path: str, location: str, date_str: str, out_rec_dir:
     sa = sa / (np.max(np.abs(sa)) + 1e-12)
     X = np.stack([librosa.stft(filt[:, c], n_fft=FRAME_LEN, hop_length=HOP_LEN, window="hamming")
                   for c in range(filt.shape[1])]).astype(np.complex64)
-    t["prep"] = time.time()
+    return mono, sa, X
 
-    results = {}
-    plain = tf.constant(np.stack([mono, sa]).astype(np.float32))
-    _birdnet(_resample3(plain), ["mono.wav", "sa.wav"], model, prep_fn, labels, results)
 
+def _renderer(location: str, X):
+    """(catalog, render) where render(idx) = peak-normalised 16 kHz signals of beams idx."""
     catalog, W = get_beam_weights_tensor(location)
     Xg = tf.constant(X)
 
     def render(idx):
         Z = tf.einsum("kcf,cft->kft", tf.constant(W[idx].astype(np.complex64)), Xg)
         return _peak_norm(_istft(Z))
+
+    return catalog, render
+
+
+def _write_clips(rows, clips_dir, mono, catalog, render):
+    """Mono clip + beam clip per row (1 s buffer each side); existing files are kept. Returns files written."""
+    os.makedirs(clips_dir, exist_ok=True)
+    written = 0
+
+    def cut(name, st, sig):
+        nonlocal written
+        a, b = int(max(0.0, st - 1.0) * FS_TARGET), int((st + 3.0 + 1.0) * FS_TARGET)
+        dst = os.path.join(clips_dir, name)
+        if not os.path.isfile(dst):
+            sf.write(dst, np.asarray(sig[a:b], dtype=np.float32), FS_TARGET, subtype="PCM_16")
+            written += 1
+
+    for r in rows:
+        cut(r["mono_clip"], r["window_seconds"][0], mono)
+    need = sorted({i for i, c in enumerate(catalog) if c[0] in {r["channel"] for r in rows}})
+    for g in range(0, len(need), BEAM_GROUP):          # render only the beams the clips need
+        idx = need[g:g + BEAM_GROUP]
+        y = render(idx).numpy()
+        sig = {catalog[i][0]: y[j] for j, i in enumerate(idx)}
+        for r in rows:
+            if r["channel"] in sig:
+                cut(r["clip"], r["window_seconds"][0], sig[r["channel"]])
+    return written
+
+
+def regen_clips(flac_path: str, location: str, date_str: str, out_rec_dir: str, clips_dir: str = None) -> dict:
+    """Recreate the audit clips of one recording that are missing (same maths as process_recording)."""
+    clips_dir = clips_dir or os.path.join(AUDIT_CLIPS_DIR, location, date_str, "audit_clips")
+    rows = json.load(open(os.path.join(out_rec_dir, "audit_clips.json")))
+    rows = [r for r in rows if not (os.path.isfile(os.path.join(clips_dir, r["clip"]))
+                                    and os.path.isfile(os.path.join(clips_dir, r["mono_clip"])))]
+    if not rows:
+        return {"written": 0}
+    mono, sa, X = _prepare(flac_path, location, out_rec_dir)
+    if mono is None:
+        return {"error": X}
+    catalog, render = _renderer(location, X)
+    return {"written": _write_clips(rows, clips_dir, mono, catalog, render)}
+
+
+def process_recording(flac_path: str, location: str, date_str: str, out_rec_dir: str) -> dict:
+    """Run one recording; returns timings. JSON into out_rec_dir, clips into AUDIT_CLIPS_DIR/<loc>/<date>/audit_clips/."""
+    t = {"t0": time.time()}
+    os.makedirs(out_rec_dir, exist_ok=True)
+    rec_name = os.path.splitext(os.path.basename(flac_path))[0]
+    model, prep_fn, labels = get_birdnet_gpu_model()
+
+    mono, sa, X = _prepare(flac_path, location, out_rec_dir)
+    if mono is None:
+        return {"error": X}
+    t["prep"] = time.time()
+
+    results = {}
+    plain = tf.constant(np.stack([mono, sa]).astype(np.float32))
+    _birdnet(_resample3(plain), ["mono.wav", "sa.wav"], model, prep_fn, labels, results)
+
+    catalog, render = _renderer(location, X)
 
     for g in range(0, len(catalog), BEAM_GROUP):
         idx = list(range(g, min(g + BEAM_GROUP, len(catalog))))
@@ -165,25 +221,7 @@ def process_recording(flac_path: str, location: str, date_str: str, out_rec_dir:
     rows = audit_rows(processed, rec_name)
     with open(os.path.join(out_rec_dir, "audit_clips.json"), "w", encoding="utf-8") as f:
         json.dump(rows, f, ensure_ascii=False)
-    clips_dir = os.path.join(AUDIT_CLIPS_DIR, location, date_str, "audit_clips")
-    os.makedirs(clips_dir, exist_ok=True)
-
-    def cut(name, st, sig):
-        a, b = int(max(0.0, st - 1.0) * FS_TARGET), int((st + 3.0 + 1.0) * FS_TARGET)
-        dst = os.path.join(clips_dir, name)
-        if not os.path.isfile(dst):
-            sf.write(dst, np.asarray(sig[a:b], dtype=np.float32), FS_TARGET, subtype="PCM_16")
-
-    for r in rows:
-        cut(r["mono_clip"], r["window_seconds"][0], mono)
-    need = sorted({i for i, c in enumerate(catalog) if c[0] in {r["channel"] for r in rows}})
-    for g in range(0, len(need), BEAM_GROUP):          # re-render only the beams the clips need
-        idx = need[g:g + BEAM_GROUP]
-        y = render(idx).numpy()
-        sig = {catalog[i][0]: y[j] for j, i in enumerate(idx)}
-        for r in rows:
-            if r["channel"] in sig:
-                cut(r["clip"], r["window_seconds"][0], sig[r["channel"]])
+    _write_clips(rows, os.path.join(AUDIT_CLIPS_DIR, location, date_str, "audit_clips"), mono, catalog, render)
     t["out"] = time.time()
     return {"prep_s": round(t["prep"] - t["t0"], 1), "beams_s": round(t["beams"] - t["prep"], 1),
             "out_s": round(t["out"] - t["beams"], 1), "n_beams": len(catalog), "n_clips": len({r["clip"] for r in rows} | {r["mono_clip"] for r in rows}),
